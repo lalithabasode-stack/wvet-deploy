@@ -1,0 +1,14 @@
+{
+  "name": "wvet-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "fetch": "node fetch-ads-data.js",
+    "matchback": "node parse-matchback.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "google-ads-api": "^23.0.0",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,2291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WesternVet · Paid Search Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#F7F6F2;color:#1a1a18;min-height:100vh;font-size:12px}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:11px 22px;background:white;border-bottom:0.5px solid #E8E6DF;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
+.logo{font-size:14px;font-weight:600;letter-spacing:-0.3px}.logo span{color:#1D9E75}
+.tabs{display:flex;gap:2px;background:#F0EEE8;border-radius:10px;padding:3px}
+.tab{font-size:11px;padding:4px 12px;border-radius:7px;border:none;background:transparent;color:#888780;cursor:pointer;white-space:nowrap}
+.tab.on{background:white;color:#1a1a18;font-weight:500}
+.topbar-right{font-size:10px;color:#B4B2A9}
+
+/* VIEWS */
+.view{display:none;padding:16px 22px}.view.on{display:block}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.kpi-row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:12px 15px}
+.kpi.hero{background:#0F6E56;border-color:#0F6E56}
+.kl{font-size:10px;font-weight:500;color:#888780;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.hero .kl{color:#9FE1CB}
+.kv{font-size:22px;font-weight:300;letter-spacing:-0.8px;color:#1a1a18;line-height:1}
+.hero .kv{color:white}
+.kd{font-size:11px;font-weight:500;margin-top:2px}
+.kd.up{color:#1D9E75}.kd.dn{color:#D85A30}.kd.fl{color:#888780}
+.hero .kd{color:#5DCAA5}
+
+/* MANAGED MINI STRIP */
+.managed-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:10px 14px}
+.ms-item{display:flex;flex-direction:column;gap:2px}
+.ms-lbl{font-size:9px;font-weight:600;color:#888780;letter-spacing:.06em;text-transform:uppercase}
+.ms-val{font-size:14px;font-weight:500;color:#0F6E56;letter-spacing:-0.3px}
+.ms-sub{font-size:10px;color:#B4B2A9}
+
+/* DATE CHIPS */
+.date-bar{display:flex;align-items:center;gap:6px;margin-bottom:13px;flex-wrap:wrap}
+.dlbl{font-size:11px;color:#888780;font-weight:500}
+.dchip{font-size:11px;padding:4px 11px;border-radius:7px;border:0.5px solid #E8E6DF;background:#F5F4F0;color:#5F5E5A;cursor:pointer;transition:all .12s}
+.dchip.on{background:#0F6E56;border-color:#0F6E56;color:white;font-weight:500}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:210px 1fr;gap:13px;align-items:start}
+
+/* SIDEBAR */
+.sidebar{background:white;border:0.5px solid #E8E6DF;border-radius:11px;overflow:hidden;position:sticky;top:56px}
+.sb-top{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:0.5px solid #E8E6DF}
+.sb-title{font-size:11px;font-weight:600;color:#1a1a18}
+.sb-clear{font-size:10px;color:#888780;background:none;border:none;cursor:pointer;text-decoration:underline}
+.sb-search{width:100%;font-size:11px;padding:7px 10px;border:none;border-bottom:0.5px solid #E8E6DF;background:#FAFAF8;color:#1a1a18;outline:none}
+.sb-search:focus{background:white}
+
+/* TS SIDEBAR QUICK BTNS */
+.ts-quick-btns{display:flex;gap:4px;padding:8px 10px;border-bottom:0.5px solid #E8E6DF}
+.ts-qbtn{font-size:10px;font-weight:500;padding:3px 9px;border-radius:5px;border:0.5px solid #E8E6DF;background:#F5F4F0;color:#5F5E5A;cursor:pointer;white-space:nowrap}
+.ts-qbtn:hover{background:#E8E6DF}
+
+/* COLLAPSIBLE FILTER GROUP */
+.fg{border-bottom:0.5px solid #F5F4F0}
+.fg-toggle{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;cursor:pointer;user-select:none;transition:background .1s}
+.fg-toggle:hover{background:#FAFAF8}
+.fg-label{font-size:10px;font-weight:600;color:#888780;letter-spacing:.06em;text-transform:uppercase}
+.fg-arrow{font-size:10px;color:#B4B2A9;transition:transform .2s}
+.fg-arrow.open{transform:rotate(180deg)}
+.fg-body{display:none;padding:6px 0 8px}
+.fg-body.open{display:block}
+
+/* ACCOUNT LIST - scrollable */
+.acct-list{max-height:180px;overflow-y:auto;padding:0 8px}
+.acct-list::-webkit-scrollbar{width:4px}
+.acct-list::-webkit-scrollbar-thumb{background:#E8E6DF;border-radius:2px}
+
+.fcheck{display:flex;align-items:center;justify-content:space-between;padding:3px 5px;border-radius:5px;cursor:pointer;transition:background .1s}
+.fcheck:hover{background:#F5F4F0}
+.fcheck-lbl{display:flex;align-items:center;gap:6px;font-size:11px;color:#1a1a18;flex:1}
+.fcheck input{accent-color:#1D9E75;width:12px;height:12px;flex-shrink:0}
+.fcount{font-size:10px;color:#B4B2A9;font-weight:500}
+
+/* CARDS + TABLES */
+.card{background:white;border:0.5px solid #E8E6DF;border-radius:11px;overflow:hidden;margin-bottom:11px}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 15px;border-bottom:0.5px solid #E8E6DF;flex-wrap:wrap;gap:5px}
+.ct{font-size:12px;font-weight:500}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+
+/* SORTABLE HEADERS */
+thead th{text-align:left;padding:6px 11px;font-size:10px;font-weight:600;color:#888780;letter-spacing:.04em;text-transform:uppercase;background:#FAFAF8;border-bottom:0.5px solid #E8E6DF;white-space:nowrap;cursor:pointer;user-select:none;transition:background .1s;position:relative}
+.col-resizer{position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:3}
+.col-resizer:hover,.col-resizer.active{background:#1D9E75;opacity:.5}
+thead th:hover{background:#F0EEE8;color:#1a1a18}
+thead th.r{text-align:right}
+thead th.sorted-asc::after{content:" ↑";color:#1D9E75}
+thead th.sorted-desc::after{content:" ↓";color:#1D9E75}
+thead th.group{background:#F0EEE8;color:#5F5E5A;text-align:center;border-left:2px solid #E8E6DF;cursor:default}
+thead th.group:hover{background:#F0EEE8;color:#5F5E5A}
+thead th.nosort{cursor:default}
+thead th.nosort:hover{background:#FAFAF8;color:#888780}
+
+tbody tr{border-bottom:0.5px solid #F5F4F0;transition:background .1s}
+tbody tr:hover{background:#FAFAF8}
+tbody tr:last-child{border-bottom:none}
+td{padding:7px 11px;vertical-align:middle;white-space:nowrap}
+td.r{text-align:right}
+.tfoot td{padding:7px 11px;font-weight:600;font-size:11px;background:#F0EEE8;border-top:2px solid #D4D0C8;white-space:nowrap;position:sticky;bottom:0;z-index:1}
+.tfoot td.r{text-align:right}
+
+/* PORTFOLIO TABLE — compact to fit viewport without horizontal scroll */
+#port-table td,#port-table thead th{padding:5px 6px}
+#port-table .tfoot td{padding:5px 6px}
+#port-table td.hn-cell{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* SECTION SEPARATOR ROWS */
+tr.section-sep td{background:#F0EEE8;font-size:10px;font-weight:600;color:#5F5E5A;letter-spacing:.05em;text-transform:uppercase;padding:5px 11px;border-bottom:0.5px solid #E8E6DF}
+
+/* MANAGED ROW ACCENT */
+tr.managed-row{border-left:2px solid #1D9E75}
+
+/* CELL STYLES */
+.hn{font-weight:500}
+.bdg{display:inline-block;font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;margin-left:4px}
+.b-test{background:#E6F1FB;color:#185FA5}
+.b-managed{background:#E1F5EE;color:#085041}
+.up{color:#1D9E75;font-weight:500}.dn{color:#D85A30;font-weight:500}.fl{color:#888780}
+.pop-cmp{display:block;font-size:9px;margin-top:2px;font-weight:400}.pop-cmp.up{color:#1D9E75}.pop-cmp.dn{color:#D85A30}.pop-cmp.fl{color:#888780}
+.pop-col-tog{font-size:9px;color:#888780;background:none;border:none;cursor:pointer;padding:0 2px;font-family:inherit;letter-spacing:-.5px;line-height:1}.pop-col-tog:hover{color:#1a1a18}
+.dot{width:5px;height:5px;border-radius:50%;display:inline-block;margin-right:5px;flex-shrink:0}
+.dg{background:#1D9E75}.da{background:#EF9F27}.dr{background:#E24B4A}
+.sbar{display:flex;align-items:center;gap:4px}
+.sbar-bg{width:44px;height:3px;background:#F0EEE8;border-radius:2px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:2px}
+.rec-pill{font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.rp-scale{background:#E1F5EE;color:#085041}
+.rp-hold{background:#F1EFE8;color:#5F5E5A}
+.rp-trim{background:#FCEBEB;color:#791F1F}
+.rp-floor{background:#FAEEDA;color:#633806}
+.rp-watch{background:#E6F1FB;color:#185FA5}
+
+/* TOGGLE CHIP (active only) */
+.toggle-chip{font-size:11px;padding:4px 11px;border-radius:7px;border:0.5px solid #E8E6DF;background:#F5F4F0;color:#5F5E5A;cursor:pointer;display:inline-flex;align-items:center;gap:5px;user-select:none}
+.toggle-chip.on{background:#E1F5EE;border-color:#9FE1CB;color:#085041;font-weight:500}
+.toggle-chip input{accent-color:#1D9E75;width:12px;height:12px}
+
+/* ROW COUNT BADGE */
+.row-count{font-size:10px;color:#888780}
+
+/* TIME SERIES */
+.ts-controls{display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap}
+.ts-date-group{display:flex;align-items:center;gap:7px;background:white;border:0.5px solid #E8E6DF;border-radius:9px;padding:7px 12px}
+.ts-date-lbl{font-size:11px;color:#888780;font-weight:500;white-space:nowrap}
+.ts-date-inp{font-size:11px;color:#1a1a18;border:none;background:transparent;outline:none;cursor:pointer}
+.ts-date-sep{font-size:11px;color:#B4B2A9}
+.granularity{display:flex;gap:2px;background:#F0EEE8;border-radius:8px;padding:2px}
+.gran-btn{font-size:11px;padding:4px 11px;border-radius:6px;border:none;background:transparent;color:#888780;cursor:pointer}
+.gran-btn.on{background:white;color:#1a1a18;font-weight:500}
+
+/* TS SIDEBAR SECTIONS */
+.ts-section-hdr{font-size:9px;font-weight:700;color:#888780;letter-spacing:.07em;text-transform:uppercase;padding:7px 13px 3px;background:#FAFAF8;border-bottom:0.5px solid #F0EEE8}
+.ts-acct-scroll{max-height:400px;overflow-y:auto}
+.ts-acct-scroll::-webkit-scrollbar{width:4px}
+.ts-acct-scroll::-webkit-scrollbar-thumb{background:#E8E6DF;border-radius:2px}
+.ts-collapse-toggle{display:block;width:100%;text-align:left;font-size:10px;color:#888780;padding:5px 13px;background:none;border:none;border-top:0.5px solid #F0EEE8;cursor:pointer}
+.ts-collapse-toggle:hover{background:#FAFAF8;color:#1a1a18}
+.ts-portfolio-list{display:none}
+.ts-portfolio-list.expanded{display:block}
+
+/* CHART GRID */
+.chart-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:13px}
+.chart-card{background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:13px 15px}
+.chart-title{font-size:10px;font-weight:700;color:#888780;letter-spacing:.07em;text-transform:uppercase;margin-bottom:0}
+.chart-sub{font-size:10px;color:#888780;margin-bottom:8px}
+.chart-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.chart-kpi-num{font-size:26px;font-weight:600;letter-spacing:-.5px;line-height:1.1;margin:4px 0 2px;color:#1a1a18}
+.chart-delta{font-size:10px;font-weight:500;min-height:14px}
+.chart-delta.up{color:#1D9E75}.chart-delta.dn{color:#D85A30}.chart-delta.fl{color:#888780}
+.legend-col{display:flex;flex-direction:column;gap:5px;align-items:flex-end;padding-top:2px}
+.legend-row{display:flex;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:5px;font-size:10px;color:#5F5E5A}
+.ld{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+
+/* CORRELATION */
+.corr-info{background:#E6F1FB;border:0.5px solid #B5D4F4;border-radius:9px;padding:12px 15px;margin-bottom:13px}
+.ci-title{font-size:11px;font-weight:600;color:#185FA5;margin-bottom:4px}
+.ci-body{font-size:11px;color:#0C447C;line-height:1.6}
+.corr-search-row{display:flex;gap:7px;margin-bottom:11px}
+.corr-search{flex:1;font-size:11px;padding:7px 11px;border-radius:8px;border:0.5px solid #E8E6DF;background:white;color:#1a1a18;outline:none}
+.corr-search:focus{border-color:#9FE1CB}
+
+/* BUDGET */
+.bi{font-size:11px;font-weight:500;color:#0F6E56;border:0.5px solid #E8E6DF;border-radius:5px;padding:2px 5px;width:65px;text-align:right;background:#F7FDF9;outline:none}
+.bi:focus{border-color:#1D9E75}
+
+/* GLOSSARY */
+.glossary{background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:13px 16px;margin-top:11px}
+.gl-title{font-size:10px;font-weight:600;color:#888780;letter-spacing:.07em;text-transform:uppercase;margin-bottom:9px}
+.gl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px 18px}
+
+/* PERFORMANCE HEADLINE */
+.port-headline{background:#E8F5EE;border:0.5px solid #9FE1CB;border-radius:9px;padding:9px 14px;margin-bottom:12px;font-size:11px;color:#1a1a18;line-height:1.6;display:none}
+.hl-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#1D9E75;margin-right:8px;vertical-align:middle;flex-shrink:0}
+.gl-item{font-size:10px;color:#888780;line-height:1.5}
+.gl-item strong{color:#1a1a18;font-weight:500}
+.gl-note{margin-top:9px;padding-top:9px;border-top:0.5px solid #F0EEE8;font-size:10px;color:#888780;line-height:1.6}
+.gl-note strong{color:#1a1a18;font-weight:500}
+
+/* UTIL BUTTON */
+.btn-sm{font-size:10px;font-weight:500;color:#0F6E56;background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:5px;padding:3px 9px;cursor:pointer}
+.btn-sm:hover{background:#c5f0e0}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Western<span>Vet</span> · Paid Search</div>
+  <div class="tabs">
+    <button class="tab on" onclick="sw('portfolio',this)">Portfolio</button>
+    <button class="tab" onclick="sw('managed',this)">Managed (<span id="tab-managed-count">—</span>)</button>
+    <button class="tab" onclick="sw('timeseries',this)">Time Series</button>
+    <button class="tab" onclick="sw('signals',this)">Signals</button>
+    <button class="tab" onclick="sw('budget',this)">Budget</button>
+  </div>
+  <div class="topbar-right" id="topbar-right">Loading...</div>
+</div>
+
+<!-- ===== PORTFOLIO (all accounts) ===== -->
+<div id="portfolio" class="view on">
+  <div class="port-headline" id="port-headline"></div>
+  <div class="date-bar" id="port-date-bar"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <span style="font-size:10px;font-weight:600;color:#888780;letter-spacing:.06em;text-transform:uppercase">All accounts</span>
+    <span style="font-size:10px;color:#B4B2A9">Not affected by account filter · updates on period change only</span>
+  </div>
+  <div class="kpi-row" id="port-kpi-row">
+    <div class="kpi"><div class="kl">Total Spend</div><div class="kv" id="port-kv-spend">—</div><div class="kd fl" id="port-kd-spend">—</div></div>
+    <div class="kpi"><div class="kl">Total Impressions</div><div class="kv" id="port-kv-imp">—</div><div class="kd fl" id="port-kd-imp">—</div></div>
+    <div class="kpi"><div class="kl">Total Clicks</div><div class="kv" id="port-kv-clicks">—</div><div class="kd fl" id="port-kd-clicks">—</div></div>
+    <div class="kpi hero"><div class="kl">Active Accounts</div><div class="kv" id="port-kv-active">—</div><div class="kd" id="port-kd-active" style="color:#5DCAA5">with spend &gt; $0</div></div>
+  </div>
+  <div class="managed-strip" id="port-managed-strip">
+    <div class="ms-item"><div class="ms-lbl">Managed Matchback</div><div class="ms-val" id="port-ms-mb">—</div><div class="ms-sub">Invoca + Vetstoria</div></div>
+    <div class="ms-item"><div class="ms-lbl">CP Matchback</div><div class="ms-val" id="port-ms-cpm">—</div><div class="ms-sub">Total spend ÷ total appts</div></div>
+    <div class="ms-item"><div class="ms-lbl">Managed Signals</div><div class="ms-val" id="port-ms-sig">—</div><div class="ms-sub">NC Industry + Appt Booked</div></div>
+    <div style="margin-left:auto;align-self:center;font-size:10px;color:#B4B2A9;padding-right:4px">All <span id="port-managed-count">—</span> managed · not affected by filter</div>
+    <div id="port-strip-lag" style="display:none;grid-column:1/-1;margin-top:8px;padding:7px 10px;background:#FFF8ED;border:0.5px solid #FCDFA0;border-radius:7px;font-size:10px;color:#7A5500;line-height:1.5">
+      <strong>Matchback not yet available for this period.</strong> Invoca + Vetstoria typically report ~15 days after month end — est. available <span id="port-strip-lag-date"></span>.
+    </div>
+  </div>
+  <div class="chart-grid" style="margin-bottom:14px">
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div>
+          <div class="chart-title">Spend</div>
+          <div class="chart-kpi-num" id="port-c1-kpi">—</div>
+          <div class="chart-delta" id="port-c1-delta"></div>
+        </div>
+        <div class="legend-col">
+          <div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#888780"/></svg>Spend</div>
+          <div class="li"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#EF9F27" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#EF9F27" stroke-width="1.5"/></svg>Avg CPC</div>
+        </div>
+      </div>
+      <div style="position:relative;height:150px"><canvas id="port-c1"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div>
+          <div class="chart-title">Matchback Appts</div>
+          <div class="chart-kpi-num" id="port-c2-kpi" style="color:#1D9E75">—</div>
+          <div class="chart-delta" id="port-c2-delta"></div>
+        </div>
+        <div class="legend-col">
+          <div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#1D9E75"/></svg>Matchback</div>
+          <div class="li"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#D85A30" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#D85A30" stroke-width="1.5"/></svg>CP matchback</div>
+        </div>
+      </div>
+      <div style="position:relative;height:150px"><canvas id="port-c2"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div>
+          <div class="chart-title">GA Signals</div>
+          <div class="chart-kpi-num" id="port-c3-kpi">—</div>
+          <div class="chart-delta" id="port-c3-delta"></div>
+        </div>
+        <div class="legend-col">
+          <div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#378ADD"/></svg>GA signals</div>
+          <div class="li"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#EF9F27" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#EF9F27" stroke-width="1.5"/></svg>CP signals</div>
+        </div>
+      </div>
+      <div style="position:relative;height:150px"><canvas id="port-c3"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div>
+          <div class="chart-title">New Clients</div>
+          <div class="chart-kpi-num" id="port-c4-kpi">—</div>
+          <div class="chart-delta" id="port-c4-delta"></div>
+        </div>
+        <div class="legend-col">
+          <div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#9FE1CB"/></svg>New clients</div>
+          <div class="li"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#D85A30" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#D85A30" stroke-width="1.5"/></svg>CP new client</div>
+        </div>
+      </div>
+      <div style="position:relative;height:150px"><canvas id="port-c4"></canvas></div>
+    </div>
+  </div>
+  <div class="layout">
+    <!-- Sidebar filters -->
+    <div class="sidebar">
+      <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearPortFilters()">Clear all</button></div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="port-acct-count">(—)</span></span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open">
+          <div style="padding:0 8px 6px"><input class="sb-search" id="port-srch" placeholder="Type to search accounts..." oninput="filterPortAcctList(this.value)" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
+          <div class="acct-list" id="port-acct-list" style="max-height:220px"></div>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Quick filters</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" id="port-managed-only" onchange="renderPortfolioTable()"><span class="fcheck-lbl">Managed only</span></label>
+          <label class="fcheck"><input type="checkbox" id="port-active-chk" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">Active only (spend &gt; $0)</span></label>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Campaign type</span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="port-camp" value="pmax_test" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">PMax Brand Test</span></label>
+          <label class="fcheck"><input type="checkbox" class="port-camp" value="pmax_std" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">Standard PMax</span></label>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Signal quality <span style="font-size:9px;font-weight:400;color:#B4B2A9">managed</span></span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="port-sig" value="strong" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">Strong (r ≥ 0.5)</span><span class="fcount" id="port-fc-s">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="port-sig" value="weak" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">Weak (0–0.49)</span><span class="fcount" id="port-fc-w">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="port-sig" value="negative" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">Negative (r &lt; 0)</span><span class="fcount" id="port-fc-n">—</span></label>
+        </div>
+      </div>
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">MB trend <span style="font-size:9px;font-weight:400;color:#B4B2A9">managed</span></span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="port-trend" value="up" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">↑ Trending up</span></label>
+          <label class="fcheck"><input type="checkbox" class="port-trend" value="flat" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">→ Flat</span></label>
+          <label class="fcheck"><input type="checkbox" class="port-trend" value="down" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">↓ Trending down</span></label>
+        </div>
+      </div>
+    </div>
+    <!-- Table -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <div class="ct">All accounts — <span id="port-month-lbl">Mar 2026</span></div>
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+            <span class="row-count" id="port-row-count" style="font-size:10px;color:#888780">—</span>
+            <button class="btn-sm" onclick="downloadXLSX('port-tbody','port-tfoot','WesternVet_Portfolio')">↓ XLSX</button>
+          </div>
+        </div>
+        <div id="port-mb-lag-note" style="display:none;padding:7px 15px;background:#FFF8ED;border-top:0.5px solid #FCDFA0;font-size:10px;color:#7A5500;line-height:1.5">
+          <strong>Matchback data not yet available for this month.</strong> Invoca + Vetstoria typically report ~15 days after month end — est. available <span id="port-mb-lag-date"></span>.
+        </div>
+        <div style="overflow-y:auto;max-height:480px;overflow-x:auto;border:0.5px solid #E8E6DF;border-radius:8px">
+          <table id="port-table" style="border-radius:0;border:none">
+            <thead style="position:sticky;top:0;z-index:2">
+              <tr>
+                <th class="nosort">Account</th>
+                <th class="r" onclick="portSort('spend')">Spend</th>
+                <th class="r nosort">MoM</th>
+                <th class="r" onclick="portSort('nci')">NC Ind*</th>
+                <th class="r nosort" style="color:#B4B2A9">MoM</th>
+                <th class="r" onclick="portSort('appt_b')">Appt Booked*</th>
+                <th class="r nosort" style="color:#B4B2A9">MoM</th>
+                <th class="r" onclick="portSort('nca')">NC Appt*</th>
+                <th class="r nosort" style="color:#B4B2A9">MoM</th>
+                <th class="r mb-total-th" onclick="portSort('mb')">Matchback* <span id="mb-expand-btn" onclick="event.stopPropagation();toggleMBExpand()" title="Show Invoca / Vetstoria split" style="cursor:pointer;font-size:9px;font-weight:600;background:#E1F5EE;color:#085041;border-radius:3px;padding:1px 5px;margin-left:3px">+</span></th>
+                <th class="r mb-total-th nosort" style="color:#B4B2A9">MoM</th>
+                <th class="r mb-split-th" style="display:none" onclick="portSort('mb_inv')">Invoca*</th>
+                <th class="r mb-split-th nosort" style="display:none;color:#B4B2A9">MoM</th>
+                <th class="r mb-split-th" style="display:none" onclick="portSort('mb_vet')">Vetstoria* <span onclick="event.stopPropagation();toggleMBExpand()" title="Collapse to Matchback total" style="cursor:pointer;font-size:9px;font-weight:600;background:#FCEBEB;color:#791F1F;border-radius:3px;padding:1px 5px;margin-left:3px">−</span></th>
+                <th class="r mb-split-th nosort" style="display:none;color:#B4B2A9">MoM</th>
+                <th class="r" onclick="portSort('cpm')">CP Match*</th>
+                <th class="r nosort" style="color:#B4B2A9">MoM</th>
+                <th class="r" onclick="portSort('cps')">CP Sigs*</th>
+                <th class="r nosort" style="color:#B4B2A9">MoM</th>
+                <th class="r nosort">Signal r*</th>
+              </tr>
+            </thead>
+            <tbody id="port-tbody"></tbody>
+            <tfoot class="tfoot" id="port-tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="glossary">
+        <div class="gl-title">Notes</div>
+        <div class="gl-grid">
+          <div class="gl-item"><strong>NC Ind*</strong> — New Client (Industry): Google Ads conversion fires when a new-to-practice patient calls or submits a form. Call ext + web page calls combined.</div>
+          <div class="gl-item"><strong>Appt Booked*</strong> — Appointment Booked (Conversion): fires when a booking is confirmed on-site. Call ext + web page calls combined. Validated bidding signal.</div>
+          <div class="gl-item"><strong>NC Appt*</strong> — New Client Appointment: Google-reported conversion. Reference only — negative correlation with verified outcomes (r = −0.61 to −0.73). Not used in bidding.</div>
+          <div class="gl-item"><strong>Matchback*</strong> — Invoca + Vetstoria verified new client appointments attributed to paid search. Ground truth. 4–6 week reporting lag.</div>
+          <div class="gl-item"><strong>Invoca</strong> — Call tracking platform. Records inbound calls from paid search and matches them to new client appointments at the practice level.</div>
+          <div class="gl-item"><strong>Vetstoria</strong> — Online booking platform used by WesternVet practices. Matches web bookings from paid search to new client appointments.</div>
+          <div class="gl-item"><strong>CP Match*</strong> — Cost per Matchback Appt: Total spend ÷ matchback appts. True cost of acquiring a verified new client via paid search.</div>
+          <div class="gl-item"><strong>CP Sigs*</strong> — Cost per GA Signal: Total spend ÷ (NC Ind + Appt Booked). How much you're paying per validated bidding signal. Lower is better.</div>
+          <div class="gl-item"><strong>Signal r*</strong> — Pearson correlation: best single GA conversion action vs matchback. r ≥ 0.5 = strong (green). r 0–0.49 = weak (amber). r &lt; 0 = negative, bidding misdirected (red).</div>
+          <div class="gl-item"><strong>PMax</strong> — Performance Max. Google's fully automated campaign type running all 12 managed accounts. Uses conversion signals to target new clients.</div>
+          <div class="gl-item"><strong>Brand Test</strong> — A/B test: PMax with brand keywords excluded vs brand allowed. Running on Payson, Chico Creek, Cherrelyn.</div>
+          <div class="gl-item"><strong>GA Signals</strong> — Google Ads reported conversions (NC Industry + Appt Booked). Used as Smart Bidding input — not verified new clients.</div>
+          <div class="gl-item"><strong>MoM</strong> — Month-over-month % change vs prior period. <strong>MTD</strong> — Month to date: current month data up to today only.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MANAGED (deep dive on 12) ===== -->
+<div id="managed" class="view">
+  <div class="date-bar" id="managed-date-bar"></div>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearMFilters()">Clear all</button></div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="m-acct-count">(—)</span></span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body">
+          <div style="padding:0 8px 6px"><input class="sb-search" id="m-srch" placeholder="Search accounts..." oninput="filterMAcctList(this.value)" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
+          <div class="acct-list" id="m-acct-list"></div>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Campaign type</span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="m-camp" value="pmax_test" checked onchange="renderManaged()"><span class="fcheck-lbl">PMax Brand Test</span></label>
+          <label class="fcheck"><input type="checkbox" class="m-camp" value="pmax_std" checked onchange="renderManaged()"><span class="fcheck-lbl">Standard PMax</span></label>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Signal quality</span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="m-sig" value="strong" checked onchange="renderManaged()"><span class="fcheck-lbl">Strong (r ≥ 0.5)</span><span class="fcount" id="m-fc-s">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="m-sig" value="weak" checked onchange="renderManaged()"><span class="fcheck-lbl">Weak (0–0.49)</span><span class="fcount" id="m-fc-w">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="m-sig" value="negative" checked onchange="renderManaged()"><span class="fcheck-lbl">Negative (r &lt; 0)</span><span class="fcount" id="m-fc-n">—</span></label>
+        </div>
+      </div>
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">MB trend</span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="m-trend" value="up" checked onchange="renderManaged()"><span class="fcheck-lbl">↑ Trending up</span></label>
+          <label class="fcheck"><input type="checkbox" class="m-trend" value="flat" checked onchange="renderManaged()"><span class="fcheck-lbl">→ Flat</span></label>
+          <label class="fcheck"><input type="checkbox" class="m-trend" value="down" checked onchange="renderManaged()"><span class="fcheck-lbl">↓ Trending down</span></label>
+        </div>
+      </div>
+    </div>
+    <!-- Table -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <div class="ct">Managed accounts — <span id="m-month-lbl">Mar 2026 (MTD)</span></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div style="font-size:10px;color:#888780">Click column header to sort</div>
+            <button class="btn-sm" onclick="downloadXLSX('m-tbody','m-tfoot','WesternVet_Managed')">↓ XLSX</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="nosort" rowspan="2">Hospital</th>
+                <th class="group" colspan="2">Matchback</th>
+                <th class="group" colspan="2">CP Matchback</th>
+                <th class="group" colspan="2">GA Signals*</th>
+                <th class="group" colspan="2">CP Signals*</th>
+                <th class="r" rowspan="2" onclick="mSort('spend')">Spend</th>
+                <th class="r nosort" rowspan="2">Signal r</th>
+                <th class="nosort" rowspan="2">Rec</th>
+              </tr>
+              <tr>
+                <th class="r" onclick="mSort('mb')">Value</th><th class="r nosort">MoM</th>
+                <th class="r" onclick="mSort('cpm')">Value</th><th class="r nosort">MoM</th>
+                <th class="r" onclick="mSort('sig')">Value</th><th class="r nosort">MoM</th>
+                <th class="r" onclick="mSort('cpsig')">Value</th><th class="r nosort">MoM</th>
+              </tr>
+            </thead>
+            <tbody id="m-tbody"></tbody>
+            <tfoot class="tfoot" id="m-tfoot">
+              <tr>
+                <td>Total (<span id="m-cnt">—</span>)</td>
+                <td class="r" id="mf-mb">—</td><td class="r" id="mf-mb-m">—</td>
+                <td class="r" id="mf-cpm">—</td><td class="r" id="mf-cpm-m">—</td>
+                <td class="r" id="mf-sig">—</td><td class="r" id="mf-sig-m">—</td>
+                <td class="r" id="mf-cpsig">—</td><td class="r" id="mf-cpsig-m">—</td>
+                <td class="r" id="mf-sp">—</td><td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="glossary">
+        <div class="gl-title">Glossary</div>
+        <div class="gl-grid">
+          <div class="gl-item"><strong>Matchback</strong> — Invoca (call) + Vetstoria (web) verified new client appts attributed to paid search. Ground truth. 4–6 week lag.</div>
+          <div class="gl-item"><strong>Invoca</strong> — Call tracking platform. Matches inbound calls from paid search to new client appointments.</div>
+          <div class="gl-item"><strong>Vetstoria</strong> — Online booking platform. Matches web bookings from paid search to new client appointments.</div>
+          <div class="gl-item"><strong>CP Matchback</strong> — Cost per Matchback Appt: Spend ÷ matchback appts. True cost of acquiring a verified new client.</div>
+          <div class="gl-item"><strong>GA Signals*</strong> — NC Industry (call ext + web) + Appt Booked (call ext + web). Used as Smart Bidding signal. Excludes NC Appt.</div>
+          <div class="gl-item"><strong>CP Signals*</strong> — Spend ÷ GA Signals. Google's reported efficiency — not verified outcomes.</div>
+          <div class="gl-item"><strong>NC Industry</strong> — New Client (Industry): fires when a new patient calls or submits a form. Call ext + web page calls.</div>
+          <div class="gl-item"><strong>Appt Booked</strong> — Appointment Booked (Conversion): fires when a booking is confirmed on-site. Validated signal.</div>
+          <div class="gl-item"><strong>NC Appt</strong> — New Client Appointment: Google-reported. Reference only — negative correlation with matchback.</div>
+          <div class="gl-item"><strong>Signal r</strong> — Pearson correlation: best single conversion action vs matchback. r ≥ 0.5 = strong, r &lt; 0 = misdirected bidding.</div>
+          <div class="gl-item"><strong>PMax</strong> — Performance Max. Google's automated campaign type running all 12 managed accounts.</div>
+          <div class="gl-item"><strong>MoM</strong> — Month-over-month change vs prior period. <strong>MTD</strong> — Month to date.</div>
+        </div>
+        <div class="gl-note"><strong>*GA Signals exclude New Client Appointment</strong> — correlation analysis showed NCA moves opposite to matchback (r = −0.61 to −0.73). Only NC Industry + Appt Booked are used as bidding signals.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TIME SERIES ===== -->
+<div id="timeseries" class="view">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearTSFilters()">Clear all</button></div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Accounts <span style="font-weight:400;color:#B4B2A9" id="ts-acct-count-lbl">(—)</span></span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open">
+          <div class="ts-quick-btns" style="padding:6px 8px 4px">
+            <button class="ts-qbtn" onclick="tsSelectManaged()">Managed</button>
+            <button class="ts-qbtn" onclick="tsSelectAll()">All</button>
+            <button class="ts-qbtn" onclick="tsSelectNone()">None</button>
+          </div>
+          <div style="padding:0 8px 4px"><input class="sb-search" id="ts-srch" placeholder="Search accounts..." oninput="renderTSSidebar()" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
+          <div class="ts-acct-scroll" style="max-height:220px">
+            <div class="ts-section-hdr">MANAGED (<span id="ts-managed-hdr-count">—</span>)</div>
+            <div id="ts-managed-list" style="padding:4px 8px"></div>
+            <div class="ts-section-hdr" style="border-top:0.5px solid #E8E6DF">PORTFOLIO (<span id="ts-portfolio-hdr-count">—</span>)</div>
+            <button class="ts-collapse-toggle" id="ts-portfolio-toggle" onclick="toggleTSPortfolio()">Show <span id="ts-portfolio-count">—</span> accounts ▼</button>
+            <div class="ts-portfolio-list" id="ts-portfolio-list" style="padding:4px 8px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Quick filters</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" id="ts-managed-only" onchange="applyTSFilters()"><span class="fcheck-lbl">Managed only</span></label>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Campaign type</span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="ts-camp" value="pmax_test" checked onchange="applyTSFilters()"><span class="fcheck-lbl">PMax Brand Test</span></label>
+          <label class="fcheck"><input type="checkbox" class="ts-camp" value="pmax_std" checked onchange="applyTSFilters()"><span class="fcheck-lbl">Standard PMax</span></label>
+        </div>
+      </div>
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Signal quality <span style="font-size:9px;font-weight:400;color:#B4B2A9">managed</span></span><span class="fg-arrow">▾</span></div>
+        <div class="fg-body" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="ts-sig" value="strong" checked onchange="applyTSFilters()"><span class="fcheck-lbl">Strong (r ≥ 0.5)</span><span class="fcount" id="ts-fc-s">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="ts-sig" value="weak" checked onchange="applyTSFilters()"><span class="fcheck-lbl">Weak (0–0.49)</span><span class="fcount" id="ts-fc-w">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="ts-sig" value="negative" checked onchange="applyTSFilters()"><span class="fcheck-lbl">Negative (r &lt; 0)</span><span class="fcount" id="ts-fc-n">—</span></label>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="chart-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        <div class="chart-card">
+          <div class="chart-hdr" style="margin-bottom:5px">
+            <div class="chart-title">Spend &amp; Avg CPC</div>
+            <div class="legend-col"><div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#888780"/></svg>Spend</div><div class="li"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#EF9F27" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#EF9F27" stroke-width="1.5"/></svg>Avg CPC</div></div>
+          </div>
+          <div style="position:relative;height:150px"><canvas id="ts-c1"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-hdr" style="margin-bottom:5px">
+            <div class="chart-title">Clicks &amp; CPC</div>
+            <div class="legend-col"><div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#378ADD"/></svg>Clicks</div><div class="li"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#D85A30" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#D85A30" stroke-width="1.5"/></svg>CPC</div></div>
+          </div>
+          <div style="position:relative;height:150px"><canvas id="ts-c2"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-hdr" style="margin-bottom:5px">
+            <div class="chart-title" id="ts-c3-title">GA Signals &amp; Matchback†</div>
+            <div class="legend-col"><div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#378ADD"/></svg>GA Signals</div><div class="li" id="ts-c3-mbleg"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#1D9E75" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#1D9E75" stroke-width="1.5"/></svg>Matchback</div></div>
+          </div>
+          <div style="position:relative;height:150px"><canvas id="ts-c3"></canvas></div>
+          <div id="ts-c3-note" style="display:none;font-size:9px;color:#B4B2A9;text-align:right;margin-top:3px">† Matchback line: monthly view only</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-hdr" style="margin-bottom:5px">
+            <div class="chart-title" id="ts-c4-title">CP Signals &amp; CP Match†</div>
+            <div class="legend-col"><div class="li"><svg width="18" height="10" style="flex-shrink:0"><rect x="1" y="3" width="16" height="4" rx="1" fill="#EF9F27"/></svg>CP Signals</div><div class="li" id="ts-c4-cpmleg"><svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#D85A30" stroke-width="1.5"/><circle cx="12" cy="5" r="3" fill="white" stroke="#D85A30" stroke-width="1.5"/></svg>CP Match</div></div>
+          </div>
+          <div style="position:relative;height:150px"><canvas id="ts-c4"></canvas></div>
+          <div id="ts-c4-note" style="display:none;font-size:9px;color:#B4B2A9;text-align:right;margin-top:3px">† CP Match line: monthly view only</div>
+        </div>
+      </div>
+      <div class="port-headline" id="ts-trend-summary" style="margin-bottom:11px"></div>
+      <div class="card">
+        <div class="card-head">
+          <div class="ct">Trend — <span id="ts-acct-label">— accounts</span></div>
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+            <div class="ts-date-group" style="padding:5px 10px">
+              <span class="ts-date-lbl">From</span>
+              <input class="ts-date-inp" type="date" id="ts-from" value="2025-10-01" onchange="renderTS()">
+              <span class="ts-date-sep">—</span>
+              <span class="ts-date-lbl">To</span>
+              <input class="ts-date-inp" type="date" id="ts-to" value="2026-03-31" onchange="renderTS()">
+            </div>
+            <div class="granularity">
+              <button class="gran-btn on" id="gran-month" onclick="setGran('month',this)">Monthly</button>
+              <button class="gran-btn" id="gran-week" onclick="setGran('week',this)">Weekly</button>
+            </div>
+            <div style="font-size:10px;background:#FAEEDA;border-radius:5px;padding:2px 8px;border:0.5px solid #FAC775;color:#854F0B">† Matchback: monthly only</div>
+            <button class="btn-sm" onclick="downloadXLSX('ts-tbody',null,'WesternVet_TimeSeries')">↓ XLSX</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" style="max-height:320px;overflow-y:auto">
+          <table id="ts-table">
+            <thead style="position:sticky;top:0;z-index:2">
+              <tr>
+                <th class="nosort">Period</th>
+                <th class="r nosort">Spend</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9">Δ</th>
+                <th class="r nosort">Imp</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9">Δ</th>
+                <th class="r nosort">Clicks</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9">Δ</th>
+                <th class="r nosort">CPC</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9">Δ</th>
+                <th class="r nosort">GA Sigs*</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9">Δ</th>
+                <th class="r nosort">CP Sigs*</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9">Δ</th>
+                <th class="r nosort" id="ts-mb-head">Matchback†</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9" id="ts-mb-head-mom">Δ</th>
+                <th class="r nosort" id="ts-cpm-head">CP Match†</th><th class="r nosort ts-mom-lbl" style="color:#B4B2A9" id="ts-cpm-head-mom">Δ</th>
+              </tr>
+            </thead>
+            <tbody id="ts-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="port-headline" id="ts-pop-summary" style="margin-bottom:11px;margin-top:11px"></div>
+      <div class="card" style="margin-top:0">
+        <div class="card-head">
+          <div class="ct">Period over Period — selected accounts</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:5px;background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:7px;padding:4px 10px">
+              <span style="font-size:10px;font-weight:600;color:#085041;letter-spacing:.04em">Base</span>
+              <input type="date" id="pop-a-from" value="2026-01-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <span style="font-size:10px;color:#888780">→</span>
+              <input type="date" id="pop-a-to" value="2026-01-31" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:7px;padding:4px 10px">
+              <span style="font-size:10px;font-weight:600;color:#5F5E5A;letter-spacing:.04em">Compare</span>
+              <input type="date" id="pop-b-from" value="2026-02-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <span style="font-size:10px;color:#888780">→</span>
+              <input type="date" id="pop-b-to" value="2026-02-28" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+            </div>
+            <div id="pop-mb-note" style="font-size:10px;color:#888780"></div>
+          </div>
+        </div>
+        <div style="padding:0 15px 6px;font-size:9px;color:#B4B2A9">Each cell: Base value (top) · Compare &amp; Δ% (bottom). Click <strong>&gt;&lt;</strong> on any column to expand.</div>
+        <div class="tbl-wrap" style="max-height:360px;overflow-y:auto">
+          <table id="pop-table">
+            <thead id="pop-thead" style="position:sticky;top:0;z-index:2"></thead>
+            <tbody id="pop-tbody"></tbody>
+          </table>
+        </div>
+        <div class="glossary" style="border:none;padding:9px 15px 11px;margin:0">
+          <div class="gl-note">† Matchback columns visible only when both periods are exact full months (1st → last day). Δ% shows how Period B changed vs Period A.</div>
+        </div>
+      </div>
+      <div class="glossary">
+        <div class="gl-title">Glossary</div>
+        <div class="gl-grid">
+          <div class="gl-item"><strong>Imp</strong> — Impressions: total ad views in the selected period.</div>
+          <div class="gl-item"><strong>GA Sigs*</strong> — GA Signals: NC Industry + Appt Booked conversions combined. Validated Smart Bidding input. Excludes NC Appt.</div>
+          <div class="gl-item"><strong>CP Sigs*</strong> — Cost per GA Signal: Spend ÷ (NC Ind + Appt Booked). Cost of each validated bidding signal.</div>
+          <div class="gl-item"><strong>Matchback†</strong> — Invoca + Vetstoria verified new client appts attributed to paid search. Ground truth. 4–6 week lag. Monthly only.</div>
+          <div class="gl-item"><strong>CP Match†</strong> — Cost per Matchback Appt: Spend ÷ matchback appts. True cost of acquiring a verified new client via paid search.</div>
+          <div class="gl-item"><strong>Signal → MB Ratio†</strong> — GA Signals ÷ Matchback appts. How many bidding signals per verified appt. Closer to 1:1 = stronger signal quality.</div>
+          <div class="gl-item"><strong>PoP Δ%</strong> — Period over Period: % change from Period A to Period B for the same metric and account set.</div>
+          <div class="gl-item"><strong>Δ</strong> — % change vs the immediately preceding period (prior month in monthly view, prior week in weekly view).</div>
+          <div class="gl-item"><strong>† Monthly only</strong> — Matchback data not available at weekly granularity. <strong>* Managed accounts only</strong> — signals and matchback shown for 12 managed accounts.</div>
+        </div>
+        <div class="gl-note"><strong>GA Signals exclude New Client Appointment</strong> — NCA has negative correlation with matchback (r = −0.61 to −0.73). Only NC Industry + Appt Booked used as bidding signals.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SIGNALS (correlation, managed only) ===== -->
+<div id="signals" class="view">
+  <div class="corr-info">
+    <div class="ci-title">How signal quality is calculated</div>
+    <div class="ci-body">For each managed account, we calculate the Pearson correlation (r) between each conversion action's monthly volume and verified matchback appointments (Invoca + Vetstoria). r = 1.0 = perfect predictor · r = −1.0 = perfect anti-predictor · r &lt; 0 = remove from primary goals immediately. The recommended action set is the combination that best predicts matchback when summed.</div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="ct">Signal quality summary — managed accounts</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div style="font-size:10px;color:#888780">Click headers to sort</div>
+        <button class="btn-sm" onclick="downloadXLSX('corr-tbody',null,'WesternVet_Signals')">↓ XLSX</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th class="nosort">Hospital</th>
+          <th class="r" onclick="corrSort('r1')">Best single r</th>
+          <th class="r" onclick="corrSort('r2')">Best combo r</th>
+          <th class="nosort">Best conversion action</th>
+          <th class="nosort">Recommended action set</th>
+          <th class="r" onclick="corrSort('strong')">Strong</th>
+          <th class="r" onclick="corrSort('neg')">Negative</th>
+          <th class="nosort">Verdict</th>
+        </tr></thead>
+        <tbody id="corr-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="margin-top:11px">
+    <div class="card-head"><div class="ct">Detailed breakdown — search any managed account</div></div>
+    <div style="padding:11px 15px;border-bottom:0.5px solid #E8E6DF">
+      <input class="corr-search" id="corr-inp" placeholder="Type account name to see full conversion action breakdown..." oninput="filterCorrDetail(this.value)">
+    </div>
+    <div id="corr-detail" style="padding:11px 15px">
+      <div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">Type an account name above to see full conversion action breakdown</div>
+    </div>
+  </div>
+  <div class="glossary">
+    <div class="gl-title">Correlation guide</div>
+    <div class="gl-grid">
+      <div class="gl-item"><strong>r ≥ 0.7</strong> — Strong. Set as primary Smart Bidding goal</div>
+      <div class="gl-item"><strong>r 0.4–0.69</strong> — Moderate. Include in combination</div>
+      <div class="gl-item"><strong>r 0.2–0.39</strong> — Weak. Use only if no better action available</div>
+      <div class="gl-item"><strong>r 0–0.19</strong> — No signal. Neutral effect on bidding</div>
+      <div class="gl-item"><strong>r &lt; 0</strong> — Negative. Remove from primary immediately</div>
+      <div class="gl-item"><strong>Best combo</strong> — Optimal 2–5 action combination, always stronger than single action alone</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BUDGET (managed only) ===== -->
+<div id="budget" class="view">
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:13px">
+    <div class="kpi hero"><div class="kl">Monthly cap</div><div class="kv" id="b-cap-v">$12,000</div><div class="kd" id="b-rem-v" style="color:#5DCAA5">—</div></div>
+    <div class="kpi"><div class="kl">Allocated (inputs)</div><div class="kv" id="b-alloc-v">—</div><div class="kd fl" id="b-pct-v">—</div></div>
+    <div class="kpi"><div class="kl">Accounts to scale</div><div class="kv" id="b-scale-v">—</div><div class="kd fl">strong signal + up trend</div></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:9px;margin-bottom:13px;padding:9px 13px;background:white;border:0.5px solid #E8E6DF;border-radius:9px;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:500">Cap: $</span>
+    <input type="number" id="b-cap-inp" value="12000" style="font-size:13px;font-weight:500;color:#0F6E56;border:none;background:transparent;width:75px;outline:none" oninput="renderBudget()">
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#E1F5EE;color:#085041;border:0.5px solid #9FE1CB;font-weight:600">↑ guardrail: $1,800 / acct</span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#F5F4F0;color:#5F5E5A;border:0.5px solid #E8E6DF;font-weight:600">↓ guardrail: $550 / acct</span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#F0EEE8;color:#5F5E5A;border:0.5px solid #E8E6DF">r ≥ 0.5 + MB ↑ → scale</span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#F0EEE8;color:#5F5E5A;border:0.5px solid #E8E6DF">r &lt; 0 → floor</span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#F0EEE8;color:#5F5E5A;border:0.5px solid #E8E6DF">surplus by score × tier</span>
+    </div>
+    <button onclick="applyRec()" style="font-size:11px;font-weight:500;color:white;background:#0F6E56;border:none;border-radius:7px;padding:5px 11px;cursor:pointer;margin-left:auto">Apply recommended ↗</button>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="ct">Budget allocation — managed accounts</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div style="font-size:10px;color:#888780">Click headers to sort</div>
+        <button class="btn-sm" onclick="downloadXLSX('b-tbody','b-tfoot-row','WesternVet_Budget')">↓ XLSX</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th class="nosort">Hospital</th>
+          <th class="r" onclick="bSort('score')">Score</th>
+          <th class="r" onclick="bSort('r')">Signal r</th>
+          <th class="r" onclick="bSort('mb')">MB trend</th>
+          <th class="r" onclick="bSort('cpa')">CPA trend</th>
+          <th class="r" onclick="bSort('cur')">Current</th>
+          <th class="r" onclick="bSort('rec')">Recommended</th>
+          <th class="r" onclick="bSort('chg')">Change</th>
+          <th class="r nosort">Your input</th>
+          <th class="nosort">Recommendation</th>
+        </tr></thead>
+        <tbody id="b-tbody"></tbody>
+        <tfoot class="tfoot"><tr id="b-tfoot-row">
+          <td colspan="5">Total</td>
+          <td class="r" id="bf-cur">—</td><td class="r" id="bf-rec">—</td>
+          <td class="r" id="bf-chg">—</td><td class="r" id="bf-inp">—</td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>
+  </div>
+  <div class="glossary">
+    <div class="gl-title">Budget scoring model</div>
+    <div class="gl-note"><strong>Guardrails:</strong> Every account stays between <strong>$550 (floor)</strong> and <strong>$1,800 (ceiling)</strong> regardless of score. No account can be recommended below $550 or above $1,800. The mini bar on each row shows where the recommendation sits within the $550–$1,800 range. <strong>Score:</strong> Signal r ≥ 0.7 (+3), ≥ 0.5 (+2), ≥ 0.3 (+1), negative (−2) · MB up 2 consecutive months (+3), net up (+1), 2 down (−1) · CPA improving both months (+2), one (+1), both worse (−1) · CPA &gt;$600 (−1), &gt;$800 (−1 more). Uses last 3 months with data — not fixed months. <strong>Allocation:</strong> Surplus pool = cap − sum of floors. Distributed by score × tier weight (Elite 1.3×, High 1.15×, Mid 1.0×, Floor 0.85×).</div>
+  </div>
+</div>
+
+<script>
+// ============================
+// CONSTANTS
+// ============================
+// Month constants are auto-generated from campaign start → today.
+// Keys are unique within a fiscal year (Oct–Sep). Add years to key if campaign
+// runs past Sep 2026 (e.g. oct26). For now single short names suffice.
+const CAMPAIGN_START=new Date(2025,9,1); // Oct 2025
+const _MO_SHORT=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const _MO_LABEL=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const _MO_LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function _buildMonths(){
+  const months=[],mlabel={},mfull={},prev={},mym={};
+  const now=new Date();
+  let d=new Date(CAMPAIGN_START.getFullYear(),CAMPAIGN_START.getMonth(),1);
+  let prevKey=null;
+  while(d<=now){
+    const mo=d.getMonth(),yr=d.getFullYear();
+    const key=_MO_SHORT[mo];
+    const isCur=(mo===now.getMonth()&&yr===now.getFullYear());
+    months.push(key);
+    mlabel[key]=_MO_LABEL[mo]+' '+yr;
+    mfull[key]=_MO_LONG[mo]+' '+yr+(isCur?' (MTD)':'');
+    prev[key]=prevKey;
+    mym[key]=yr+'-'+String(mo+1).padStart(2,'0');
+    prevKey=key;
+    d=new Date(yr,mo+1,1);
+  }
+  return{months,mlabel,mfull,prev,mym};
+}
+const {months:MONTHS,mlabel:MLABEL,mfull:MFULL,prev:PREV,mym:MONTH_YM}=_buildMonths();
+const TIER_WT={Elite:1.3,High:1.15,Mid:1.0,Floor:0.85};
+const BUDGET_UPPER=1800; // per-account hard cap
+const BUDGET_LOWER=550;  // per-account minimum floor
+
+// ============================
+// DATA
+// ============================
+let A=[], AM=[], MANAGED_IDS=new Set(), WEEKLY_DATA=[], MONTHLY_TS=[];
+
+// ============================
+// UTILITIES
+// ============================
+function pct(a,b,lowerBetter){
+  if(!b||b===0)return'—';
+  const p=Math.round((a-b)/b*100);
+  const isGood=lowerBetter?p<0:p>0;
+  const cls=isGood?'up':p===0?'fl':'dn';
+  return`<span class="${cls}">${p>0?'↑':'↓'}${Math.abs(p)}%</span>`;
+}
+function f$(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+Math.round(v)}
+function fN(v){return v>=1000?(v/1000).toFixed(1)+'k':String(Math.round(v))}
+function rC(r){return r>=0.5?'#1D9E75':r>=0.3?'#EF9F27':r>=0?'#B4B2A9':'#E24B4A'}
+function rBar(r){
+  const p=Math.min(100,Math.round(Math.abs(r)*100));
+  return`<div class="sbar"><div class="sbar-bg"><div class="sbar-fill" style="width:${p}%;background:${rC(r)}"></div></div><span style="font-size:10px;${r<0?'color:#D85A30':'color:#888780'};font-weight:500">${r.toFixed(2)}</span></div>`;
+}
+function getSigBand(r){return r>=0.5?'strong':r>=0?'weak':'negative';}
+function getMBTrend(a,m){const p=PREV[m];if(!p||!a.mb)return'flat';return(a.mb[m]||0)>(a.mb[p]||0)?'up':(a.mb[m]||0)<(a.mb[p]||0)?'down':'flat';}
+function scoreA(a){
+  let s=0;
+  if(a.bestR>=0.7)s+=3;else if(a.bestR>=0.5)s+=2;else if(a.bestR>=0.3)s+=1;else if(a.bestR<0)s-=2;
+  // Use last 3 months that have mb > 0 (dynamic, not hard-coded)
+  const mbMos=MONTHS.filter(m=>a.mb&&(a.mb[m]||0)>0).slice(-3);
+  if(mbMos.length>=2){
+    const mv=mbMos.map(m=>a.mb[m]||0);
+    if(mv.length>=3&&mv[1]>mv[0]&&mv[2]>mv[1])s+=3;
+    else if(mv[mv.length-1]>mv[0])s+=1;
+    else if(mv.length>=3&&mv[1]<mv[0]&&mv[2]<mv[1])s-=1;
+  }
+  // Use last 3 months with cpm > 0
+  if(a.cpm&&typeof a.cpm==='object'){
+    const cMos=MONTHS.filter(m=>a.cpm&&(a.cpm[m]||0)>0).slice(-3);
+    if(cMos.length>=2){
+      const cv=cMos.map(m=>a.cpm[m]||0);
+      if(cv.length>=3&&cv[1]<cv[0]&&cv[2]<cv[1])s+=2;
+      else if(cv[cv.length-1]<cv[0])s+=1;
+      else s-=1;
+      const lastCpa=cv[cv.length-1];
+      if(lastCpa>600)s-=1;if(lastCpa>800)s-=1;
+    }
+  }
+  return s;
+}
+function recFromScore(a,score){
+  if(a.bestR<0)return{type:'floor',label:'Floor'};
+  if(score>=5&&a.bestR>=0.5)return{type:'scale',label:'Scale up'};
+  if(score>=3)return{type:'hold',label:'Hold'};
+  if(score>=1)return{type:'watch',label:'Watch'};
+  return{type:'trim',label:'Trim'};
+}
+function recPill(type,label){
+  const c={scale:'rp-scale',hold:'rp-hold',watch:'rp-watch',trim:'rp-trim',floor:'rp-floor'}[type]||'rp-hold';
+  return`<span class="rec-pill ${c}">${label}</span>`;
+}
+function toggleFG(el){
+  const body=el.nextElementSibling;
+  const arrow=el.querySelector('.fg-arrow');
+  body.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+// ============================
+// PORTFOLIO TAB (all accounts)
+// ============================
+let portDate=MONTHS[MONTHS.length-1], portSortCol='spend', portSortDir=-1, mbExpanded=false;
+
+function toggleMBExpand(){
+  mbExpanded=!mbExpanded;
+  document.querySelectorAll('.mb-total-th,.mb-total-td').forEach(el=>el.style.display=mbExpanded?'none':'');
+  document.querySelectorAll('.mb-split-th,.mb-split-td').forEach(el=>el.style.display=mbExpanded?'':'none');
+  document.querySelectorAll('.mb-split-th,.mb-split-td').forEach(el=>el.style.background=mbExpanded?'#EDF4FF':'');
+  const btn=document.getElementById('mb-expand-btn');
+  if(btn) btn.textContent=mbExpanded?'split':'+';
+}
+
+
+
+function renderDateChips(barId,currentVal,onClickFn){
+  const bar=document.getElementById(barId);
+  if(!bar) return;
+  const latest=MONTHS[MONTHS.length-1];
+  bar.innerHTML='<span class="dlbl">Period:</span>'+MONTHS.map(m=>{
+    const d=new Date(MONTH_YM[m]+'-02'); // +2 to avoid UTC offset issues
+    const label=_MO_LABEL[d.getMonth()]+(m===latest?' MTD':'');
+    return`<div class="dchip${m===currentVal?' on':''}" onclick="${onClickFn}('${m}',this)">${label}</div>`;
+  }).join('');
+}
+
+function setPortDate(m,el){
+  portDate=m;
+  document.querySelectorAll('#portfolio .dchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderPortfolioKPIs();
+  renderPortfolioTable();
+}
+
+function portSort(col){
+  if(portSortCol===col)portSortDir*=-1;else{portSortCol=col;portSortDir=-1;}
+  renderPortfolioTable();
+}
+
+function renderPortfolioKPIs(){
+  const m=portDate;
+  const p=PREV[m];
+  // All accounts totals
+  const totSpend=A.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
+  const totClicks=A.reduce((s,a)=>s+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0);
+  const totImp=A.reduce((s,a)=>s+(a.imp&&a.imp[m]?a.imp[m]:0),0);
+  const activeN=A.filter(a=>a.spend&&(a.spend[m]||0)>0).length;
+
+  const prevSpend=p?A.reduce((s,a)=>s+(a.spend&&a.spend[p]?a.spend[p]:0),0):0;
+  const prevClicks=p?A.reduce((s,a)=>s+(a.clicks&&a.clicks[p]?a.clicks[p]:0),0):0;
+  const prevImp=p?A.reduce((s,a)=>s+(a.imp&&a.imp[p]?a.imp[p]:0),0):0;
+
+  const mom='<span style="font-weight:400;color:#B4B2A9;font-size:10px"> MoM</span>';
+  document.getElementById('port-kv-spend').textContent=f$(totSpend);
+  document.getElementById('port-kd-spend').innerHTML=p?pct(totSpend,prevSpend,true)+mom:'—';
+  document.getElementById('port-kv-clicks').textContent=fN(totClicks);
+  document.getElementById('port-kd-clicks').innerHTML=p?pct(totClicks,prevClicks)+mom:'—';
+  document.getElementById('port-kv-imp').textContent=fN(totImp);
+  document.getElementById('port-kd-imp').innerHTML=p?pct(totImp,prevImp)+mom:'—';
+  document.getElementById('port-kv-active').textContent=activeN;
+
+  // Managed strip
+  const totMB=AM.reduce((s,a)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0);
+  const totSig=AM.reduce((s,a)=>s+(a.sig&&a.sig[m]?a.sig[m]:0),0);
+  const totMSpend=AM.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
+  const avgCPM=totMB>0?Math.round(totMSpend/totMB):0;
+  document.getElementById('port-ms-mb').textContent=totMB+' appts';
+  document.getElementById('port-ms-cpm').textContent=avgCPM>0?'$'+avgCPM:'—';
+  document.getElementById('port-ms-sig').textContent=fN(totSig);
+  document.getElementById('port-month-lbl').textContent=MLABEL[m];
+  document.getElementById('port-managed-count').textContent=AM.length;
+  // Matchback lag note in strip
+  const stripLag=document.getElementById('port-strip-lag');
+  if(stripLag){
+    if(totMB===0){
+      document.getElementById('port-strip-lag-date').textContent=getMBLagEstDate(m);
+      stripLag.style.display='block';
+    } else {
+      stripLag.style.display='none';
+    }
+  }
+  renderPerfSummary();
+}
+
+function renderPerfSummary(){
+  const el=document.getElementById('port-headline');
+  if(!el||!AM.length){return;}
+
+  // Always use the last month with actual matchback data, not the selected month
+  const m=[...MONTHS].reverse().find(mk=>AM.some(a=>a.mb&&a.mb[mk]>0))||MONTHS[MONTHS.length-1];
+  const p=PREV[m];
+
+  const totMb=AM.reduce((s,a)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0);
+  const prevMb=p?AM.reduce((s,a)=>s+(a.mb&&a.mb[p]?a.mb[p]:0),0):0;
+  const totSp=AM.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
+  const prevSp=p?AM.reduce((s,a)=>s+(a.spend&&a.spend[p]?a.spend[p]:0),0):0;
+  const cpMb=totMb?Math.round(totSp/totMb):0;
+  const prevCpMb=prevMb?Math.round(prevSp/prevMb):0;
+
+  // No matchback yet this month
+  if(!totMb){
+    el.style.display='block';
+    el.innerHTML=`<span class="hl-dot"></span><strong>${MLABEL[m]} headline:</strong> Matchback data not yet available — Invoca + Vetstoria report ~15 days after month end.`;
+    return;
+  }
+
+  const parts=[];
+
+  // MoM matchback summary
+  if(p&&prevMb>0){
+    const pct=Math.round((totMb-prevMb)/prevMb*100);
+    const dir=pct>=0?'grew':'declined';
+    const cpDir=cpMb<prevCpMb?'down':'up';
+    const cpPct=Math.abs(Math.round((cpMb-prevCpMb)/prevCpMb*100));
+    parts.push(`Portfolio matchback ${dir} ${Math.abs(pct)}% MoM (${prevMb}→${totMb} appts) at $${cpMb} CP matchback — ${cpDir} ${cpPct}% vs ${MLABEL[p].split(' ')[0]}`);
+  } else {
+    parts.push(`Portfolio matchback: ${totMb} appts at $${cpMb} CP matchback`);
+  }
+
+  // Top account by matchback share
+  const top=[...AM].sort((a,b)=>(b.mb&&b.mb[m]?b.mb[m]:0)-(a.mb&&a.mb[m]?a.mb[m]:0))[0];
+  const topMb=top&&top.mb&&top.mb[m]?top.mb[m]:0;
+  const topCp=top&&top.cpm&&top.cpm[m]?top.cpm[m]:0;
+  const topShare=totMb?Math.round(topMb/totMb*100):0;
+  const topFirst=top?top.name.split(' ')[0]:'';
+  if(topMb>0&&topShare>=20){
+    parts.push(`${topFirst} drove ${topShare}% of appts${topCp?' at $'+topCp+' CP':''}`);
+  }
+
+  // Negative signal accounts
+  const negAccts=AM.filter(a=>a.bestR<0);
+  if(negAccts.length){
+    const names=negAccts.map(a=>a.name.split(' ')[0]).join(', ');
+    const budget=negAccts.reduce((s,a)=>s+(a.budget||0),0);
+    parts.push(`${names} ${negAccts.length===1?'still has':'still have'} no working signal (best r = ${negAccts[0].bestR.toFixed(2)})${budget?' — $'+fN(budget)+' budget at risk':''}`);
+  }
+
+  el.style.display='block';
+  el.innerHTML=`<span class="hl-dot"></span><strong>${MLABEL[m]} headline:</strong> ${parts.join('. ')}.`;
+}
+
+function initPortFilters(){
+  const el=document.getElementById('port-acct-list');
+  el.innerHTML=A.map(a=>`<label class="fcheck"><input type="checkbox" class="port-acct" value="${a.id}" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">${a.name}</span></label>`).join('');
+  document.getElementById('port-acct-count').textContent=`(${A.length})`;
+  document.getElementById('port-fc-s').textContent=AM.filter(a=>getSigBand(a.bestR)==='strong').length;
+  document.getElementById('port-fc-w').textContent=AM.filter(a=>getSigBand(a.bestR)==='weak').length;
+  document.getElementById('port-fc-n').textContent=AM.filter(a=>getSigBand(a.bestR)==='negative').length;
+}
+function filterPortAcctList(val){
+  const q=val.toLowerCase();
+  document.querySelectorAll('#port-acct-list label').forEach(l=>{
+    l.style.display=l.textContent.toLowerCase().includes(q)?'flex':'none';
+  });
+}
+function clearPortFilters(){
+  document.getElementById('port-srch').value='';
+  document.querySelectorAll('.port-acct').forEach(c=>c.checked=true);
+  document.getElementById('port-managed-only').checked=false;
+  document.getElementById('port-active-chk').checked=true;
+  document.querySelectorAll('.port-camp,.port-sig,.port-trend').forEach(c=>c.checked=true);
+  filterPortAcctList('');
+  renderPortfolioTable();
+}
+
+const portCharts={};
+function renderPortfolioCharts(selectedIds){
+  const months=MONTHS;
+  const lbls=months.map(m=>MLABEL[m].split(' ')[0]); // e.g. 'Oct', 'Nov' from 'Oct 2025'
+  const sel=A.filter(a=>selectedIds.has(a.id));
+  const selM=sel.filter(a=>a.isManaged!==undefined?a.isManaged:MANAGED_IDS.has(a.id));
+
+  const spend=months.map(m=>sel.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0));
+  const clicks=months.map(m=>sel.reduce((s,a)=>s+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0));
+  const cpc=months.map((m,i)=>clicks[i]?Math.round(spend[i]/clicks[i]*100)/100:0);
+  const mb=months.map(m=>selM.reduce((s,a)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0));
+  const sig=months.map(m=>selM.reduce((s,a)=>s+(a.sig&&a.sig[m]?a.sig[m]:0),0));
+  const mbSpend=months.map(m=>selM.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0));
+  const cpMB=months.map((m,i)=>mb[i]?Math.round(mbSpend[i]/mb[i]):0);
+  const cpSig=months.map((m,i)=>sig[i]?Math.round(mbSpend[i]/sig[i]):0);
+
+  const scaleOpts=(yFmt,y2Fmt,y2Color)=>({
+    x:{ticks:{font:{size:9},color:'#888780'},grid:{display:false},border:{display:false}},
+    y:{ticks:{font:{size:9},color:'#888780',callback:v=>yFmt(v)},grid:{color:'#F5F4F0'},border:{display:false}},
+    y2:{position:'right',ticks:{callback:v=>y2Fmt(v),font:{size:9},color:y2Color},grid:{display:false},border:{display:false}}
+  });
+
+  function buildChart(id,barData,lineData,barColor,lineColor,yFmt,y2Fmt){
+    if(portCharts[id])portCharts[id].destroy();
+    portCharts[id]=new Chart(document.getElementById(id),{
+      type:'bar',
+      data:{labels:lbls,datasets:[
+        {type:'bar',data:barData,backgroundColor:barColor,borderRadius:3,yAxisID:'y',order:2},
+        {type:'line',data:lineData,borderColor:lineColor,backgroundColor:'transparent',tension:0.35,pointRadius:4,pointBackgroundColor:'white',pointBorderColor:lineColor,pointBorderWidth:2,yAxisID:'y2',order:1}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:scaleOpts(yFmt,y2Fmt,lineColor)}
+    });
+  }
+
+  // Chart 4 — New Clients & CP new client (managed only)
+  const ncMonths=['oct','nov','dec','jan','feb'];
+  const ncLbls=['Oct','Nov','Dec','Jan','Feb'];
+  const nc=ncMonths.map(m=>selM.reduce((s,a)=>s+(a.nc&&a.nc[m]?a.nc[m]:0),0));
+  const ncSpend=ncMonths.map(m=>selM.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0));
+  const cpNC=ncMonths.map((m,i)=>nc[i]?Math.round(ncSpend[i]/nc[i]):0);
+
+  buildChart('port-c1',spend,cpc,'#888780','#EF9F27',
+    v=>'$'+(v>=1000?(v/1000).toFixed(0)+'k':v),
+    v=>'$'+v.toFixed(2));
+  buildChart('port-c2',mb,cpMB,'#1D9E75','#D85A30',v=>v,v=>'$'+v);
+  buildChart('port-c3',sig,cpSig,'#378ADD','#EF9F27',v=>v,v=>'$'+v);
+
+  if(portCharts['port-c4'])portCharts['port-c4'].destroy();
+  portCharts['port-c4']=new Chart(document.getElementById('port-c4'),{
+    type:'bar',
+    data:{labels:ncLbls,datasets:[
+      {type:'bar',data:nc,backgroundColor:'#9FE1CB',borderRadius:3,yAxisID:'y',order:2},
+      {type:'line',data:cpNC,borderColor:'#D85A30',backgroundColor:'transparent',tension:0.35,pointRadius:4,pointBackgroundColor:'white',pointBorderColor:'#D85A30',pointBorderWidth:2,yAxisID:'y2',order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:scaleOpts(v=>v,v=>'$'+v,'#D85A30')}
+  });
+
+  // Populate KPI headers
+  function setKPI(kpiId,deltaId,cur,prev,prevLbl,fmt,higherBetter=true){
+    document.getElementById(kpiId).textContent=fmt(cur);
+    const el=document.getElementById(deltaId);
+    if(prev!=null&&prevLbl){
+      const d=prev===0?0:Math.round((cur-prev)/prev*100);
+      const good=higherBetter?d>0:d<0;
+      el.className='chart-delta '+(d===0?'fl':good?'up':'dn');
+      el.textContent=(d>0?'↑':'↓')+Math.abs(d)+'% vs '+prevLbl;
+    } else { el.textContent=''; }
+  }
+  const mi=months.indexOf(portDate), pi=PREV[portDate]?months.indexOf(PREV[portDate]):-1;
+  const prevLbl=PREV[portDate]?MLABEL[PREV[portDate]].split(' ')[0]:null;
+  setKPI('port-c1-kpi','port-c1-delta',spend[mi]??0,pi>=0?spend[pi]:null,prevLbl,v=>'$'+(v>=1000?(v/1000).toFixed(1)+'k':v),false);
+  setKPI('port-c2-kpi','port-c2-delta',mb[mi]??0,pi>=0?mb[pi]:null,prevLbl,v=>String(v));
+  setKPI('port-c3-kpi','port-c3-delta',sig[mi]??0,pi>=0?sig[pi]:null,prevLbl,v=>String(v));
+  const nci4=ncMonths.indexOf(portDate),pi4=PREV[portDate]?ncMonths.indexOf(PREV[portDate]):-1;
+  setKPI('port-c4-kpi','port-c4-delta',nci4>=0?nc[nci4]:0,pi4>=0?nc[pi4]:null,prevLbl,v=>String(v));
+}
+
+function getCurrentMonthKey(){
+  const now=new Date();
+  const ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  return Object.keys(MONTH_YM).find(k=>MONTH_YM[k]===ym)||null;
+}
+function getMBLagEstDate(mk){
+  const ym=MONTH_YM[mk];
+  if(!ym) return '';
+  const [yr,mo]=ym.split('-').map(Number);
+  // Last day of month
+  const lastDay=new Date(yr,mo,0);
+  // +15 days
+  const est=new Date(lastDay.getTime()+15*24*60*60*1000);
+  return est.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+}
+
+function renderPortfolioTable(){
+  const m=portDate;
+  const p=PREV[m];
+
+  // Matchback lag note — show when viewing current calendar month
+  const curMK=getCurrentMonthKey();
+  const lagNote=document.getElementById('port-mb-lag-note');
+  if(lagNote){
+    if(m===curMK){
+      document.getElementById('port-mb-lag-date').textContent=getMBLagEstDate(m);
+      lagNote.style.display='block';
+    } else {
+      lagNote.style.display='none';
+    }
+  }
+  const acctChk=new Set(Array.from(document.querySelectorAll('.port-acct:checked')).map(c=>c.value));
+  const activeOnly=document.getElementById('port-active-chk').checked;
+  const managedOnly=document.getElementById('port-managed-only').checked;
+  const sigChk=Array.from(document.querySelectorAll('.port-sig:checked')).map(c=>c.value);
+  const trendChk=Array.from(document.querySelectorAll('.port-trend:checked')).map(c=>c.value);
+  const campChk=Array.from(document.querySelectorAll('.port-camp:checked')).map(c=>c.value);
+
+  // Build one unified enriched array — managed first, then non-managed
+  const enrich=(a,isManaged)=>{
+    const sp=a.spend&&a.spend[m]?a.spend[m]:0;
+    const spp=p&&a.spend&&a.spend[p]?a.spend[p]:0;
+    const im=a.imp&&a.imp[m]?a.imp[m]:0;
+    const cl=a.clicks&&a.clicks[m]?a.clicks[m]:0;
+    const si=isManaged&&a.sig&&a.sig[m]?a.sig[m]:0;
+    const mb=isManaged&&a.mb&&a.mb[m]?a.mb[m]:0;
+    const cpm=isManaged&&a.cpm&&a.cpm[m]?a.cpm[m]:0;
+    const cpc=cl?sp/cl:0;
+    const mb_inv=isManaged&&a.mb_inv&&a.mb_inv[m]!=null?a.mb_inv[m]:null;
+    const mb_vet=isManaged&&a.mb_vet&&a.mb_vet[m]!=null?a.mb_vet[m]:null;
+    const nc=isManaged&&a.nc&&a.nc[m]!=null?a.nc[m]:null;
+    const nci=isManaged&&a.convByAction&&a.convByAction[m]?((a.convByAction[m].nci_call||0)+(a.convByAction[m].nci_web||0)):null;
+    const appt_b=isManaged&&a.convByAction&&a.convByAction[m]?((a.convByAction[m].appt_call||0)+(a.convByAction[m].appt_web||0)):null;
+    const nca=isManaged&&a.nca&&a.nca[m]!=null?a.nca[m]:null;
+    // Prev-period values for MoM on conversion/matchback columns
+    const mbP=p&&isManaged&&a.mb&&a.mb[p]?a.mb[p]:0;
+    const mb_invP=p&&isManaged&&a.mb_inv&&a.mb_inv[p]!=null?a.mb_inv[p]:null;
+    const mb_vetP=p&&isManaged&&a.mb_vet&&a.mb_vet[p]!=null?a.mb_vet[p]:null;
+    const nciP=p&&isManaged&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].nci_call||0)+(a.convByAction[p].nci_web||0)):null;
+    const appt_bP=p&&isManaged&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].appt_call||0)+(a.convByAction[p].appt_web||0)):null;
+    const ncaP=p&&isManaged&&a.nca&&a.nca[p]!=null?a.nca[p]:null;
+    const cpmP=p&&isManaged&&a.cpm&&a.cpm[p]?a.cpm[p]:0;
+    const cps=isManaged&&nci!=null&&appt_b!=null&&(nci+appt_b)>0?Math.round(sp/(nci+appt_b)):null;
+    const cpsP=p&&isManaged&&nciP!=null&&appt_bP!=null&&(nciP+appt_bP)>0?Math.round(spp/(nciP+appt_bP)):null;
+    return{...a,sp,spp,im,cl,si,mb,cpm,cpc,isManaged,mb_inv,mb_vet,nc,nci,appt_b,nca,mbP,mb_invP,mb_vetP,nciP,appt_bP,ncaP,cpmP,cps,cpsP};
+  };
+
+  let rows=[
+    ...AM.map(a=>enrich(a,true)),
+    ...A.filter(a=>!MANAGED_IDS.has(a.id)).map(a=>enrich(a,false))
+  ];
+
+  // Apply filters
+  rows=rows.filter(a=>acctChk.has(a.id));
+  if(activeOnly) rows=rows.filter(a=>a.sp>0);
+  if(managedOnly) rows=rows.filter(a=>a.isManaged);
+  // Campaign type (applies to all — non-managed accounts may have ct set)
+  rows=rows.filter(a=>{
+    if(!a.ct) return true; // no ct = always show
+    return campChk.includes(a.ct)||(!campChk.includes('pmax_test')&&!campChk.includes('pmax_std'));
+  });
+  // Signal quality & MB trend — only filter managed accounts; non-managed always pass through
+  rows=rows.filter(a=>{
+    if(!a.isManaged) return true;
+    if(!sigChk.includes(getSigBand(a.bestR))) return false;
+    if(!trendChk.includes(getMBTrend(a,m))) return false;
+    return true;
+  });
+
+  // Sort unified array
+  const sortFn=(a,b)=>{
+    if(portSortCol==='spend')return portSortDir*(b.sp-a.sp);
+    if(portSortCol==='imp')return portSortDir*(b.im-a.im);
+    if(portSortCol==='clicks')return portSortDir*(b.cl-a.cl);
+    if(portSortCol==='cpc')return portSortDir*(a.cpc-b.cpc);
+    if(portSortCol==='sig')return portSortDir*(b.si-a.si);
+    if(portSortCol==='nci')return portSortDir*((b.nci||0)-(a.nci||0));
+    if(portSortCol==='appt_b')return portSortDir*((b.appt_b||0)-(a.appt_b||0));
+    if(portSortCol==='nca')return portSortDir*((b.nca||0)-(a.nca||0));
+    if(portSortCol==='mb')return portSortDir*(b.mb-a.mb);
+    if(portSortCol==='mb_inv')return portSortDir*((b.mb_inv||0)-(a.mb_inv||0));
+    if(portSortCol==='mb_vet')return portSortDir*((b.mb_vet||0)-(a.mb_vet||0));
+    if(portSortCol==='cpm')return portSortDir*(a.cpm-b.cpm);
+    if(portSortCol==='cps')return portSortDir*((a.cps!=null?a.cps:Infinity)-(b.cps!=null?b.cps:Infinity));
+    return 0;
+  };
+  rows.sort(sortFn);
+
+  document.getElementById('port-acct-count').textContent=`(${acctChk.size})`;
+  document.getElementById('port-row-count').textContent=`Showing ${rows.length} of ${A.length} accounts`;
+
+  // Build HTML — one flat table, no section separators
+  const mbSplit=mbExpanded;
+  const html=rows.map(a=>{
+    if(a.isManaged){
+      return`<tr class="managed-row">
+        <td class="hn-cell"><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
+        <td class="r">${f$(a.sp)}</td>
+        <td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
+        <td class="r">${a.nci!=null?a.nci:'—'}</td>
+        <td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
+        <td class="r">${a.appt_b!=null?a.appt_b:'—'}</td>
+        <td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
+        <td class="r" style="color:#888780">${a.nca!=null?a.nca:'—'}</td>
+        <td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
+        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}><strong>${a.mb}</strong></td>
+        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p?pct(a.mb,a.mbP,true):'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_inv!=null?a.mb_inv:'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_inv!=null&&a.mb_invP!=null?pct(a.mb_inv,a.mb_invP,true):'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_vet!=null?a.mb_vet:'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_vet!=null&&a.mb_vetP!=null?pct(a.mb_vet,a.mb_vetP,true):'—'}</td>
+        <td class="r">${a.cpm?'$'+a.cpm:'—'}</td>
+        <td class="r">${p&&a.cpm&&a.cpmP?pct(a.cpm,a.cpmP,true):'—'}</td>
+        <td class="r">${a.cps!=null?'$'+a.cps:'—'}</td>
+        <td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
+        <td class="r">${rBar(a.bestR)}</td>
+      </tr>`;
+    }
+    const dim='style="color:#B4B2A9"';
+    return`<tr>
+      <td class="hn-cell"><span class="hn">${a.name}</span></td>
+      <td class="r">${f$(a.sp)}</td>
+      <td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
+      <td class="r" ${dim}>—</td><td class="r" ${dim}>—</td>
+      <td class="r" ${dim}>—</td><td class="r" ${dim}>—</td>
+      <td class="r" ${dim}>—</td><td class="r" ${dim}>—</td>
+      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r" ${dim}>—</td>
+      <td class="r" ${dim}>—</td>
+      <td class="r" ${dim}>—</td>
+      <td class="r" ${dim}>—</td>
+      <td class="r" ${dim}>—</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match current filters</td></tr>';
+
+  document.getElementById('port-tbody').innerHTML=html;
+
+  // Re-apply expand colour after tbody re-render
+  if(mbExpanded) document.querySelectorAll('.mb-split-td').forEach(el=>el.style.background='#EDF4FF');
+
+  // Update charts for selected accounts
+  renderPortfolioCharts(acctChk);
+
+  // Footer totals (all visible rows)
+  const totSp=rows.reduce((s,a)=>s+a.sp,0);
+  const totSpP=p?rows.reduce((s,a)=>s+a.spp,0):0;
+  const totCl=rows.reduce((s,a)=>s+a.cl,0);
+  const avgCPC=totCl?totSp/totCl:0;
+  const mRows=rows.filter(a=>a.isManaged);
+  const totNci=mRows.reduce((s,a)=>s+(a.nci!=null?a.nci:0),0);
+  const totAppt=mRows.reduce((s,a)=>s+(a.appt_b!=null?a.appt_b:0),0);
+  const totNca=mRows.reduce((s,a)=>s+(a.nca!=null?a.nca:0),0);
+  const totMb=mRows.reduce((s,a)=>s+a.mb,0);
+  const totInv=mRows.reduce((s,a)=>s+(a.mb_inv!=null?a.mb_inv:0),0);
+  const totVet=mRows.reduce((s,a)=>s+(a.mb_vet!=null?a.mb_vet:0),0);
+  const prevNci=p?mRows.reduce((s,a)=>s+(a.nciP!=null?a.nciP:0),0):0;
+  const prevAppt=p?mRows.reduce((s,a)=>s+(a.appt_bP!=null?a.appt_bP:0),0):0;
+  const prevNca=p?mRows.reduce((s,a)=>s+(a.ncaP!=null?a.ncaP:0),0):0;
+  const prevMb=p?mRows.reduce((s,a)=>s+a.mbP,0):0;
+  const prevInv=p?mRows.reduce((s,a)=>s+(a.mb_invP!=null?a.mb_invP:0),0):0;
+  const prevVet=p?mRows.reduce((s,a)=>s+(a.mb_vetP!=null?a.mb_vetP:0),0):0;
+  const avgCPM2=totMb?Math.round(totSp/totMb):0;
+  const prevCPM=p&&prevMb>0?Math.round(totSpP/prevMb):0;
+  const totSigs=mRows.reduce((s,a)=>s+(a.nci||0)+(a.appt_b||0),0);
+  const prevSigs=p?mRows.reduce((s,a)=>s+(a.nciP||0)+(a.appt_bP||0),0):0;
+  const totCPS=totSigs>0?Math.round(totSp/totSigs):0;
+  const prevCPS=p&&prevSigs>0?Math.round(totSpP/prevSigs):0;
+  document.getElementById('port-tfoot').innerHTML=`<tr>
+    <td>Total (${rows.length})</td>
+    <td class="r">${f$(totSp)}</td>
+    <td class="r">${p?pct(totSp,totSpP,true):'—'}</td>
+    <td class="r">${totNci}</td>
+    <td class="r">${p?pct(totNci,prevNci,true):'—'}</td>
+    <td class="r">${totAppt}</td>
+    <td class="r">${p?pct(totAppt,prevAppt,true):'—'}</td>
+    <td class="r" style="color:#888780">${totNca}</td>
+    <td class="r" style="color:#888780">${p?pct(totNca,prevNca,false):'—'}</td>
+    <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}><strong>${totMb}</strong></td>
+    <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}>${p?pct(totMb,prevMb,true):'—'}</td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${totInv}</strong></td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totInv,prevInv,true):'—'}</td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${totVet}</strong></td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totVet,prevVet,true):'—'}</td>
+    <td class="r">${avgCPM2>0?'$'+avgCPM2:'—'}</td>
+    <td class="r">${p&&avgCPM2&&prevCPM?pct(avgCPM2,prevCPM,true):'—'}</td>
+    <td class="r">${totCPS>0?'$'+totCPS:'—'}</td>
+    <td class="r">${p&&totCPS&&prevCPS?pct(totCPS,prevCPS,true):'—'}</td>
+    <td></td>
+  </tr>`;
+}
+
+
+// ============================
+// MANAGED TAB (deep dive)
+// ============================
+let mDate=MONTHS[MONTHS.length-1], mSortCol='mb', mSortDir=-1;
+
+function initManagedFilters(){
+  const el=document.getElementById('m-acct-list');
+  el.innerHTML=AM.map(a=>`<label class="fcheck"><input type="checkbox" class="m-acct" value="${a.id}" checked onchange="renderManaged()"><span class="fcheck-lbl">${a.name}</span></label>`).join('');
+  document.getElementById('m-acct-count').textContent=`(${AM.length})`;
+  document.getElementById('m-fc-s').textContent=AM.filter(a=>getSigBand(a.bestR)==='strong').length;
+  document.getElementById('m-fc-w').textContent=AM.filter(a=>getSigBand(a.bestR)==='weak').length;
+  document.getElementById('m-fc-n').textContent=AM.filter(a=>getSigBand(a.bestR)==='negative').length;
+}
+
+function setMDate(m,el){
+  mDate=m;
+  document.querySelectorAll('#managed .dchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderManaged();
+}
+
+function mSort(col){
+  if(mSortCol===col)mSortDir*=-1;else{mSortCol=col;mSortDir=-1;}
+  renderManaged();
+}
+
+function clearMFilters(){
+  document.querySelectorAll('#managed input[type=checkbox]').forEach(c=>c.checked=true);
+  document.getElementById('m-srch').value='';
+  renderManaged();
+}
+
+function filterMAcctList(val){
+  const q=val.toLowerCase();
+  document.querySelectorAll('#m-acct-list label').forEach(l=>{
+    l.style.display=l.textContent.toLowerCase().includes(q)?'flex':'none';
+  });
+}
+
+function renderManaged(){
+  const p2=PREV[mDate];
+  document.getElementById('m-month-lbl').textContent=MFULL[mDate];
+  const srch=document.getElementById('m-srch').value.toLowerCase();
+  const acctChk=Array.from(document.querySelectorAll('.m-acct:checked')).map(c=>c.value);
+  const sigChk=Array.from(document.querySelectorAll('.m-sig:checked')).map(c=>c.value);
+  const trendChk=Array.from(document.querySelectorAll('.m-trend:checked')).map(c=>c.value);
+  const campChk=Array.from(document.querySelectorAll('.m-camp:checked')).map(c=>c.value);
+  document.getElementById('m-acct-count').textContent=`(${acctChk.length})`;
+
+  let rows=AM.filter(a=>{
+    if(srch&&!a.name.toLowerCase().includes(srch))return false;
+    if(!acctChk.includes(a.id))return false;
+    if(!sigChk.includes(getSigBand(a.bestR)))return false;
+    if(!trendChk.includes(getMBTrend(a,mDate)))return false;
+    if(!campChk.includes(a.ct))return false;
+    return true;
+  });
+
+  rows=rows.map(a=>{
+    const mb=a.mb[mDate]||0,mbp=p2?a.mb[p2]||0:0;
+    const sig=a.sig[mDate]||0,sigp=p2?a.sig[p2]||0:0;
+    const sp=a.spend[mDate]||0,spp=p2?a.spend[p2]||0:0;
+    const cpm=a.cpm[mDate]||0,cpmp=p2?a.cpm[p2]||0:0;
+    const cpsig=sig?Math.round(sp/sig):0,cpsigp=sigp?Math.round(spp/sigp):0;
+    const mbMom=mbp?(mb-mbp)/mbp:0;
+    const cpmMom=cpmp?(cpmp-cpm)/cpmp:0;
+    const sigMom=sigp?(sig-sigp)/sigp:0;
+    const cpsigMom=cpsigp?(cpsigp-cpsig)/cpsigp:0;
+    return{...a,mb,mbp,sig,sigp,sp,spp,cpm,cpmp,cpsig,cpsigp,mbMom,cpmMom,sigMom,cpsigMom};
+  });
+
+  const sortFns={mb:(a,b)=>mSortDir*(b.mb-a.mb),cpm:(a,b)=>mSortDir*(a.cpm-b.cpm),sig:(a,b)=>mSortDir*(b.sig-a.sig),cpsig:(a,b)=>mSortDir*(a.cpsig-b.cpsig),spend:(a,b)=>mSortDir*(b.sp-a.sp)};
+  if(sortFns[mSortCol])rows.sort(sortFns[mSortCol]);
+
+  let tMB=0,tMBp=0,tSig=0,tSigP=0,tSp=0,tSpP=0;
+  const html=rows.map(a=>{
+    tMB+=a.mb;tMBp+=a.mbp;tSig+=a.sig;tSigP+=a.sigp;tSp+=a.sp;tSpP+=a.spp;
+    const score=scoreA(a);const rec=recFromScore(a,score);
+    return`<tr>
+      <td><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
+      <td class="r"><strong>${a.mb}</strong></td><td class="r">${pct(a.mb,a.mbp)}</td>
+      <td class="r">${a.cpm?'$'+a.cpm:'—'}</td><td class="r">${pct(a.cpmp,a.cpm,true)}</td>
+      <td class="r">${a.sig}</td><td class="r">${pct(a.sig,a.sigp)}</td>
+      <td class="r">${a.cpsig?'$'+a.cpsig:'—'}</td><td class="r">${pct(a.cpsigp,a.cpsig,true)}</td>
+      <td class="r">${f$(a.sp)}</td>
+      <td class="r">${rBar(a.bestR)}</td>
+      <td>${recPill(rec.type,rec.label)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('m-tbody').innerHTML=html||'<tr><td colspan="12" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match filters</td></tr>';
+  document.getElementById('m-cnt').textContent=rows.length;
+  const tCPM=tMB?Math.round(tSp/tMB):0,tCPMp=tMBp?Math.round(tSpP/tMBp):0;
+  const tCPSig=tSig?Math.round(tSp/tSig):0,tCPSigP=tSigP?Math.round(tSpP/tSigP):0;
+  document.getElementById('mf-mb').textContent=tMB;
+  document.getElementById('mf-mb-m').innerHTML=pct(tMB,tMBp);
+  document.getElementById('mf-cpm').textContent=tCPM?'$'+tCPM:'—';
+  document.getElementById('mf-cpm-m').innerHTML=pct(tCPMp,tCPM,false);
+  document.getElementById('mf-sig').textContent=tSig;
+  document.getElementById('mf-sig-m').innerHTML=pct(tSig,tSigP);
+  document.getElementById('mf-cpsig').textContent=tCPSig?'$'+tCPSig:'—';
+  document.getElementById('mf-cpsig-m').innerHTML=pct(tCPSigP,tCPSig,false);
+  document.getElementById('mf-sp').textContent=f$(tSp);
+}
+
+// ============================
+// TIME SERIES
+// ============================
+let tsGran='month', tsCharts={c1:null,c2:null,c3:null,c4:null}, tsSelectedIds=[], tsInited=false, tsPortfolioExpanded=false;
+let tsFilters={managedOnly:false,campTypes:['pmax_test','pmax_std'],sigQuality:['strong','weak','negative']};
+
+function initTSSidebar(){
+  const managedEl=document.getElementById('ts-managed-list');
+  const portfolioEl=document.getElementById('ts-portfolio-list');
+  const nonManaged=A.filter(a=>!MANAGED_IDS.has(a.id));
+
+  managedEl.innerHTML=AM.map(a=>`<label class="fcheck"><input type="checkbox" class="ts-acct" value="${a.id}" checked onchange="updateTSSelection()"><span class="fcheck-lbl">${a.name}</span></label>`).join('');
+  portfolioEl.innerHTML=nonManaged.map(a=>`<label class="fcheck"><input type="checkbox" class="ts-acct ts-portfolio-acct" value="${a.id}" onchange="updateTSSelection()"><span class="fcheck-lbl">${a.name}</span></label>`).join('');
+
+  document.getElementById('ts-managed-hdr-count').textContent=AM.length;
+  document.getElementById('ts-portfolio-hdr-count').textContent=nonManaged.length;
+  document.getElementById('ts-portfolio-count').textContent=nonManaged.length;
+
+  // Default: managed accounts only selected
+  tsSelectedIds=AM.map(a=>a.id);
+  // Init filter counts
+  const fcS=document.getElementById('ts-fc-s'),fcW=document.getElementById('ts-fc-w'),fcN=document.getElementById('ts-fc-n');
+  if(fcS)fcS.textContent=AM.filter(a=>getSigBand(a.bestR)==='strong').length;
+  if(fcW)fcW.textContent=AM.filter(a=>getSigBand(a.bestR)==='weak').length;
+  if(fcN)fcN.textContent=AM.filter(a=>getSigBand(a.bestR)==='negative').length;
+  const cntLbl=document.getElementById('ts-acct-count-lbl');
+  if(cntLbl)cntLbl.textContent=`(${A.length})`;
+}
+
+function renderTSSidebar(){
+  const q=document.getElementById('ts-srch').value.toLowerCase();
+  document.querySelectorAll('#ts-managed-list label, #ts-portfolio-list label').forEach(l=>{
+    l.style.display=!q||l.textContent.toLowerCase().includes(q)?'flex':'none';
+  });
+}
+
+function toggleTSPortfolio(){
+  tsPortfolioExpanded=!tsPortfolioExpanded;
+  const el=document.getElementById('ts-portfolio-list');
+  const btn=document.getElementById('ts-portfolio-toggle');
+  el.classList.toggle('expanded',tsPortfolioExpanded);
+  const cnt=A.filter(a=>!MANAGED_IDS.has(a.id)).length;
+  btn.textContent=tsPortfolioExpanded?`Hide portfolio accounts ▲`:`Show ${cnt} accounts ▼`;
+}
+
+function tsSelectManaged(){
+  document.querySelectorAll('.ts-acct').forEach(c=>{c.checked=MANAGED_IDS.has(c.value);});
+  updateTSSelection();
+}
+function tsSelectAll(){
+  document.querySelectorAll('.ts-acct').forEach(c=>{c.checked=true;});
+  updateTSSelection();
+}
+function tsSelectNone(){
+  document.querySelectorAll('.ts-acct').forEach(c=>{c.checked=false;});
+  updateTSSelection();
+}
+function selectAllTS(){tsSelectAll();}
+
+function getEffectiveTSSel(){
+  return A.filter(a=>{
+    if(!tsSelectedIds.includes(a.id)) return false;
+    if(tsFilters.managedOnly && !MANAGED_IDS.has(a.id)) return false;
+    if(a.ct && !tsFilters.campTypes.includes(a.ct)) return false;
+    if(MANAGED_IDS.has(a.id) && a.bestR!==undefined){
+      if(!tsFilters.sigQuality.includes(getSigBand(a.bestR))) return false;
+    }
+    return true;
+  });
+}
+function applyTSFilters(){
+  tsFilters.managedOnly=document.getElementById('ts-managed-only').checked;
+  tsFilters.campTypes=Array.from(document.querySelectorAll('.ts-camp:checked')).map(c=>c.value);
+  tsFilters.sigQuality=Array.from(document.querySelectorAll('.ts-sig:checked')).map(c=>c.value);
+  renderTS();renderPoP();
+}
+function clearTSFilters(){
+  document.getElementById('ts-managed-only').checked=false;
+  document.querySelectorAll('.ts-camp,.ts-sig').forEach(c=>c.checked=true);
+  tsFilters={managedOnly:false,campTypes:['pmax_test','pmax_std'],sigQuality:['strong','weak','negative']};
+  renderTS();renderPoP();
+}
+
+function updateTSSelection(){
+  tsSelectedIds=Array.from(document.querySelectorAll('.ts-acct:checked')).map(c=>c.value);
+  renderTS();
+  renderPoP();
+}
+
+function setGran(g,el){
+  tsGran=g;
+  document.querySelectorAll('.gran-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderTS();
+}
+
+function getTSData(){
+  if(tsGran==='week'){
+    // Use weekly data, aggregate for selected accounts
+    // WEEKLY_DATA already has portfolio-level totals — for per-account weekly we'd need per-account weekly,
+    // but data.json only has monthly per account + aggregate weekly. Use weekly aggregates filtered by proportion
+    // when non-managed are deselected. For simplicity: if all accounts selected use WEEKLY_DATA as-is,
+    // else build monthly-level weekly approximation from monthly per-account.
+    const allSelected=tsSelectedIds.length===A.length;
+    if(allSelected){
+      return WEEKLY_DATA.map((d,i)=>{
+        const pr=i>0?WEEKLY_DATA[i-1]:null;
+        return{...d,cpc:d.clicks?d.spend/d.clicks:0,cvr:d.clicks?d.sig/d.clicks*100:0,cpsig:d.sig?d.spend/d.sig:0,cpm:null,pr};
+      });
+    }
+    // Fall through to monthly aggregation with weekly labels when non-standard selection
+    const sel=getEffectiveTSSel();
+    return WEEKLY_DATA.map((d,i)=>{
+      // scale spend/clicks/sig proportionally based on selected vs total monthly
+      const month=d.month||null;
+      let scaleFactor=1;
+      if(month){
+        const totSp=A.reduce((s,a)=>s+(a.spend&&a.spend[month]?a.spend[month]:0),0);
+        const selSp=sel.reduce((s,a)=>s+(a.spend&&a.spend[month]?a.spend[month]:0),0);
+        scaleFactor=totSp>0?selSp/totSp:0;
+      }
+      const sp=Math.round((d.spend||0)*scaleFactor);
+      const cl=Math.round((d.clicks||0)*scaleFactor);
+      const si=Math.round((d.sig||0)*scaleFactor);
+      const pr=i>0?null:null;
+      return{...d,spend:sp,clicks:cl,sig:si,imp:Math.round((d.imp||0)*scaleFactor),cpc:cl?sp/cl:0,cvr:cl?si/cl*100:0,cpsig:si?sp/si:0,cpm:null,pr:i>0?null:null};
+    }).map((d,i,arr)=>({...d,pr:i>0?arr[i-1]:null}));
+  } else {
+    const fromVal=document.getElementById('ts-from').value;
+    const toVal=document.getElementById('ts-to').value;
+    const fromDate=fromVal?new Date(fromVal):new Date('2025-10-01');
+    const toDate=toVal?new Date(toVal):new Date('2026-12-31');
+    const filtered=MONTHS.filter(m=>{const d=new Date(MONTH_YM[m]+'-02');return d>=fromDate&&d<=toDate;});
+    const sel=getEffectiveTSSel();
+    const aggRows=filtered.map(m=>{
+      const sp=sel.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
+      const cl=sel.reduce((s,a)=>s+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0);
+      const si=sel.reduce((s,a)=>s+(a.sig&&a.sig[m]?a.sig[m]:0),0);
+      const mb=sel.reduce((s,a)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0);
+      const im=sel.reduce((s,a)=>s+(a.imp&&a.imp[m]?a.imp[m]:0),0);
+      return{label:MLABEL[m],month:m,spend:sp,clicks:cl,sig:si,mb,imp:im,cpc:cl?sp/cl:0,cvr:cl?si/cl*100:0,cpsig:si?sp/si:0,cpm:mb?sp/mb:null};
+    });
+    return aggRows.map((d,i)=>({...d,pr:i>0?aggRows[i-1]:null}));
+  }
+}
+
+function buildChart(id,data,lbls,barKey,lineKey,barColor,lineColor,lineFmt){
+  const c=tsCharts[id];
+  if(c)c.destroy();
+  tsCharts[id]=new Chart(document.getElementById('ts-'+id),{
+    type:'bar',
+    data:{
+      labels:lbls,
+      datasets:[
+        {type:'bar',data:data.map(d=>Math.round(d[barKey]||0)),backgroundColor:barColor,borderRadius:3,yAxisID:'y',order:2},
+        {type:'line',data:data.map(d=>parseFloat((d[lineKey]||0).toFixed(2))),borderColor:lineColor,backgroundColor:'transparent',tension:0.35,pointRadius:3,pointBackgroundColor:'white',pointBorderColor:lineColor,pointBorderWidth:2,yAxisID:'y2',order:1}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+      x:{ticks:{font:{size:9},color:'#888780',autoSkip:true,maxTicksLimit:8,maxRotation:45},grid:{display:false},border:{display:false}},
+      y:{ticks:{font:{size:9},color:'#888780'},grid:{color:'#F5F4F0'},border:{display:false}},
+      y2:{position:'right',ticks:{callback:v=>lineFmt(v),font:{size:9},color:lineColor},grid:{display:false},border:{display:false}}
+    }}
+  });
+}
+
+function renderTS(){
+  const data=getTSData();
+  const lbls=data.map(d=>d.label);
+  const showMB=tsGran==='month';
+
+  document.querySelectorAll('#ts-table .ts-mom-lbl').forEach(el=>el.textContent='Δ');
+
+  // Show/hide matchback columns in weekly view
+  ['ts-mb-head','ts-mb-head-mom','ts-cpm-head','ts-cpm-head-mom'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=showMB?'':'none';
+  });
+  // Chart 3/4 — hide line legend item and note in weekly mode
+  const c3note=document.getElementById('ts-c3-note'),c4note=document.getElementById('ts-c4-note');
+  const c3mbleg=document.getElementById('ts-c3-mbleg'),c4cpmleg=document.getElementById('ts-c4-cpmleg');
+  const c3title=document.getElementById('ts-c3-title'),c4title=document.getElementById('ts-c4-title');
+  if(c3note)c3note.style.display='none';
+  if(c4note)c4note.style.display='none';
+  if(c3mbleg)c3mbleg.style.display=showMB?'':'none';
+  if(c4cpmleg)c4cpmleg.style.display=showMB?'':'none';
+  if(c3title)c3title.innerHTML=showMB?'GA Signals &amp; Matchback':'GA Signals';
+  if(c4title)c4title.innerHTML=showMB?'CP Signals &amp; CP Match':'CP Signals';
+
+  // Charts
+  buildChart('c1',data,lbls,'spend','cpc','#888780','#EF9F27',v=>'$'+(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(2)));
+  buildChart('c2',data,lbls,'clicks','cpc','#378ADD','#D85A30',v=>'$'+v.toFixed(2));
+  // Chart 3: GA Signals (bars) + Matchback line (monthly only)
+  if(tsCharts.c3)tsCharts.c3.destroy();
+  {
+    const c3ds=[{type:'bar',data:data.map(d=>Math.round(d.sig||0)),backgroundColor:'#378ADD',borderRadius:3,yAxisID:'y',order:2}];
+    const c3scales={
+      x:{ticks:{font:{size:9},color:'#888780',autoSkip:true,maxTicksLimit:8,maxRotation:45},grid:{display:false},border:{display:false}},
+      y:{ticks:{font:{size:9},color:'#888780'},grid:{color:'#F5F4F0'},border:{display:false}}
+    };
+    if(showMB){
+      c3ds.push({type:'line',data:data.map(d=>d.mb>0?d.mb:null),borderColor:'#1D9E75',backgroundColor:'transparent',tension:0.35,pointRadius:3,pointBackgroundColor:'white',pointBorderColor:'#1D9E75',pointBorderWidth:2,yAxisID:'y2',order:1,spanGaps:false});
+      c3scales.y2={position:'right',ticks:{callback:v=>v,font:{size:9},color:'#1D9E75'},grid:{display:false},border:{display:false}};
+    }
+    tsCharts.c3=new Chart(document.getElementById('ts-c3'),{type:'bar',data:{labels:lbls,datasets:c3ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:c3scales}});
+  }
+  // Chart 4: CP Signals (bars) + CP Match line (monthly only)
+  if(tsCharts.c4)tsCharts.c4.destroy();
+  {
+    const c4ds=[{type:'bar',data:data.map(d=>Math.round(d.cpsig||0)),backgroundColor:'#EF9F27',borderRadius:3,yAxisID:'y',order:2}];
+    const c4scales={
+      x:{ticks:{font:{size:9},color:'#888780',autoSkip:true,maxTicksLimit:8,maxRotation:45},grid:{display:false},border:{display:false}},
+      y:{ticks:{font:{size:9},color:'#888780',callback:v=>'$'+Math.round(v)},grid:{color:'#F5F4F0'},border:{display:false}}
+    };
+    if(showMB){
+      c4ds.push({type:'line',data:data.map(d=>d.cpm!=null&&d.cpm>0?Math.round(d.cpm):null),borderColor:'#D85A30',backgroundColor:'transparent',tension:0.35,pointRadius:3,pointBackgroundColor:'white',pointBorderColor:'#D85A30',pointBorderWidth:2,yAxisID:'y2',order:1,spanGaps:false});
+      c4scales.y2={position:'right',ticks:{callback:v=>'$'+v,font:{size:9},color:'#D85A30'},grid:{display:false},border:{display:false}};
+    }
+    tsCharts.c4=new Chart(document.getElementById('ts-c4'),{type:'bar',data:{labels:lbls,datasets:c4ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:c4scales}});
+  }
+
+  // Table rows
+  const tbody=document.getElementById('ts-tbody');
+  const dataRows=data.map(d=>{
+    const pr=d.pr;
+    const mbCells=showMB?
+      (d.mb!=null?`<td class="r"><strong>${d.mb}</strong></td><td class="r">${pr&&pr.mb!=null?pct(d.mb,pr.mb):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')+
+      (d.cpm!=null?`<td class="r">$${Math.round(d.cpm)}</td><td class="r">${pr&&pr.cpm?pct(pr.cpm,d.cpm,false):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')
+      :'';
+    return`<tr>
+      <td style="font-weight:500">${d.label}</td>
+      <td class="r">${f$(Math.round(d.spend))}</td><td class="r">${pr?pct(d.spend,pr.spend,true):'—'}</td>
+      <td class="r">${fN(Math.round(d.imp||0))}</td><td class="r">${pr?pct(d.imp||0,pr.imp||0):'—'}</td>
+      <td class="r">${fN(Math.round(d.clicks))}</td><td class="r">${pr?pct(d.clicks,pr.clicks):'—'}</td>
+      <td class="r">$${d.cpc.toFixed(2)}</td><td class="r">${pr?pct(pr.cpc,d.cpc,false):'—'}</td>
+      <td class="r">${Math.round(d.sig)}</td><td class="r">${pr?pct(d.sig,pr.sig):'—'}</td>
+      <td class="r">${d.cpsig?'$'+Math.round(d.cpsig):'—'}</td><td class="r">${pr?pct(pr.cpsig,d.cpsig,false):'—'}</td>
+      ${mbCells}
+    </tr>`;
+  }).join('');
+
+  const tot=data.reduce((t,d)=>({spend:t.spend+d.spend,imp:t.imp+(d.imp||0),clicks:t.clicks+d.clicks,sig:t.sig+d.sig,mb:d.mb!=null?(t.mb!=null?t.mb+d.mb:d.mb):t.mb}),{spend:0,imp:0,clicks:0,sig:0,mb:null});
+  const tCPC=tot.clicks?tot.spend/tot.clicks:0;
+  const tCPSig=tot.sig?tot.spend/tot.sig:0;
+  const tCPM=tot.mb!=null&&tot.mb>0?tot.spend/tot.mb:null;
+  const mbTotCells=showMB?
+    (tot.mb!=null?`<td class="r"><strong>${tot.mb}</strong></td><td class="r">—</td>`:'<td class="r">—</td><td class="r">—</td>')+
+    (tCPM?`<td class="r">$${Math.round(tCPM)}</td><td class="r">—</td>`:'<td class="r">—</td><td class="r">—</td>')
+    :'';
+  tbody.innerHTML=dataRows+`<tr class="tfoot">
+    <td>Total / Period</td>
+    <td class="r">${f$(Math.round(tot.spend))}</td><td class="r">—</td>
+    <td class="r">${fN(Math.round(tot.imp))}</td><td class="r">—</td>
+    <td class="r">${fN(Math.round(tot.clicks))}</td><td class="r">—</td>
+    <td class="r">$${tCPC.toFixed(2)}</td><td class="r">—</td>
+    <td class="r">${Math.round(tot.sig)}</td><td class="r">—</td>
+    <td class="r">${tCPSig?'$'+Math.round(tCPSig):'—'}</td><td class="r">—</td>
+    ${mbTotCells}
+  </tr>`;
+
+  // Account count label + AI summary
+  const effSel=getEffectiveTSSel();
+  const cnt=effSel.length;
+  const mCnt=effSel.filter(a=>MANAGED_IDS.has(a.id)).length;
+  document.getElementById('ts-acct-label').textContent=`${cnt} account${cnt!==1?'s':''} · ${mCnt} managed`;
+  renderTSSummary(data,effSel);
+}
+
+function renderTSSummary(data,effSel){
+  const el=document.getElementById('ts-trend-summary');
+  if(!el) return;
+  if(!effSel.length){el.style.display='none';return;}
+  const showMB=tsGran==='month';
+  const mCnt=effSel.filter(a=>MANAGED_IDS.has(a.id)).length;
+  // Period label — always meaningful
+  let periodLbl;
+  if(!data.length){
+    periodLbl='no data in range';
+  } else if(tsGran==='week'){
+    const n=data.length;
+    periodLbl='last '+n+' week'+(n!==1?'s':'');
+  } else {
+    const fromVal=document.getElementById('ts-from').value;
+    const toVal=document.getElementById('ts-to').value;
+    periodLbl=describePeriod(fromVal,toVal);
+  }
+  const parts=[`${effSel.length} account${effSel.length!==1?'s':''} (${mCnt} managed) · ${periodLbl}`];
+  if(data.length>0){
+    const totSpend=data.reduce((s,d)=>s+d.spend,0);
+    const totSig=data.reduce((s,d)=>s+(d.sig||0),0);
+    if(data.length>1){
+      const first=data[0],last=data[data.length-1];
+      const spChg=first.spend>0?Math.round((last.spend-first.spend)/first.spend*100):null;
+      const sigChg=first.sig>0?Math.round((last.sig-first.sig)/first.sig*100):null;
+      if(spChg!==null&&spChg!==0) parts.push('Spend '+(spChg>0?'↑':'↓')+Math.abs(spChg)+'%');
+      if(sigChg!==null&&sigChg!==0) parts.push('GA Signals '+(sigChg>0?'↑':'↓')+Math.abs(sigChg)+'%');
+    }
+    if(tsGran==='week'){
+      // weekly mode — keep it simple
+    } else {
+      const maxSig=data.reduce((b,d)=>d.sig>(b.sig||0)?d:b,data[0]);
+      if(maxSig.sig>0&&data.length>1) parts.push('Peak: '+maxSig.label+' ('+maxSig.sig+' signals)');
+      const totMB=data.reduce((s,d)=>s+(d.mb||0),0);
+      if(totMB>0&&mCnt>0){
+        parts.push(totMB+' matchback appts · $'+Math.round(totSpend/totMB)+' CP match');
+      } else if(mCnt>0){
+        parts.push('Matchback pending (4–6 wk lag)');
+      }
+    }
+  }
+  el.style.display='block';
+  el.innerHTML='<span class="hl-dot"></span>'+parts.join(' · ')+'.';
+}
+
+function renderPoPSummary(sel,aD,bD,aFrom,aTo,bFrom,bTo,mbOk){
+  const el=document.getElementById('ts-pop-summary');
+  if(!el) return;
+  if(!sel.length){el.style.display='none';return;}
+  const pA=describePeriod(aFrom,aTo);
+  const pB=describePeriod(bFrom,bTo);
+  const totA=aD.reduce((t,d)=>({sp:t.sp+d.sp,si:t.si+d.si,mb:t.mb+d.mb}),{sp:0,si:0,mb:0});
+  const totB=bD.reduce((t,d)=>({sp:t.sp+d.sp,si:t.si+d.si,mb:t.mb+d.mb}),{sp:0,si:0,mb:0});
+  const spChg=totA.sp>0?Math.round((totB.sp-totA.sp)/totA.sp*100):0;
+  const siChg=totA.si>0?Math.round((totB.si-totA.si)/totA.si*100):0;
+  const mbChg=mbOk&&totA.mb>0?Math.round((totB.mb-totA.mb)/totA.mb*100):null;
+  let bestMover=null,bestChg=0;
+  sel.forEach((a,i)=>{
+    const aC=aD[i].si,bC=bD[i].si;
+    if(aC>0){const ch=Math.round((bC-aC)/aC*100);if(Math.abs(ch)>Math.abs(bestChg)){bestChg=ch;bestMover=a.name.split(' ')[0];}}
+  });
+  const parts=[`${sel.length} account${sel.length!==1?'s':''} · Base: ${pA} vs Compare: ${pB}`];
+  if(spChg!==0) parts.push(`Spend ${spChg>0?'↑':'↓'}${Math.abs(spChg)}%`);
+  if(siChg!==0) parts.push(`GA Signals ${siChg>0?'↑':'↓'}${Math.abs(siChg)}%`);
+  if(mbChg!==null) parts.push(`Matchback ${mbChg>0?'↑':'↓'}${Math.abs(mbChg)}%`);
+  if(bestMover) parts.push(`Biggest mover: ${bestMover} (${bestChg>0?'+':''}${bestChg}% signals)`);
+  if(!mbOk) parts.push(`Select full months to compare Matchback`);
+  el.style.display='block';
+  el.innerHTML='<span class="hl-dot"></span>'+parts.join(' · ')+'.';
+}
+
+// ============================
+// PERIOD OVER PERIOD
+// ============================
+function describePeriod(fromStr,toStr){
+  if(!fromStr||!toStr) return 'selected range';
+  const f=new Date(fromStr+'T12:00:00'),t=new Date(toStr+'T12:00:00');
+  const now=new Date();
+  const days=Math.round((t-f)/(864e5))+1;
+  // MTD: from 1st of current month to today (or this month's end)
+  if(f.getDate()===1&&f.getMonth()===now.getMonth()&&f.getFullYear()===now.getFullYear()){
+    if(t>=new Date(now.getFullYear(),now.getMonth(),now.getDate()-1)&&t<=new Date(now.getFullYear(),now.getMonth()+1,0))
+      return 'MTD ('+_MO_LABEL[f.getMonth()]+')';
+  }
+  // Single full month
+  if(isFullMonth(fromStr,toStr)&&f.getMonth()===t.getMonth()&&f.getFullYear()===t.getFullYear())
+    return _MO_LABEL[f.getMonth()]+' '+f.getFullYear();
+  // Multiple full months
+  if(f.getDate()===1&&t.getDate()===new Date(t.getFullYear(),t.getMonth()+1,0).getDate()){
+    const n=(t.getFullYear()-f.getFullYear())*12+(t.getMonth()-f.getMonth())+1;
+    if(n>1&&n<=12) return 'last '+n+' months ('+_MO_LABEL[f.getMonth()]+'–'+_MO_LABEL[t.getMonth()]+')';
+  }
+  // Week multiples
+  if(days===7) return 'last 7 days';
+  if(days===14) return 'last 2 weeks';
+  if(days===21) return 'last 3 weeks';
+  if(days===28||days===30) return 'last 4 weeks';
+  if(days===42) return 'last 6 weeks';
+  if(days===84) return 'last 12 weeks';
+  // Fallback: short date range
+  const opts={month:'short',day:'numeric'};
+  return f.toLocaleDateString('en-US',opts)+'–'+t.toLocaleDateString('en-US',opts);
+}
+
+function shortPeriod(fromStr,toStr){
+  if(!fromStr||!toStr) return '—';
+  const f=new Date(fromStr+'T12:00:00'),t=new Date(toStr+'T12:00:00');
+  const now=new Date();
+  if(f.getDate()===1&&f.getMonth()===now.getMonth()&&f.getFullYear()===now.getFullYear()) return 'MTD';
+  if(f.getMonth()===t.getMonth()&&f.getFullYear()===t.getFullYear())
+    return _MO_LABEL[f.getMonth()]+" '"+String(f.getFullYear()).slice(2);
+  if(f.getDate()===1&&t.getDate()===new Date(t.getFullYear(),t.getMonth()+1,0).getDate())
+    return _MO_LABEL[f.getMonth()]+'–'+_MO_LABEL[t.getMonth()];
+  const days=Math.round((t-f)/864e5)+1;
+  return days+'d';
+}
+
+function isFullMonth(fromStr,toStr){
+  if(!fromStr||!toStr) return false;
+  const f=new Date(fromStr+'T12:00:00'), t=new Date(toStr+'T12:00:00');
+  if(f.getDate()!==1) return false;
+  return t.getDate()===new Date(t.getFullYear(),t.getMonth()+1,0).getDate();
+}
+
+function getPeriodAcctData(fromStr,toStr,accts){
+  const from=new Date(fromStr+'T12:00:00'), to=new Date(toStr+'T12:00:00');
+  const months=MONTHS.filter(m=>{const d=new Date(MONTH_YM[m]+'-02');return d>=from&&d<=to;});
+  return accts.map(a=>{
+    const sp=months.reduce((s,m)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
+    const cl=months.reduce((s,m)=>s+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0);
+    const si=months.reduce((s,m)=>s+(a.sig&&a.sig[m]?a.sig[m]:0),0);
+    const mb=months.reduce((s,m)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0);
+    return{sp,cl,si,mb,cps:si?sp/si:null,cpm:mb?sp/mb:null};
+  });
+}
+
+const popExpandedCols=new Set();
+function togglePopCol(key){
+  if(popExpandedCols.has(key)) popExpandedCols.delete(key); else popExpandedCols.add(key);
+  renderPoP();
+}
+
+// Returns {cls, txt} for stacked comparison cell
+function popDelta(newV,oldV,lowerBetter){
+  if(!oldV||oldV===0) return {cls:'fl',txt:'—'};
+  const p=Math.round((newV-oldV)/oldV*100);
+  const isGood=lowerBetter?p<0:p>0;
+  const cls=isGood?'up':p===0?'fl':'dn';
+  return {cls, txt:(p>0?'↑':'↓')+Math.abs(p)+'%'};
+}
+function popCell(aVal,bVal,fmtFn,lowerBetter){
+  const d=popDelta(bVal,aVal,lowerBetter);
+  const aFmt=fmtFn(aVal), bFmt=fmtFn(bVal);
+  return `<td class="r">${aFmt}<span class="pop-cmp ${d.cls}">${bFmt} · ${d.txt}</span></td>`;
+}
+
+function renderPoP(){
+  const aFrom=document.getElementById('pop-a-from').value;
+  const aTo=document.getElementById('pop-a-to').value;
+  const bFrom=document.getElementById('pop-b-from').value;
+  const bTo=document.getElementById('pop-b-to').value;
+  const mbOk=isFullMonth(aFrom,aTo)&&isFullMonth(bFrom,bTo);
+
+  const noteEl=document.getElementById('pop-mb-note');
+  if(noteEl) noteEl.textContent=mbOk?'':'⚠ Select full months for Matchback';
+
+  const pAShort=shortPeriod(aFrom,aTo), pBShort=shortPeriod(bFrom,bTo);
+
+  // Metric definitions: key, label, format fn, lowerBetter, mbcol flag
+  const POP_METRICS=[
+    {key:'sp',  label:'Spend',       fmt:f$,                               lb:false, mb:false},
+    {key:'cl',  label:'Clicks',      fmt:fN,                               lb:false, mb:false},
+    {key:'si',  label:'GA Sigs',     fmt:v=>String(Math.round(v||0)),      lb:false, mb:false},
+    {key:'cps', label:'CP Sigs',     fmt:v=>v?'$'+Math.round(v):'—',      lb:true,  mb:false},
+    {key:'mb',  label:'Matchback†',  fmt:v=>String(Math.round(v||0)),      lb:false, mb:true},
+    {key:'cpm', label:'CP Match†',   fmt:v=>v?'$'+Math.round(v):'—',      lb:true,  mb:true},
+  ];
+
+  // Format a date string as "M/D/YYYY"
+  function fmtDateShort(s){if(!s)return'';const d=new Date(s+'T12:00:00');return(d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();}
+  const aRangeLabel=fmtDateShort(aFrom)+(aFrom!==aTo?'–'+fmtDateShort(aTo):'');
+  const bRangeLabel=fmtDateShort(bFrom)+(bFrom!==bTo?'–'+fmtDateShort(bTo):'');
+
+  // Build thead — 2 rows: row1=metric names+toggle, row2=sub-period headers for expanded cols
+  const theadEl=document.getElementById('pop-thead');
+  if(theadEl){
+    const anyExpanded=POP_METRICS.some(m=>popExpandedCols.has(m.key));
+    const row1Cells=POP_METRICS.map(m=>{
+      const exp=popExpandedCols.has(m.key);
+      const mc=m.mb?' pop-mb-col':'';
+      const ico=exp?'&lt;&gt;':'&gt;&lt;';
+      const rs=exp?'':' rowspan="2"';
+      const cs=exp?' colspan="4"':'';
+      return `<th class="r nosort${mc}"${rs}${cs} style="${exp?'text-align:center;background:#EAF6EF':'vertical-align:middle'}">${m.label} <button class="pop-col-tog" onclick="togglePopCol('${m.key}')">${ico}</button></th>`;
+    }).join('');
+    const row2Cells=POP_METRICS.filter(m=>popExpandedCols.has(m.key)).map(m=>{
+      const mc=m.mb?' pop-mb-col':'';
+      return `<th class="r nosort${mc}" style="background:#EAF6EF;color:#085041;font-size:9px;font-weight:500;white-space:nowrap">${aRangeLabel}</th>`+
+             `<th class="r nosort${mc}" style="background:#EAF6EF;font-size:9px;white-space:nowrap">${bRangeLabel}</th>`+
+             `<th class="r nosort${mc}" style="background:#EAF6EF;color:#888780;font-size:9px">Change</th>`+
+             `<th class="r nosort${mc}" style="background:#EAF6EF;color:#888780;font-size:9px">Change (%)</th>`;
+    }).join('');
+    theadEl.innerHTML=`<tr><th class="nosort" rowspan="2" style="vertical-align:middle">Account</th>${row1Cells}</tr>`+
+                      (anyExpanded?`<tr>${row2Cells}</tr>`:'');
+  }
+  document.querySelectorAll('.pop-mb-col').forEach(el=>{el.style.display=mbOk?'':'none';});
+
+  const sel=getEffectiveTSSel();
+  if(!sel.length){
+    document.getElementById('pop-tbody').innerHTML='<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:16px;font-size:11px">No accounts selected</td></tr>';
+    renderPoPSummary([],[],[],aFrom,aTo,bFrom,bTo,mbOk);
+    return;
+  }
+  const aD=getPeriodAcctData(aFrom,aTo,sel);
+  const bD=getPeriodAcctData(bFrom,bTo,sel);
+
+  // Build data cells per metric based on its expand state
+  function metricCells(av,bv,m){
+    const mc=m.mb?' pop-mb-col':'';
+    const aVal=av[m.key], bVal=bv[m.key];
+    if(popExpandedCols.has(m.key)){
+      // Expanded: 4 cells — Base | Compare | abs Change | Change%
+      const aFmt=m.fmt(aVal), bFmt=m.fmt(bVal);
+      const d=popDelta(bVal,aVal,m.lb);
+      // Absolute change
+      let absCh='—';
+      if(aVal!=null&&bVal!=null&&typeof aVal==='number'&&typeof bVal==='number'){
+        const diff=bVal-aVal;
+        absCh=(diff>0?'+':'')+m.fmt(Math.abs(diff));
+      }
+      const absCls=d.cls;
+      const bg=' style="background:#F3FAF6"';
+      return `<td class="r${mc}"${bg}>${aFmt}</td>`+
+             `<td class="r${mc}"${bg}>${bFmt}</td>`+
+             `<td class="r${mc}"${bg}><span class="${absCls}">${absCh}</span></td>`+
+             `<td class="r${mc}"${bg}><span class="${d.cls}">${d.txt}</span></td>`;
+    } else {
+      // Compact: single stacked cell
+      const d=popDelta(bVal,aVal,m.lb);
+      return `<td class="r${mc}">${m.fmt(aVal)}<span class="pop-cmp ${d.cls}">${m.fmt(bVal)} · ${d.txt}</span></td>`;
+    }
+  }
+
+  const html=sel.map((a,i)=>{
+    const av=aD[i], bv=bD[i];
+    const isM=MANAGED_IDS.has(a.id);
+    const cells=POP_METRICS.filter(m=>!m.mb||mbOk).map(m=>metricCells(av,bv,m)).join('');
+    return`<tr ${isM?'class="managed-row"':''}>
+      <td class="hn-cell"><span class="hn">${a.name}</span></td>${cells}
+    </tr>`;
+  }).join('');
+  document.getElementById('pop-tbody').innerHTML=html;
+  renderPoPSummary(sel,aD,bD,aFrom,aTo,bFrom,bTo,mbOk);
+}
+
+// ============================
+// SIGNALS (correlation, managed only)
+// ============================
+let corrSortCol='r1', corrSortDir=-1;
+function corrSort(col){
+  if(corrSortCol===col)corrSortDir*=-1;else{corrSortCol=col;corrSortDir=-1;}
+  renderSignals();
+}
+function renderSignals(){
+  let rows=[...AM];
+  if(corrSortCol==='r1')rows.sort((a,b)=>corrSortDir*(b.bestR-a.bestR));
+  else if(corrSortCol==='r2')rows.sort((a,b)=>corrSortDir*(b.bestCR-a.bestCR));
+  else if(corrSortCol==='strong')rows.sort((a,b)=>corrSortDir*(b.strong-a.strong));
+  else if(corrSortCol==='neg')rows.sort((a,b)=>corrSortDir*(b.neg-a.neg));
+
+  document.getElementById('corr-tbody').innerHTML=rows.map(a=>{
+    const v=a.bestR>=0.7?'<span style="font-size:10px;font-weight:600;color:#085041;background:#E1F5EE;padding:2px 8px;border-radius:4px">Strong</span>':a.bestR>=0.5?'<span style="font-size:10px;font-weight:600;color:#185FA5;background:#E6F1FB;padding:2px 8px;border-radius:4px">Moderate</span>':a.bestR>=0.3?'<span style="font-size:10px;font-weight:600;color:#854F0B;background:#FAEEDA;padding:2px 8px;border-radius:4px">Weak</span>':a.bestR>=0?'<span style="font-size:10px;font-weight:600;color:#5F5E5A;background:#F1EFE8;padding:2px 8px;border-radius:4px">No signal</span>':'<span style="font-size:10px;font-weight:600;color:#791F1F;background:#FCEBEB;padding:2px 8px;border-radius:4px">Negative — fix now</span>';
+    return`<tr>
+      <td><span class="hn">${a.name}</span></td>
+      <td class="r">${rBar(a.bestR)}</td>
+      <td class="r">${rBar(a.bestCR)}</td>
+      <td style="font-size:10px;color:#888780;max-width:160px;white-space:normal">${a.bestA}</td>
+      <td style="font-size:10px;color:#888780;max-width:200px;white-space:normal">${a.recSet}</td>
+      <td class="r"><span class="${a.strong>0?'up':'fl'}">${a.strong}</span></td>
+      <td class="r"><span class="${a.neg>2?'dn':a.neg>0?'fl':'up'}">${a.neg}</span></td>
+      <td>${v}</td>
+    </tr>`;
+  }).join('');
+}
+function filterCorrDetail(val){
+  const q=val.toLowerCase().trim();
+  const el=document.getElementById('corr-detail');
+  if(!q){el.innerHTML='<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">Type an account name above to see full conversion action breakdown</div>';return;}
+  const a=AM.find(x=>x.name.toLowerCase().includes(q));
+  if(!a){el.innerHTML=`<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">No managed account found matching "${val}"</div>`;return;}
+  const rows=a.sigs.map(s=>{
+    const rc=s.rec==='YES'?'rp-scale':s.rec==='NO'?'rp-trim':'rp-watch';
+    const action=s.r>=0.5?'Set as primary Smart Bidding goal':s.r>=0.3?'Include in combination':s.r>=0?'Neutral — low priority':s.r>=-0.3?'Misleading — remove from primary':'Actively harmful — remove immediately';
+    return`<tr><td style="font-size:11px">${s.n}</td><td class="r">${rBar(s.r)}</td><td class="r"><span class="rec-pill ${rc}">${s.rec}</span></td><td style="font-size:10px;color:#888780">${action}</td></tr>`;
+  }).join('');
+  el.innerHTML=`<div style="padding:10px 14px;border-bottom:0.5px solid #E8E6DF"><div style="font-size:12px;font-weight:500;margin-bottom:2px">${a.name}</div><div style="font-size:10px;color:#888780">Best combo r = ${a.bestCR.toFixed(2)} · ${a.strong} strong actions · ${a.neg} negative actions</div></div><div class="tbl-wrap"><table><thead><tr><th class="nosort">Conversion action</th><th class="r nosort">r value</th><th class="r nosort">Include?</th><th class="nosort">Action to take</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+// ============================
+// BUDGET (managed only)
+// ============================
+let bInputs={}, bSortCol='rec', bSortDir=-1;
+
+function bSort(col){
+  if(bSortCol===col)bSortDir*=-1;else{bSortCol=col;bSortDir=-1;}
+  renderBudget();
+}
+function renderBudget(){
+  const cap=parseInt(document.getElementById('b-cap-inp').value)||12000;
+  const scored=AM.map(a=>{const s=scoreA(a);return{...a,score:s,rec:recFromScore(a,s)};});
+  const wts=scored.map(a=>Math.max(0,a.score)*(TIER_WT[a.tier]||1.0));
+  const totalW=wts.reduce((s,w)=>s+w,0);
+  const floors=scored.reduce((s,a)=>s+(a.floor||0),0);
+  const pool=Math.max(0,cap-floors);
+  const withB=scored.map((a,i)=>{
+    let b=Math.max(BUDGET_LOWER,a.floor||0);
+    if(a.rec.type!=='trim'&&a.rec.type!=='floor'&&a.score>0&&totalW>0)
+      b=Math.round(((a.floor||0)+wts[i]/totalW*pool)/50)*50;
+    // Apply guardrails: $550 floor, $1800 ceiling
+    return{...a,recBudget:Math.max(BUDGET_LOWER,Math.min(BUDGET_UPPER,b))};
+  });
+
+  let rows=[...withB];
+  if(bSortCol==='score')rows.sort((a,b)=>bSortDir*(b.score-a.score));
+  else if(bSortCol==='r')rows.sort((a,b)=>bSortDir*(b.bestR-a.bestR));
+  else if(bSortCol==='cur')rows.sort((a,b)=>bSortDir*(b.budget-a.budget));
+  else if(bSortCol==='rec')rows.sort((a,b)=>bSortDir*(b.recBudget-a.recBudget));
+  else if(bSortCol==='chg')rows.sort((a,b)=>bSortDir*(b.recBudget-b.budget-(a.recBudget-a.budget)));
+
+  let totCur=0,totRec=0,totInp=0,scaleN=0;
+  const html=rows.map(a=>{
+    const inp=bInputs[a.id]!==undefined?bInputs[a.id]:a.recBudget;
+    totCur+=(a.budget||0);totRec+=a.recBudget;totInp+=inp;
+    if(a.rec.type==='scale')scaleN++;
+    const chg=a.recBudget-(a.budget||0);
+    const mbMosD=MONTHS.filter(m=>a.mb&&(a.mb[m]||0)>0).slice(-3);
+    const mbs=mbMosD.map(m=>a.mb[m]||0);
+    const mbU=mbs.length<2?'<span class="fl">—</span>':
+      (mbs.length>=3&&mbs[1]>mbs[0]&&mbs[2]>mbs[1])?'<span class="up">↑↑</span>':
+      mbs[mbs.length-1]>mbs[0]?'<span class="up">↑</span>':
+      mbs[mbs.length-1]<mbs[0]?'<span class="dn">↓</span>':'<span class="fl">→</span>';
+    const cMosD=a.cpm&&typeof a.cpm==='object'?MONTHS.filter(m=>a.cpm&&(a.cpm[m]||0)>0).slice(-3):[];
+    const cpas=cMosD.map(m=>a.cpm[m]||0);
+    const cpaU=cpas.length<2?'<span class="fl">—</span>':
+      (cpas.length>=3&&cpas[1]<cpas[0]&&cpas[2]<cpas[1])?'<span class="up">↓↓ better</span>':
+      cpas[cpas.length-1]<cpas[0]?'<span class="up">↓ better</span>':'<span class="dn">↑ worse</span>';
+    const sBar=`<div class="sbar"><div class="sbar-bg"><div class="sbar-fill" style="width:${Math.min(100,Math.round((a.score+3)/10*100))}%;background:${a.score>=4?'#1D9E75':a.score>=2?'#EF9F27':a.score>=0?'#B4B2A9':'#E24B4A'}"></div></div><span style="font-size:10px;color:#888780;font-weight:500">${a.score}</span></div>`;
+    const rCls={scale:'rp-scale',hold:'rp-hold',watch:'rp-watch',trim:'rp-trim',floor:'rp-floor'}[a.rec.type];
+    // Guardrail bar: show where recBudget sits between $550–$1800
+    const gPct=Math.round((a.recBudget-BUDGET_LOWER)/(BUDGET_UPPER-BUDGET_LOWER)*100);
+    const gBar=`<div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">
+      <span style="font-weight:500">$${a.recBudget.toLocaleString()}</span>
+      <div style="width:52px;height:5px;background:#F0EEE8;border-radius:3px;flex-shrink:0">
+        <div style="width:${gPct}%;height:5px;border-radius:3px;background:${a.score>=4?'#1D9E75':a.score>=2?'#EF9F27':'#D85A30'}"></div>
+      </div>
+    </div>`;
+    return`<tr>
+      <td><span class="hn">${a.name}</span></td>
+      <td class="r">${sBar}</td>
+      <td class="r">${rBar(a.bestR)}</td>
+      <td class="r">${mbU}</td>
+      <td class="r">${cpaU}</td>
+      <td class="r">$${(a.budget||0).toLocaleString()}</td>
+      <td class="r">${gBar}</td>
+      <td class="r ${chg>0?'up':chg<0?'dn':'fl'}">${chg===0?'—':(chg>0?'+':'')+'\$'+Math.abs(chg).toLocaleString()}</td>
+      <td class="r"><input class="bi" type="number" value="${inp}" min="${BUDGET_LOWER}" max="${BUDGET_UPPER}" step="50" oninput="setBInput('${a.id}',this.value)"></td>
+      <td><span class="rec-pill ${rCls}">${a.rec.label}</span></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('b-tbody').innerHTML=html;
+  document.getElementById('bf-cur').textContent='$'+totCur.toLocaleString();
+  document.getElementById('bf-rec').textContent='$'+totRec.toLocaleString();
+  const tc=totRec-totCur;
+  document.getElementById('bf-chg').innerHTML=`<span class="${tc>0?'up':tc<0?'dn':'fl'}">${tc===0?'—':(tc>0?'+':'')+'\$'+Math.abs(tc).toLocaleString()}</span>`;
+  document.getElementById('bf-inp').textContent='$'+totInp.toLocaleString();
+  document.getElementById('b-cap-v').textContent='$'+cap.toLocaleString();
+  document.getElementById('b-alloc-v').textContent='$'+totInp.toLocaleString();
+  document.getElementById('b-pct-v').textContent=Math.round(totInp/cap*100)+'% of cap';
+  document.getElementById('b-scale-v').textContent=scaleN;
+  const rem=cap-totInp;
+  document.getElementById('b-rem-v').textContent=rem>=0?'$'+rem.toLocaleString()+' remaining':'$'+Math.abs(rem).toLocaleString()+' over cap';
+  document.getElementById('b-rem-v').style.color=rem>=0?'#5DCAA5':'#F0997B';
+}
+function setBInput(id,val){
+  const a=AM.find(x=>x.id===id);
+  bInputs[id]=Math.max(BUDGET_LOWER,Math.min(BUDGET_UPPER,parseInt(val)||BUDGET_LOWER));
+  const cap=parseInt(document.getElementById('b-cap-inp').value)||12000;
+  const tot=AM.reduce((s,ac)=>s+(bInputs[ac.id]!==undefined?bInputs[ac.id]:ac.budget||0),0);
+  const rem=cap-tot;
+  document.getElementById('b-alloc-v').textContent='$'+tot.toLocaleString();
+  document.getElementById('b-rem-v').textContent=rem>=0?'$'+rem.toLocaleString()+' remaining':'$'+Math.abs(rem).toLocaleString()+' over cap';
+  document.getElementById('b-rem-v').style.color=rem>=0?'#5DCAA5':'#F0997B';
+  document.getElementById('bf-inp').textContent='$'+tot.toLocaleString();
+}
+function applyRec(){bInputs={};renderBudget();}
+
+// ============================
+// TAB SWITCHER
+// ============================
+function sw(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='timeseries'){
+    if(!tsInited){initTSSidebar();tsInited=true;}
+    renderTS();
+  }
+  if(id==='budget')renderBudget();
+  if(id==='signals')renderSignals();
+}
+
+// ============================
+// XLSX DOWNLOAD
+// ============================
+function downloadXLSX(tbodyId,tfootId,filename){
+  const tbody=document.getElementById(tbodyId);
+  const tfoot=tfootId?document.getElementById(tfootId):null;
+  if(!tbody){alert('No data to export');return;}
+  const table=tbody.closest('table');
+  const headers=[];
+  const theadRows=table.querySelectorAll('thead tr');
+  const lastHeadRow=theadRows[theadRows.length-1];
+  lastHeadRow.querySelectorAll('th').forEach(th=>{
+    if(!th.classList.contains('group'))headers.push(th.textContent.trim().replace(/[↑↓]/g,'').trim());
+  });
+  const firstHeadTh=theadRows[0].querySelector('th');
+  if(firstHeadTh&&firstHeadTh.rowSpan>1&&!headers.includes(firstHeadTh.textContent.trim())){
+    headers.unshift(firstHeadTh.textContent.trim());
+  }
+  function cellText(cell){
+    const clone=cell.cloneNode(true);
+    clone.querySelectorAll('.sbar,.dot,.bdg').forEach(el=>el.remove());
+    return clone.textContent.trim().replace(/[↑↓]/g,'').replace(/\s+/g,' ').trim();
+  }
+  const rows=[];
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    if(tr.classList.contains('section-sep'))return;
+    const row=[];
+    tr.querySelectorAll('td').forEach(td=>row.push(cellText(td)));
+    if(row.some(v=>v!==''))rows.push(row);
+  });
+  if(tfoot){
+    const tfEl=document.getElementById(tfootId);
+    if(tfEl){
+      tfEl.querySelectorAll('tr').forEach(tr=>{
+        const row=[];
+        tr.querySelectorAll('td').forEach(td=>row.push(cellText(td)));
+        if(row.some(v=>v!==''))rows.push(row);
+      });
+    }
+  }
+  const wsData=[headers,...rows];
+  const ws=XLSX.utils.aoa_to_sheet(wsData);
+  const range=XLSX.utils.decode_range(ws['!ref']);
+  for(let c=range.s.c;c<=range.e.c;c++){
+    const cell=XLSX.utils.encode_cell({r:0,c});
+    if(ws[cell])ws[cell].s={font:{bold:true},fill:{fgColor:{rgb:'E1F5EE'}}};
+  }
+  const colWidths=wsData[0].map((_,ci)=>({wch:Math.min(40,Math.max(10,...wsData.map(row=>(row[ci]||'').toString().length)))}));
+  ws['!cols']=colWidths;
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Data');
+  const metaWs=XLSX.utils.aoa_to_sheet([
+    ['WesternVet Paid Search Dashboard'],
+    ['Exported:',new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})],
+    ['Source:','Direct Agents — Google Ads'],
+    [''],
+    ['Notes:'],
+    ['GA Signals = NC Industry (call ext + web) + Appt Booked (call ext + web). Excludes New Client Appointment.'],
+    ['Matchback = Invoca + Vetstoria verified new client appts. 4–6 week reporting lag.'],
+    ['CP Matchback = Spend ÷ Matchback. True cost per new client acquisition.'],
+    ['MoM % = Change vs prior month. Green = improvement for that metric.'],
+  ]);
+  XLSX.utils.book_append_sheet(wb,metaWs,'Notes');
+  XLSX.writeFile(wb,filename+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+// ============================
+// INIT
+// ============================
+(async function(){
+  try{
+function initTableResize(tableId){
+  document.querySelectorAll('#'+tableId+' thead th').forEach(th=>{
+    if(th.querySelector('.col-resizer')) return;
+    const handle=document.createElement('div');
+    handle.className='col-resizer';
+    th.appendChild(handle);
+    let startX,startW;
+    handle.addEventListener('mousedown',e=>{
+      startX=e.pageX;
+      startW=th.offsetWidth;
+      handle.classList.add('active');
+      const onMove=ev=>{
+        const w=Math.max(30,startW+(ev.pageX-startX));
+        th.style.width=w+'px';
+        th.style.minWidth=w+'px';
+      };
+      const onUp=()=>{
+        handle.classList.remove('active');
+        document.removeEventListener('mousemove',onMove);
+        document.removeEventListener('mouseup',onUp);
+      };
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+}
+function initPortResize(){initTableResize('port-table');}
+
+    const r=await fetch('data.json');
+    if(!r.ok)throw new Error('data.json fetch failed: '+r.status);
+    const d=await r.json();
+    A=d.accounts;
+    WEEKLY_DATA=d.weekly||[];
+    MONTHLY_TS=d.monthly||[];
+
+    // Detect managed accounts
+    AM=A.filter(a=>a.mb&&typeof a.mb==='object'&&Object.keys(a.mb).length>0&&a.bestR!==undefined);
+    MANAGED_IDS=new Set(AM.map(a=>a.id));
+
+    // Update topbar
+    const updatedDate=d._updated||'';
+    const dateParts=updatedDate?new Date(updatedDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}):'';
+    document.getElementById('topbar-right').textContent=`${dateParts} · ${A.length} accounts · Google Ads`;
+    document.getElementById('tab-managed-count').textContent=AM.length;
+
+    // Render date chips for all tabs
+    renderDateChips('port-date-bar',portDate,'setPortDate');
+    renderDateChips('managed-date-bar',mDate,'setMDate');
+
+    // Init portfolio tab
+    initPortFilters();
+    renderPortfolioKPIs();
+    renderPortfolioTable();
+    initPortResize();
+    initTableResize('ts-table');
+    initTableResize('pop-table');
+
+    // Init managed tab
+    initManagedFilters();
+    renderManaged();
+    renderPoP();
+
+  }catch(e){
+    console.error('Failed to load data.json:',e);
+    document.body.innerHTML='<div style="padding:40px;font-family:system-ui;color:#c00"><strong>Dashboard data unavailable.</strong><br>Make sure data.json is served alongside this file (use a local HTTP server — not file://).<br><small>'+e.message+'</small></div>';
+  }
+})();
+</script>
+</body>
+</html>
