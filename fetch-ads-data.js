@@ -401,7 +401,7 @@ function aggregateConversions(rows) {
     const mk  = MONTH_KEYS[row.segments.month];
     if (!mk) continue;
     const name = row.segments.conversion_action_name;
-    const val  = Math.round(row.metrics.conversions || 0);
+    const val  = Math.round(row.metrics.all_conversions || 0);
     if (name === 'Appointment Booked (Conversion) (call extensions)') { convByAction[mk].appt_call += val; sig[mk] += val; }
     if (name === 'Appointment Booked (Conversion) (web page calls)')  { convByAction[mk].appt_web  += val; sig[mk] += val; }
     if (name === 'New Client (Industry) (call extensions)')           { convByAction[mk].nci_call  += val; sig[mk] += val; }
@@ -430,7 +430,7 @@ function aggregateConversions(rows) {
     ORDER BY segments.month`;
 
   const convQuery = `
-    SELECT segments.month, segments.conversion_action_name, metrics.conversions
+    SELECT segments.month, segments.conversion_action_name, metrics.all_conversions
     FROM campaign
     WHERE segments.date BETWEEN '${START_DATE}' AND '${dateTo}'
     AND segments.conversion_action_name IN (${actionList})
