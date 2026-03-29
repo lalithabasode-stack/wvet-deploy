@@ -335,6 +335,12 @@ const VALIDATED_ACTIONS = [
   'Appointment Booked (Conversion) (web page calls)',
 ];
 
+// NC Appt — shown for reference only, negative correlation with matchback (never include in signal)
+const NCA_ACTIONS = [
+  'New Client Appointment (call extensions)',
+  'New Client Appointment (web page calls)',
+];
+
 // Month window auto-generates from START_DATE → today.
 // Keys are unique within a fiscal year (Oct–Sep). No manual update needed.
 const START_DATE = '2025-10-01';
@@ -385,23 +391,25 @@ function aggregateTraffic(rows) {
 }
 
 function aggregateConversions(rows) {
-  const sig = {}, convByAction = {};
+  const sig = {}, convByAction = {}, nca = {};
   for (const mk of Object.values(MONTH_KEYS)) {
     sig[mk] = 0;
-    convByAction[mk] = { appt_call:0, appt_web:0, nci_call:0, nci_web:0 };
+    convByAction[mk] = { appt_call:0, appt_web:0, nci_call:0, nci_web:0, nca_call:0, nca_web:0 };
+    nca[mk] = 0;
   }
   for (const row of rows) {
     const mk  = MONTH_KEYS[row.segments.month];
     if (!mk) continue;
     const name = row.segments.conversion_action_name;
     const val  = Math.round(row.metrics.conversions || 0);
-    sig[mk] += val;
-    if (name === 'Appointment Booked (Conversion) (call extensions)') convByAction[mk].appt_call += val;
-    if (name === 'Appointment Booked (Conversion) (web page calls)')  convByAction[mk].appt_web  += val;
-    if (name === 'New Client (Industry) (call extensions)')           convByAction[mk].nci_call  += val;
-    if (name === 'New Client (Industry) (web page calls)')            convByAction[mk].nci_web   += val;
+    if (name === 'Appointment Booked (Conversion) (call extensions)') { convByAction[mk].appt_call += val; sig[mk] += val; }
+    if (name === 'Appointment Booked (Conversion) (web page calls)')  { convByAction[mk].appt_web  += val; sig[mk] += val; }
+    if (name === 'New Client (Industry) (call extensions)')           { convByAction[mk].nci_call  += val; sig[mk] += val; }
+    if (name === 'New Client (Industry) (web page calls)')            { convByAction[mk].nci_web   += val; sig[mk] += val; }
+    if (name === 'New Client Appointment (call extensions)')          { convByAction[mk].nca_call  += val; nca[mk] += val; }
+    if (name === 'New Client Appointment (web page calls)')           { convByAction[mk].nca_web   += val; nca[mk] += val; }
   }
-  return { sig, convByAction };
+  return { sig, convByAction, nca };
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -413,7 +421,7 @@ function aggregateConversions(rows) {
   const existingMap = Object.fromEntries((existing.accounts || []).map(a => [a.id, a]));
 
   const dateTo = today();
-  const actionList = VALIDATED_ACTIONS.map(a => `'${a}'`).join(', ');
+  const actionList = [...VALIDATED_ACTIONS, ...NCA_ACTIONS].map(a => `'${a}'`).join(', ');
 
   const trafficQuery = `
     SELECT segments.month, metrics.cost_micros, metrics.impressions, metrics.clicks
@@ -444,7 +452,7 @@ function aggregateConversions(rows) {
           customer.query(convQuery),
         ]);
         const { spend, imp, clicks }  = aggregateTraffic(trafficRows);
-        const { sig, convByAction }   = aggregateConversions(convRows);
+        const { sig, convByAction, nca } = aggregateConversions(convRows);
         const prev = existingMap[acct.id] || {};
         const mb   = prev.mb || {};
         const cpm  = {};
@@ -456,8 +464,8 @@ function aggregateConversions(rows) {
         updatedAccounts.push({
           id: acct.id, name: acct.name, cid: acct.cid,
           ct: acct.ct || prev.ct || 'pmax_std',
-          spend, imp, clicks, sig, mb, cpm, convByAction,
-          mb_inv: prev.mb_inv, mb_vet: prev.mb_vet, nc: prev.nc, nca: prev.nca,
+          spend, imp, clicks, sig, mb, cpm, convByAction, nca,
+          mb_inv: prev.mb_inv, mb_vet: prev.mb_vet, nc: prev.nc,
           bestR:  prev.bestR  ?? 0,
           bestCR: prev.bestCR ?? 0,
           bestA:  prev.bestA  ?? '',

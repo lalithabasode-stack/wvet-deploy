@@ -1195,14 +1195,14 @@ function renderPortfolioTable(){
     const nc=isManaged&&a.nc&&a.nc[m]!=null?a.nc[m]:null;
     const nci=a.convByAction&&a.convByAction[m]?((a.convByAction[m].nci_call||0)+(a.convByAction[m].nci_web||0)):null;
     const appt_b=a.convByAction&&a.convByAction[m]?((a.convByAction[m].appt_call||0)+(a.convByAction[m].appt_web||0)):null;
-    const nca=isManaged&&a.nca&&a.nca[m]!=null?a.nca[m]:null;
+    const nca=a.nca&&a.nca[m]!=null?a.nca[m]:null;
     // Prev-period values for MoM on conversion/matchback columns
     const mbP=p&&isManaged&&a.mb&&a.mb[p]?a.mb[p]:0;
     const mb_invP=p&&isManaged&&a.mb_inv&&a.mb_inv[p]!=null?a.mb_inv[p]:null;
     const mb_vetP=p&&isManaged&&a.mb_vet&&a.mb_vet[p]!=null?a.mb_vet[p]:null;
     const nciP=p&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].nci_call||0)+(a.convByAction[p].nci_web||0)):null;
     const appt_bP=p&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].appt_call||0)+(a.convByAction[p].appt_web||0)):null;
-    const ncaP=p&&isManaged&&a.nca&&a.nca[p]!=null?a.nca[p]:null;
+    const ncaP=p&&a.nca&&a.nca[p]!=null?a.nca[p]:null;
     const cpmP=p&&isManaged&&a.cpm&&a.cpm[p]?a.cpm[p]:0;
     const cps=nci!=null&&appt_b!=null&&(nci+appt_b)>0?Math.round(sp/(nci+appt_b)):null;
     const cpsP=p&&nciP!=null&&appt_bP!=null&&(nciP+appt_bP)>0?Math.round(spp/(nciP+appt_bP)):null;
