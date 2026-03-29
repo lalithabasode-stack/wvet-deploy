@@ -1289,9 +1289,9 @@ function renderPortfolioTable(){
       <td class="hn-cell"><span class="hn">${a.name}</span></td>
       <td class="r">${f$(a.sp)}</td>
       <td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
-      <td class="r" ${dim}>—</td><td class="r" ${dim}>—</td>
-      <td class="r" ${dim}>—</td><td class="r" ${dim}>—</td>
-      <td class="r" ${dim}>—</td><td class="r" ${dim}>—</td>
+      <td class="r">${a.nci!=null?a.nci:'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
+      <td class="r">${a.appt_b!=null?a.appt_b:'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
+      <td class="r" style="color:#888780">${a.nca!=null?a.nca:'—'}</td><td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
       <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
       <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
       <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
@@ -1300,8 +1300,8 @@ function renderPortfolioTable(){
       <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
       <td class="r" ${dim}>—</td>
       <td class="r" ${dim}>—</td>
-      <td class="r" ${dim}>—</td>
-      <td class="r" ${dim}>—</td>
+      <td class="r">${a.cps!=null?'$'+a.cps:'—'}</td>
+      <td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
       <td class="r" ${dim}>—</td>
     </tr>`;
   }).join('')||'<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match current filters</td></tr>';
