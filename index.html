@@ -1193,19 +1193,19 @@ function renderPortfolioTable(){
     const mb_inv=isManaged&&a.mb_inv&&a.mb_inv[m]!=null?a.mb_inv[m]:null;
     const mb_vet=isManaged&&a.mb_vet&&a.mb_vet[m]!=null?a.mb_vet[m]:null;
     const nc=isManaged&&a.nc&&a.nc[m]!=null?a.nc[m]:null;
-    const nci=isManaged&&a.convByAction&&a.convByAction[m]?((a.convByAction[m].nci_call||0)+(a.convByAction[m].nci_web||0)):null;
-    const appt_b=isManaged&&a.convByAction&&a.convByAction[m]?((a.convByAction[m].appt_call||0)+(a.convByAction[m].appt_web||0)):null;
+    const nci=a.convByAction&&a.convByAction[m]?((a.convByAction[m].nci_call||0)+(a.convByAction[m].nci_web||0)):null;
+    const appt_b=a.convByAction&&a.convByAction[m]?((a.convByAction[m].appt_call||0)+(a.convByAction[m].appt_web||0)):null;
     const nca=isManaged&&a.nca&&a.nca[m]!=null?a.nca[m]:null;
     // Prev-period values for MoM on conversion/matchback columns
     const mbP=p&&isManaged&&a.mb&&a.mb[p]?a.mb[p]:0;
     const mb_invP=p&&isManaged&&a.mb_inv&&a.mb_inv[p]!=null?a.mb_inv[p]:null;
     const mb_vetP=p&&isManaged&&a.mb_vet&&a.mb_vet[p]!=null?a.mb_vet[p]:null;
-    const nciP=p&&isManaged&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].nci_call||0)+(a.convByAction[p].nci_web||0)):null;
-    const appt_bP=p&&isManaged&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].appt_call||0)+(a.convByAction[p].appt_web||0)):null;
+    const nciP=p&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].nci_call||0)+(a.convByAction[p].nci_web||0)):null;
+    const appt_bP=p&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].appt_call||0)+(a.convByAction[p].appt_web||0)):null;
     const ncaP=p&&isManaged&&a.nca&&a.nca[p]!=null?a.nca[p]:null;
     const cpmP=p&&isManaged&&a.cpm&&a.cpm[p]?a.cpm[p]:0;
-    const cps=isManaged&&nci!=null&&appt_b!=null&&(nci+appt_b)>0?Math.round(sp/(nci+appt_b)):null;
-    const cpsP=p&&isManaged&&nciP!=null&&appt_bP!=null&&(nciP+appt_bP)>0?Math.round(spp/(nciP+appt_bP)):null;
+    const cps=nci!=null&&appt_b!=null&&(nci+appt_b)>0?Math.round(sp/(nci+appt_b)):null;
+    const cpsP=p&&nciP!=null&&appt_bP!=null&&(nciP+appt_bP)>0?Math.round(spp/(nciP+appt_bP)):null;
     return{...a,sp,spp,im,cl,si,mb,cpm,cpc,isManaged,mb_inv,mb_vet,nc,nci,appt_b,nca,mbP,mb_invP,mb_vetP,nciP,appt_bP,ncaP,cpmP,cps,cpsP};
   };
 

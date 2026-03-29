@@ -457,6 +457,7 @@ function aggregateConversions(rows) {
           id: acct.id, name: acct.name, cid: acct.cid,
           ct: acct.ct || prev.ct || 'pmax_std',
           spend, imp, clicks, sig, mb, cpm, convByAction,
+          mb_inv: prev.mb_inv, mb_vet: prev.mb_vet, nc: prev.nc, nca: prev.nca,
           bestR:  prev.bestR  ?? 0,
           bestCR: prev.bestCR ?? 0,
           bestA:  prev.bestA  ?? '',
