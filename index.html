@@ -55,6 +55,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F7F6F2;color:#1a
 .sb-top{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;border-bottom:0.5px solid #E8E6DF}
 .sb-title{font-size:11px;font-weight:600;color:#1a1a18}
 .sb-clear{font-size:10px;color:#888780;background:none;border:none;cursor:pointer;text-decoration:underline}
+.acct-tog-btn{font-size:9px;color:#888780;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:3px;cursor:pointer;padding:1px 5px;font-family:inherit;line-height:1.4}.acct-tog-btn:hover{background:#E8E6DF;color:#1a1a18}
 .sb-search{width:100%;font-size:11px;padding:7px 10px;border:none;border-bottom:0.5px solid #E8E6DF;background:#FAFAF8;color:#1a1a18;outline:none}
 .sb-search:focus{background:white}
 
@@ -315,7 +316,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
     <div class="sidebar">
       <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearPortFilters()">Clear all</button></div>
       <div class="fg">
-        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="port-acct-count">(—)</span></span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="port-acct-count">(—)</span></span><span style="margin-left:auto;display:flex;gap:4px;margin-right:4px" onclick="event.stopPropagation()"><button class="acct-tog-btn" onclick="portSelectAll()">All</button><button class="acct-tog-btn" onclick="portClearAccts()">Clear</button></span><span class="fg-arrow open">▾</span></div>
         <div class="fg-body open">
           <div style="padding:0 8px 6px"><input class="sb-search" id="port-srch" placeholder="Type to search accounts..." oninput="filterPortAcctList(this.value)" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
           <div class="acct-list" id="port-acct-list" style="max-height:220px"></div>
@@ -369,7 +370,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
           <table id="port-table" style="border-radius:0;border:none">
             <thead style="position:sticky;top:0;z-index:2">
               <tr>
-                <th class="nosort">Account</th>
+                <th onclick="portSort('name')">Account</th>
                 <th class="r" onclick="portSort('spend')">Spend</th>
                 <th class="r nosort">MoM</th>
                 <th class="r" onclick="portSort('nci')">NC Ind*</th>
@@ -426,7 +427,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
     <div class="sidebar">
       <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearMFilters()">Clear all</button></div>
       <div class="fg">
-        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="m-acct-count">(—)</span></span><span class="fg-arrow">▾</span></div>
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="m-acct-count">(—)</span></span><span style="margin-left:auto;display:flex;gap:4px;margin-right:4px" onclick="event.stopPropagation()"><button class="acct-tog-btn" onclick="mSelectAll()">All</button><button class="acct-tog-btn" onclick="mClearAccts()">Clear</button></span><span class="fg-arrow">▾</span></div>
         <div class="fg-body">
           <div style="padding:0 8px 6px"><input class="sb-search" id="m-srch" placeholder="Search accounts..." oninput="filterMAcctList(this.value)" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
           <div class="acct-list" id="m-acct-list"></div>
@@ -470,7 +471,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
           <table>
             <thead>
               <tr>
-                <th class="nosort" rowspan="2">Hospital</th>
+                <th onclick="mSort('name')" rowspan="2">Hospital</th>
                 <th class="group" colspan="2">Matchback</th>
                 <th class="group" colspan="2">CP Matchback</th>
                 <th class="group" colspan="2">GA Signals*</th>
@@ -706,7 +707,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th class="nosort">Hospital</th>
+          <th onclick="corrSort('name')">Hospital</th>
           <th class="r" onclick="corrSort('r1')">Best single r</th>
           <th class="r" onclick="corrSort('r2')">Best combo r</th>
           <th class="nosort">Best conversion action</th>
@@ -771,7 +772,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
     <div class="tbl-wrap">
       <table>
         <thead><tr>
-          <th class="nosort">Hospital</th>
+          <th onclick="bSort('name')">Hospital</th>
           <th class="r" onclick="bSort('score')">Score</th>
           <th class="r" onclick="bSort('r')">Signal r</th>
           <th class="r" onclick="bSort('mb')">MB trend</th>
@@ -1055,6 +1056,8 @@ function filterPortAcctList(val){
     l.style.display=l.textContent.toLowerCase().includes(q)?'flex':'none';
   });
 }
+function portSelectAll(){document.querySelectorAll('.port-acct').forEach(c=>c.checked=true);renderPortfolioTable();}
+function portClearAccts(){document.querySelectorAll('.port-acct').forEach(c=>c.checked=false);renderPortfolioTable();}
 function clearPortFilters(){
   document.getElementById('port-srch').value='';
   document.querySelectorAll('.port-acct').forEach(c=>c.checked=true);
@@ -1246,6 +1249,7 @@ function renderPortfolioTable(){
     if(portSortCol==='mb_vet')return portSortDir*((b.mb_vet||0)-(a.mb_vet||0));
     if(portSortCol==='cpm')return portSortDir*(a.cpm-b.cpm);
     if(portSortCol==='cps')return portSortDir*((a.cps!=null?a.cps:Infinity)-(b.cps!=null?b.cps:Infinity));
+    if(portSortCol==='name')return portSortDir*a.name.localeCompare(b.name);
     return 0;
   };
   rows.sort(sortFn);
@@ -1385,6 +1389,8 @@ function mSort(col){
   renderManaged();
 }
 
+function mSelectAll(){document.querySelectorAll('.m-acct').forEach(c=>c.checked=true);renderManaged();}
+function mClearAccts(){document.querySelectorAll('.m-acct').forEach(c=>c.checked=false);renderManaged();}
 function clearMFilters(){
   document.querySelectorAll('#managed input[type=checkbox]').forEach(c=>c.checked=true);
   document.getElementById('m-srch').value='';
@@ -1430,7 +1436,7 @@ function renderManaged(){
     return{...a,mb,mbp,sig,sigp,sp,spp,cpm,cpmp,cpsig,cpsigp,mbMom,cpmMom,sigMom,cpsigMom};
   });
 
-  const sortFns={mb:(a,b)=>mSortDir*(b.mb-a.mb),cpm:(a,b)=>mSortDir*(a.cpm-b.cpm),sig:(a,b)=>mSortDir*(b.sig-a.sig),cpsig:(a,b)=>mSortDir*(a.cpsig-b.cpsig),spend:(a,b)=>mSortDir*(b.sp-a.sp)};
+  const sortFns={mb:(a,b)=>mSortDir*(b.mb-a.mb),cpm:(a,b)=>mSortDir*(a.cpm-b.cpm),sig:(a,b)=>mSortDir*(b.sig-a.sig),cpsig:(a,b)=>mSortDir*(a.cpsig-b.cpsig),spend:(a,b)=>mSortDir*(b.sp-a.sp),name:(a,b)=>mSortDir*a.name.localeCompare(b.name)};
   if(sortFns[mSortCol])rows.sort(sortFns[mSortCol]);
 
   let tMB=0,tMBp=0,tSig=0,tSigP=0,tSp=0,tSpP=0;
@@ -2002,6 +2008,7 @@ function renderSignals(){
   else if(corrSortCol==='r2')rows.sort((a,b)=>corrSortDir*(b.bestCR-a.bestCR));
   else if(corrSortCol==='strong')rows.sort((a,b)=>corrSortDir*(b.strong-a.strong));
   else if(corrSortCol==='neg')rows.sort((a,b)=>corrSortDir*(b.neg-a.neg));
+  else if(corrSortCol==='name')rows.sort((a,b)=>corrSortDir*a.name.localeCompare(b.name));
 
   document.getElementById('corr-tbody').innerHTML=rows.map(a=>{
     const v=a.bestR>=0.7?'<span style="font-size:10px;font-weight:600;color:#085041;background:#E1F5EE;padding:2px 8px;border-radius:4px">Strong</span>':a.bestR>=0.5?'<span style="font-size:10px;font-weight:600;color:#185FA5;background:#E6F1FB;padding:2px 8px;border-radius:4px">Moderate</span>':a.bestR>=0.3?'<span style="font-size:10px;font-weight:600;color:#854F0B;background:#FAEEDA;padding:2px 8px;border-radius:4px">Weak</span>':a.bestR>=0?'<span style="font-size:10px;font-weight:600;color:#5F5E5A;background:#F1EFE8;padding:2px 8px;border-radius:4px">No signal</span>':'<span style="font-size:10px;font-weight:600;color:#791F1F;background:#FCEBEB;padding:2px 8px;border-radius:4px">Negative — fix now</span>';
@@ -2061,6 +2068,7 @@ function renderBudget(){
   else if(bSortCol==='cur')rows.sort((a,b)=>bSortDir*(b.budget-a.budget));
   else if(bSortCol==='rec')rows.sort((a,b)=>bSortDir*(b.recBudget-a.recBudget));
   else if(bSortCol==='chg')rows.sort((a,b)=>bSortDir*(b.recBudget-b.budget-(a.recBudget-a.budget)));
+  else if(bSortCol==='name')rows.sort((a,b)=>bSortDir*a.name.localeCompare(b.name));
 
   let totCur=0,totRec=0,totInp=0,scaleN=0;
   const html=rows.map(a=>{
