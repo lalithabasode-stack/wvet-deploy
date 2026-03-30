@@ -2255,7 +2255,7 @@ function initTableResize(tableId){
 }
 function initPortResize(){initTableResize('port-table');}
 
-    const r=await fetch('data.json');
+    const r=await fetch('data.json?v='+Date.now());
     if(!r.ok)throw new Error('data.json fetch failed: '+r.status);
     const d=await r.json();
     A=d.accounts;
