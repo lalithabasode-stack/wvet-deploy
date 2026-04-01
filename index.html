@@ -2181,7 +2181,17 @@ function renderPoP(){
       <td class="hn-cell"><span class="hn">${a.name}</span></td>${cells}
     </tr>`;
   }).join('');
-  document.getElementById('pop-tbody').innerHTML=html;
+
+  // Totals row
+  const sumFn=(arr,key)=>arr.reduce((s,d)=>s+(d[key]||0),0);
+  const aTot={sp:sumFn(aD,'sp'),cl:sumFn(aD,'cl'),si:sumFn(aD,'si'),mb:sumFn(aD,'mb')};
+  aTot.cps=aTot.si?aTot.sp/aTot.si:null; aTot.cpm=aTot.mb?aTot.sp/aTot.mb:null;
+  const bTot={sp:sumFn(bD,'sp'),cl:sumFn(bD,'cl'),si:sumFn(bD,'si'),mb:sumFn(bD,'mb')};
+  bTot.cps=bTot.si?bTot.sp/bTot.si:null; bTot.cpm=bTot.mb?bTot.sp/bTot.mb:null;
+  const totCells=POP_METRICS.filter(m=>!m.mb||mbOk).map(m=>metricCells(aTot,bTot,m)).join('');
+  const totRow=`<tr class="tfoot"><td><strong>Total</strong></td>${totCells}</tr>`;
+
+  document.getElementById('pop-tbody').innerHTML=html+totRow;
   renderPoPSummary(sel,aD,bD,aFrom,aTo,bFrom,bTo,mbOk);
 }
 
