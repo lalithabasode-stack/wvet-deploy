@@ -1603,7 +1603,11 @@ function getTSData(){
     const toVal=document.getElementById('ts-to').value;
     const fromDate=fromVal?new Date(fromVal):new Date('2025-10-01');
     const toDate=toVal?new Date(toVal):new Date('2026-12-31');
-    const filtered=MONTHS.filter(m=>{const d=new Date(MONTH_YM[m]+'-02');return d>=fromDate&&d<=toDate;});
+    const filtered=MONTHS.filter(m=>{
+      const mStart=new Date(MONTH_YM[m]+'-01');
+      const mEnd=new Date(mStart.getFullYear(),mStart.getMonth()+1,0);
+      return mStart<=toDate&&mEnd>=fromDate;
+    });
     const sel=getEffectiveTSSel();
     const aggRows=filtered.map(m=>{
       const sp=sel.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
