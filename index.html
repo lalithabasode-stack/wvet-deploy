@@ -1603,10 +1603,12 @@ function getTSData(){
     const toVal=document.getElementById('ts-to').value;
     const fromDate=fromVal?new Date(fromVal):new Date('2025-10-01');
     const toDate=toVal?new Date(toVal):new Date('2026-12-31');
+    const fromYM=fromDate.getUTCFullYear()*12+fromDate.getUTCMonth();
+    const toYM=toDate.getUTCFullYear()*12+toDate.getUTCMonth();
     const filtered=MONTHS.filter(m=>{
-      const mStart=new Date(MONTH_YM[m]+'-01');
-      const mEnd=new Date(mStart.getFullYear(),mStart.getMonth()+1,0);
-      return mStart<=toDate&&mEnd>=fromDate;
+      const d=new Date(MONTH_YM[m]+'-01T00:00:00Z');
+      const mYM=d.getUTCFullYear()*12+d.getUTCMonth();
+      return mYM>=fromYM&&mYM<=toYM;
     });
     const sel=getEffectiveTSSel();
     const aggRows=filtered.map(m=>{
@@ -1760,7 +1762,8 @@ function renderTS(){
 
   // Update note
   const noteEl=document.getElementById('ts-note');
-  if(noteEl) noteEl.innerHTML=`Row Δ = month-over-month vs prior month. &nbsp;|&nbsp; Total Δ = selected period vs prior equal period${priorLabel?' ('+priorLabel+')':' — not enough prior data'}.`;
+  const _granLabel=tsGran==='week'?'week-over-week vs prior week':'month-over-month vs prior month';
+  if(noteEl) noteEl.innerHTML=`Row Δ = ${_granLabel}. &nbsp;|&nbsp; Total Δ = selected period vs prior equal period${priorLabel?' ('+priorLabel+')':' — not enough prior data'}.`;
 
   // Account count label + AI summary
   const effSel=getEffectiveTSSel();
