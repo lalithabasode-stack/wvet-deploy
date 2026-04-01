@@ -661,17 +661,23 @@ tr.managed-row{border-left:2px solid #1D9E75}
         <div class="card-head">
           <div class="ct">Period over Period — selected accounts</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <div style="display:flex;align-items:center;gap:5px;background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:7px;padding:4px 10px">
+            <div class="ts-date-group" style="background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:7px;padding:4px 10px;position:relative">
               <span style="font-size:10px;font-weight:600;color:#085041;letter-spacing:.04em">Base</span>
-              <input type="date" id="pop-a-from" value="2026-01-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
-              <span style="font-size:10px;color:#888780">→</span>
-              <input type="date" id="pop-a-to" value="2026-01-31" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <span class="ts-date-sep" style="margin:0 4px"></span>
+              <span class="mpick-val" id="pop-a-from-disp" onclick="openMPick('from',event,'pop-a')" style="color:#085041">Jan 2026</span>
+              <span class="ts-date-sep">—</span>
+              <span class="mpick-val" id="pop-a-to-disp" onclick="openMPick('to',event,'pop-a')" style="color:#085041">Jan 2026</span>
+              <input type="hidden" id="pop-a-from" value="2026-01-01">
+              <input type="hidden" id="pop-a-to" value="2026-01-31">
             </div>
-            <div style="display:flex;align-items:center;gap:5px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:7px;padding:4px 10px">
+            <div class="ts-date-group" style="background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:7px;padding:4px 10px;position:relative">
               <span style="font-size:10px;font-weight:600;color:#5F5E5A;letter-spacing:.04em">Compare</span>
-              <input type="date" id="pop-b-from" value="2026-02-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
-              <span style="font-size:10px;color:#888780">→</span>
-              <input type="date" id="pop-b-to" value="2026-02-28" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <span class="ts-date-sep" style="margin:0 4px"></span>
+              <span class="mpick-val" id="pop-b-from-disp" onclick="openMPick('from',event,'pop-b')" style="color:#5F5E5A">Feb 2026</span>
+              <span class="ts-date-sep">—</span>
+              <span class="mpick-val" id="pop-b-to-disp" onclick="openMPick('to',event,'pop-b')" style="color:#5F5E5A">Feb 2026</span>
+              <input type="hidden" id="pop-b-from" value="2026-02-01">
+              <input type="hidden" id="pop-b-to" value="2026-02-28">
             </div>
             <div id="pop-mb-note" style="font-size:10px;color:#888780"></div>
           </div>
@@ -1490,17 +1496,20 @@ function renderManaged(){
 // MONTH PICKER
 // ============================
 const _MPICK_MOS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-let _mpickWhich=null, _mpickYear=2026;
+let _mpickWhich=null, _mpickYear=2026, _mpickCtx='ts';
+// _mpickCtx: 'ts' | 'pop-a' | 'pop-b'
 
-function openMPick(which, e){
+function openMPick(which, e, ctx){
   e.stopPropagation();
   _mpickWhich=which;
-  const val=document.getElementById('ts-'+which).value||'2026-03-01';
+  _mpickCtx=ctx||'ts';
+  const pfx=_mpickCtx==='ts'?'ts':_mpickCtx;
+  const val=document.getElementById(pfx+'-'+which).value||'2026-01-01';
   _mpickYear=parseInt(val.slice(0,4));
   _renderMPick();
   const popup=document.getElementById('mpick-popup');
   popup.style.display='block';
-  const btn=document.getElementById('ts-'+which+'-disp');
+  const btn=document.getElementById(pfx+'-'+which+'-disp');
   const rect=btn.getBoundingClientRect();
   let left=rect.left, top=rect.bottom+6;
   if(left+220>window.innerWidth) left=window.innerWidth-225;
@@ -1515,8 +1524,11 @@ function mpickNavYear(d){
 }
 
 function _renderMPick(){
-  const fromVal=document.getElementById('ts-from').value||'2025-10-01';
-  const toVal=document.getElementById('ts-to').value||'2026-03-31';
+  const pfx=_mpickCtx==='ts'?'ts':_mpickCtx;
+  const fromEl=document.getElementById(pfx+'-from');
+  const toEl=document.getElementById(pfx+'-to');
+  const fromVal=(fromEl?fromEl.value:'')||'2025-10-01';
+  const toVal=(toEl?toEl.value:'')||'2026-03-31';
   const fromYM=fromVal.slice(0,7), toYM=toVal.slice(0,7);
   const selYM=(_mpickWhich==='from'?fromVal:toVal).slice(0,7);
   const now=new Date();
@@ -1545,10 +1557,11 @@ function _selectMPick(ym){
     const last=new Date(yr,mo,0).getDate();
     dateVal=ym+'-'+String(last).padStart(2,'0');
   }
-  document.getElementById('ts-'+_mpickWhich).value=dateVal;
-  document.getElementById('ts-'+_mpickWhich+'-disp').textContent=_MPICK_MOS[mo-1]+' '+yr;
+  const pfx=_mpickCtx==='ts'?'ts':_mpickCtx;
+  document.getElementById(pfx+'-'+_mpickWhich).value=dateVal;
+  document.getElementById(pfx+'-'+_mpickWhich+'-disp').textContent=_MPICK_MOS[mo-1]+' '+yr;
   _closeMPick();
-  renderTS();
+  if(_mpickCtx==='ts') renderTS(); else renderPoP();
 }
 
 function _closeMPick(){
@@ -1663,29 +1676,37 @@ function getTSData(){
     // but data.json only has monthly per account + aggregate weekly. Use weekly aggregates filtered by proportion
     // when non-managed are deselected. For simplicity: if all accounts selected use WEEKLY_DATA as-is,
     // else build monthly-level weekly approximation from monthly per-account.
+    // Filter by date range using weekStart field
+    const fromVal=document.getElementById('ts-from').value||'2025-10-01';
+    const toVal=document.getElementById('ts-to').value||'2026-12-31';
+    const filtered=WEEKLY_DATA.filter(d=>{
+      const ws=d.weekStart||'';
+      return ws>=fromVal&&ws<=toVal;
+    });
     const allSelected=tsSelectedIds.length===A.length;
     if(allSelected){
-      return WEEKLY_DATA.map((d,i)=>{
-        const pr=i>0?WEEKLY_DATA[i-1]:null;
+      return filtered.map((d,i)=>{
+        const pr=i>0?filtered[i-1]:null;
         return{...d,cpc:d.clicks?d.spend/d.clicks:0,cvr:d.clicks?d.sig/d.clicks*100:0,cpsig:d.sig?d.spend/d.sig:0,cpm:null,pr};
       });
     }
-    // Fall through to monthly aggregation with weekly labels when non-standard selection
+    // Non-standard selection: scale by monthly proportion
     const sel=getEffectiveTSSel();
-    return WEEKLY_DATA.map((d,i)=>{
-      // scale spend/clicks/sig proportionally based on selected vs total monthly
-      const month=d.month||null;
+    return filtered.map((d,i,arr)=>{
+      // Derive month key from weekStart (e.g. "2025-10-06" → "oct")
+      const ws=d.weekStart||'';
+      const mo=ws?new Date(ws+'T00:00:00Z').toLocaleString('en-US',{month:'short',timeZone:'UTC'}).toLowerCase():null;
       let scaleFactor=1;
-      if(month){
-        const totSp=A.reduce((s,a)=>s+(a.spend&&a.spend[month]?a.spend[month]:0),0);
-        const selSp=sel.reduce((s,a)=>s+(a.spend&&a.spend[month]?a.spend[month]:0),0);
+      if(mo){
+        const totSp=A.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
+        const selSp=sel.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
         scaleFactor=totSp>0?selSp/totSp:0;
       }
       const sp=Math.round((d.spend||0)*scaleFactor);
       const cl=Math.round((d.clicks||0)*scaleFactor);
       const si=Math.round((d.sig||0)*scaleFactor);
-      const pr=i>0?null:null;
-      return{...d,spend:sp,clicks:cl,sig:si,imp:Math.round((d.imp||0)*scaleFactor),cpc:cl?sp/cl:0,cvr:cl?si/cl*100:0,cpsig:si?sp/si:0,cpm:null,pr:i>0?null:null};
+      const pr=i>0?arr[i-1]:null;
+      return{...d,spend:sp,clicks:cl,sig:si,imp:Math.round((d.imp||0)*scaleFactor),cpc:cl?sp/cl:0,cvr:cl?si/cl*100:0,cpsig:si?sp/si:0,cpm:null,pr};
     }).map((d,i,arr)=>({...d,pr:i>0?arr[i-1]:null}));
   } else {
     const fromVal=document.getElementById('ts-from').value;
@@ -1873,8 +1894,9 @@ function renderTSSummary(data,effSel){
   if(!data.length){
     periodLbl='no data in range';
   } else if(tsGran==='week'){
-    const n=data.length;
-    periodLbl='last '+n+' week'+(n!==1?'s':'');
+    const fromVal=document.getElementById('ts-from').value;
+    const toVal=document.getElementById('ts-to').value;
+    periodLbl=describePeriod(fromVal,toVal);
   } else {
     const fromVal=document.getElementById('ts-from').value;
     const toVal=document.getElementById('ts-to').value;

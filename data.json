@@ -39063,179 +39063,237 @@
   ],
   "weekly": [
     {
-      "label": "Oct W1",
-      "spend": 4503,
-      "imp": 90504,
-      "clicks": 3202,
-      "sig": 93,
+      "weekStart": "2025-10-06",
+      "label": "Oct 6",
+      "spend": 3444,
+      "imp": 77682,
+      "clicks": 2728,
+      "sig": 47,
       "mb": null
     },
     {
-      "label": "Oct W2",
-      "spend": 4502,
-      "imp": 90503,
-      "clicks": 3202,
-      "sig": 93,
+      "weekStart": "2025-10-13",
+      "label": "Oct 13",
+      "spend": 3588,
+      "imp": 79833,
+      "clicks": 2931,
+      "sig": 74,
       "mb": null
     },
     {
-      "label": "Oct W3",
-      "spend": 4502,
-      "imp": 90503,
-      "clicks": 3201,
+      "weekStart": "2025-10-20",
+      "label": "Oct 20",
+      "spend": 4182,
+      "imp": 95397,
+      "clicks": 2946,
+      "sig": 110,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-10-27",
+      "label": "Oct 27",
+      "spend": 4796,
+      "imp": 64393,
+      "clicks": 2754,
+      "sig": 110,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-11-03",
+      "label": "Nov 3",
+      "spend": 5857,
+      "imp": 63097,
+      "clicks": 3132,
+      "sig": 133,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-11-10",
+      "label": "Nov 10",
+      "spend": 3346,
+      "imp": 46504,
+      "clicks": 1992,
+      "sig": 91,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-11-17",
+      "label": "Nov 17",
+      "spend": 3583,
+      "imp": 43450,
+      "clicks": 1977,
+      "sig": 103,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-11-24",
+      "label": "Nov 24",
+      "spend": 3446,
+      "imp": 44222,
+      "clicks": 2051,
+      "sig": 36,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-12-01",
+      "label": "Dec 1",
+      "spend": 3755,
+      "imp": 54438,
+      "clicks": 2656,
+      "sig": 25,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-12-08",
+      "label": "Dec 8",
+      "spend": 3355,
+      "imp": 43206,
+      "clicks": 2370,
+      "sig": 16,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-12-15",
+      "label": "Dec 15",
+      "spend": 3451,
+      "imp": 47121,
+      "clicks": 2382,
+      "sig": 18,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-12-22",
+      "label": "Dec 22",
+      "spend": 5030,
+      "imp": 51461,
+      "clicks": 2198,
+      "sig": 12,
+      "mb": null
+    },
+    {
+      "weekStart": "2025-12-29",
+      "label": "Dec 29",
+      "spend": 3162,
+      "imp": 49801,
+      "clicks": 2298,
+      "sig": 11,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-01-05",
+      "label": "Jan 5",
+      "spend": 2741,
+      "imp": 48353,
+      "clicks": 2330,
+      "sig": 23,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-01-12",
+      "label": "Jan 12",
+      "spend": 2308,
+      "imp": 42299,
+      "clicks": 1909,
+      "sig": 15,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-01-19",
+      "label": "Jan 19",
+      "spend": 2368,
+      "imp": 42073,
+      "clicks": 2041,
+      "sig": 14,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-01-26",
+      "label": "Jan 26",
+      "spend": 3420,
+      "imp": 36984,
+      "clicks": 2139,
+      "sig": 58,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-02-02",
+      "label": "Feb 2",
+      "spend": 3098,
+      "imp": 44309,
+      "clicks": 2202,
+      "sig": 70,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-02-09",
+      "label": "Feb 9",
+      "spend": 2610,
+      "imp": 40396,
+      "clicks": 2167,
+      "sig": 79,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-02-16",
+      "label": "Feb 16",
+      "spend": 2792,
+      "imp": 56977,
+      "clicks": 2455,
+      "sig": 95,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-02-23",
+      "label": "Feb 23",
+      "spend": 3506,
+      "imp": 66588,
+      "clicks": 3139,
       "sig": 92,
       "mb": null
     },
     {
-      "label": "Oct W4",
-      "spend": 4502,
-      "imp": 90503,
-      "clicks": 3201,
-      "sig": 92,
+      "weekStart": "2026-03-02",
+      "label": "Mar 2",
+      "spend": 3046,
+      "imp": 64697,
+      "clicks": 2845,
+      "sig": 104,
       "mb": null
     },
     {
-      "label": "Nov W1",
-      "spend": 4230,
-      "imp": 52400,
-      "clicks": 2432,
+      "weekStart": "2026-03-09",
+      "label": "Mar 9",
+      "spend": 1828,
+      "imp": 43753,
+      "clicks": 2111,
+      "sig": 72,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-03-16",
+      "label": "Mar 16",
+      "spend": 2522,
+      "imp": 57435,
+      "clicks": 2698,
+      "sig": 77,
+      "mb": null
+    },
+    {
+      "weekStart": "2026-03-23",
+      "label": "Mar 23",
+      "spend": 3307,
+      "imp": 83035,
+      "clicks": 3124,
       "sig": 93,
       "mb": null
     },
     {
-      "label": "Nov W2",
-      "spend": 4230,
-      "imp": 52399,
-      "clicks": 2432,
-      "sig": 93,
-      "mb": null
-    },
-    {
-      "label": "Nov W3",
-      "spend": 4230,
-      "imp": 52399,
-      "clicks": 2432,
-      "sig": 92,
-      "mb": null
-    },
-    {
-      "label": "Nov W4",
-      "spend": 4229,
-      "imp": 52399,
-      "clicks": 2431,
-      "sig": 92,
-      "mb": null
-    },
-    {
-      "label": "Dec W1",
-      "spend": 4314,
-      "imp": 53877,
-      "clicks": 2664,
-      "sig": 20,
-      "mb": null
-    },
-    {
-      "label": "Dec W2",
-      "spend": 4313,
-      "imp": 53877,
-      "clicks": 2663,
-      "sig": 19,
-      "mb": null
-    },
-    {
-      "label": "Dec W3",
-      "spend": 4313,
-      "imp": 53876,
-      "clicks": 2663,
-      "sig": 19,
-      "mb": null
-    },
-    {
-      "label": "Dec W4",
-      "spend": 4313,
-      "imp": 53876,
-      "clicks": 2663,
-      "sig": 19,
-      "mb": null
-    },
-    {
-      "label": "Jan W1",
-      "spend": 3002,
-      "imp": 49091,
-      "clicks": 2365,
-      "sig": 28,
-      "mb": null
-    },
-    {
-      "label": "Jan W2",
-      "spend": 3002,
-      "imp": 49090,
-      "clicks": 2365,
-      "sig": 28,
-      "mb": null
-    },
-    {
-      "label": "Jan W3",
-      "spend": 3002,
-      "imp": 49090,
-      "clicks": 2365,
-      "sig": 28,
-      "mb": null
-    },
-    {
-      "label": "Jan W4",
-      "spend": 3001,
-      "imp": 49090,
-      "clicks": 2364,
-      "sig": 27,
-      "mb": null
-    },
-    {
-      "label": "Feb W1",
-      "spend": 3009,
-      "imp": 50655,
-      "clicks": 2457,
-      "sig": 85,
-      "mb": null
-    },
-    {
-      "label": "Feb W2",
-      "spend": 3009,
-      "imp": 50655,
-      "clicks": 2457,
-      "sig": 85,
-      "mb": null
-    },
-    {
-      "label": "Feb W3",
-      "spend": 3009,
-      "imp": 50655,
-      "clicks": 2457,
-      "sig": 85,
-      "mb": null
-    },
-    {
-      "label": "Feb W4",
-      "spend": 3009,
-      "imp": 50654,
-      "clicks": 2456,
-      "sig": 84,
-      "mb": null
-    },
-    {
-      "label": "Mar W1",
-      "spend": 4436,
-      "imp": 102573,
-      "clicks": 4579,
-      "sig": 149,
-      "mb": null
-    },
-    {
-      "label": "Mar W2",
-      "spend": 4436,
-      "imp": 102573,
-      "clicks": 4580,
-      "sig": 150,
+      "weekStart": "2026-03-30",
+      "label": "Mar 30",
+      "spend": 1001,
+      "imp": 23812,
+      "clicks": 958,
+      "sig": 30,
       "mb": null
     }
   ],
