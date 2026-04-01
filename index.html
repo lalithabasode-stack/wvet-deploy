@@ -661,23 +661,17 @@ tr.managed-row{border-left:2px solid #1D9E75}
         <div class="card-head">
           <div class="ct">Period over Period — selected accounts</div>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <div class="ts-date-group" style="background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:7px;padding:4px 10px;position:relative">
+            <div style="display:flex;align-items:center;gap:5px;background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:7px;padding:4px 10px">
               <span style="font-size:10px;font-weight:600;color:#085041;letter-spacing:.04em">Base</span>
-              <span class="ts-date-sep" style="margin:0 4px"></span>
-              <span class="mpick-val" id="pop-a-from-disp" onclick="openMPick('from',event,'pop-a')" style="color:#085041">Jan 2026</span>
-              <span class="ts-date-sep">—</span>
-              <span class="mpick-val" id="pop-a-to-disp" onclick="openMPick('to',event,'pop-a')" style="color:#085041">Jan 2026</span>
-              <input type="hidden" id="pop-a-from" value="2026-01-01">
-              <input type="hidden" id="pop-a-to" value="2026-01-31">
+              <input type="date" id="pop-a-from" value="2026-01-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <span style="font-size:10px;color:#888780">→</span>
+              <input type="date" id="pop-a-to" value="2026-01-31" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
             </div>
-            <div class="ts-date-group" style="background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:7px;padding:4px 10px;position:relative">
+            <div style="display:flex;align-items:center;gap:5px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:7px;padding:4px 10px">
               <span style="font-size:10px;font-weight:600;color:#5F5E5A;letter-spacing:.04em">Compare</span>
-              <span class="ts-date-sep" style="margin:0 4px"></span>
-              <span class="mpick-val" id="pop-b-from-disp" onclick="openMPick('from',event,'pop-b')" style="color:#5F5E5A">Feb 2026</span>
-              <span class="ts-date-sep">—</span>
-              <span class="mpick-val" id="pop-b-to-disp" onclick="openMPick('to',event,'pop-b')" style="color:#5F5E5A">Feb 2026</span>
-              <input type="hidden" id="pop-b-from" value="2026-02-01">
-              <input type="hidden" id="pop-b-to" value="2026-02-28">
+              <input type="date" id="pop-b-from" value="2026-02-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <span style="font-size:10px;color:#888780">→</span>
+              <input type="date" id="pop-b-to" value="2026-02-28" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
             </div>
             <div id="pop-mb-note" style="font-size:10px;color:#888780"></div>
           </div>
@@ -1496,20 +1490,17 @@ function renderManaged(){
 // MONTH PICKER
 // ============================
 const _MPICK_MOS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-let _mpickWhich=null, _mpickYear=2026, _mpickCtx='ts';
-// _mpickCtx: 'ts' | 'pop-a' | 'pop-b'
+let _mpickWhich=null, _mpickYear=2026;
 
-function openMPick(which, e, ctx){
+function openMPick(which, e){
   e.stopPropagation();
   _mpickWhich=which;
-  _mpickCtx=ctx||'ts';
-  const pfx=_mpickCtx==='ts'?'ts':_mpickCtx;
-  const val=document.getElementById(pfx+'-'+which).value||'2026-01-01';
+  const val=document.getElementById('ts-'+which).value||'2026-03-01';
   _mpickYear=parseInt(val.slice(0,4));
   _renderMPick();
   const popup=document.getElementById('mpick-popup');
   popup.style.display='block';
-  const btn=document.getElementById(pfx+'-'+which+'-disp');
+  const btn=document.getElementById('ts-'+which+'-disp');
   const rect=btn.getBoundingClientRect();
   let left=rect.left, top=rect.bottom+6;
   if(left+220>window.innerWidth) left=window.innerWidth-225;
@@ -1524,11 +1515,8 @@ function mpickNavYear(d){
 }
 
 function _renderMPick(){
-  const pfx=_mpickCtx==='ts'?'ts':_mpickCtx;
-  const fromEl=document.getElementById(pfx+'-from');
-  const toEl=document.getElementById(pfx+'-to');
-  const fromVal=(fromEl?fromEl.value:'')||'2025-10-01';
-  const toVal=(toEl?toEl.value:'')||'2026-03-31';
+  const fromVal=document.getElementById('ts-from').value||'2025-10-01';
+  const toVal=document.getElementById('ts-to').value||'2026-03-31';
   const fromYM=fromVal.slice(0,7), toYM=toVal.slice(0,7);
   const selYM=(_mpickWhich==='from'?fromVal:toVal).slice(0,7);
   const now=new Date();
@@ -1557,11 +1545,10 @@ function _selectMPick(ym){
     const last=new Date(yr,mo,0).getDate();
     dateVal=ym+'-'+String(last).padStart(2,'0');
   }
-  const pfx=_mpickCtx==='ts'?'ts':_mpickCtx;
-  document.getElementById(pfx+'-'+_mpickWhich).value=dateVal;
-  document.getElementById(pfx+'-'+_mpickWhich+'-disp').textContent=_MPICK_MOS[mo-1]+' '+yr;
+  document.getElementById('ts-'+_mpickWhich).value=dateVal;
+  document.getElementById('ts-'+_mpickWhich+'-disp').textContent=_MPICK_MOS[mo-1]+' '+yr;
   _closeMPick();
-  if(_mpickCtx==='ts') renderTS(); else renderPoP();
+  renderTS();
 }
 
 function _closeMPick(){
