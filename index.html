@@ -663,15 +663,15 @@ tr.managed-row{border-left:2px solid #1D9E75}
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <div style="display:flex;align-items:center;gap:5px;background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:7px;padding:4px 10px">
               <span style="font-size:10px;font-weight:600;color:#085041;letter-spacing:.04em">Base</span>
-              <input type="date" id="pop-a-from" value="2026-01-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <input type="date" id="pop-a-from" value="2026-01-01" onchange="clampPop('a','from');renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
               <span style="font-size:10px;color:#888780">→</span>
-              <input type="date" id="pop-a-to" value="2026-01-31" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <input type="date" id="pop-a-to" value="2026-01-31" onchange="clampPop('a','to');renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
             </div>
             <div style="display:flex;align-items:center;gap:5px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:7px;padding:4px 10px">
               <span style="font-size:10px;font-weight:600;color:#5F5E5A;letter-spacing:.04em">Compare</span>
-              <input type="date" id="pop-b-from" value="2026-02-01" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <input type="date" id="pop-b-from" value="2026-02-01" onchange="clampPop('b','from');renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
               <span style="font-size:10px;color:#888780">→</span>
-              <input type="date" id="pop-b-to" value="2026-02-28" onchange="renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
+              <input type="date" id="pop-b-to" value="2026-02-28" onchange="clampPop('b','to');renderPoP()" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18">
             </div>
             <div id="pop-mb-note" style="font-size:10px;color:#888780"></div>
           </div>
@@ -2026,6 +2026,16 @@ function popCell(aVal,bVal,fmtFn,lowerBetter){
   const d=popDelta(bVal,aVal,lowerBetter);
   const aFmt=fmtFn(aVal), bFmt=fmtFn(bVal);
   return `<td class="r">${aFmt}<span class="pop-cmp ${d.cls}">${bFmt} · ${d.txt}</span></td>`;
+}
+
+function clampPop(g, changed){
+  const f=document.getElementById('pop-'+g+'-from');
+  const t=document.getElementById('pop-'+g+'-to');
+  if(!f||!t) return;
+  if(changed==='from' && t.value && f.value>t.value) t.value=f.value;
+  if(changed==='to' && f.value && t.value<f.value) f.value=t.value;
+  if(f.value) t.setAttribute('min',f.value);
+  if(t.value) f.setAttribute('max',t.value);
 }
 
 function renderPoP(){
