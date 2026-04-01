@@ -639,6 +639,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
             <tbody id="ts-tbody"></tbody>
           </table>
         </div>
+        <div id="ts-note" style="padding:6px 15px 8px;font-size:9px;color:#B4B2A9"></div>
       </div>
       <div class="port-headline" id="ts-pop-summary" style="margin-bottom:11px;margin-top:11px"></div>
       <div class="card" style="margin-top:0">
@@ -1715,20 +1716,51 @@ function renderTS(){
   const tCPC=tot.clicks?tot.spend/tot.clicks:0;
   const tCPSig=tot.sig?tot.spend/tot.sig:0;
   const tCPM=tot.mb!=null&&tot.mb>0?tot.spend/tot.mb:null;
+
+  // Prior period: same number of months immediately before the selected range
+  const _fromVal=document.getElementById('ts-from').value;
+  const _toVal=document.getElementById('ts-to').value;
+  const _fromDate=_fromVal?new Date(_fromVal):new Date('2025-10-01');
+  const _toDate=_toVal?new Date(_toVal):new Date('2026-12-31');
+  const _curMonths=MONTHS.filter(m=>{const d=new Date(MONTH_YM[m]+'-02');return d>=_fromDate&&d<=_toDate;});
+  const _N=_curMonths.length;
+  const _earliestIdx=MONTHS.indexOf(_curMonths[0]);
+  const _priorMonths=_earliestIdx>=_N?MONTHS.slice(_earliestIdx-_N,_earliestIdx):[];
+  const _sel=getEffectiveTSSel();
+  let priorTot=null,priorLabel='';
+  if(_priorMonths.length===_N){
+    priorTot={
+      spend:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.spend&&a.spend[m]?a.spend[m]:0),0),0),
+      imp:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.imp&&a.imp[m]?a.imp[m]:0),0),0),
+      clicks:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0),0),
+      sig:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.sig&&a.sig[m]?a.sig[m]:0),0),0),
+      mb:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.mb&&a.mb[m]?a.mb[m]:0),0),0),
+    };
+    priorTot.cpc=priorTot.clicks?priorTot.spend/priorTot.clicks:0;
+    priorTot.cpsig=priorTot.sig?priorTot.spend/priorTot.sig:0;
+    priorTot.cpm=priorTot.mb>0?priorTot.spend/priorTot.mb:null;
+    priorLabel=_N===1?MLABEL[_priorMonths[0]]:`${MLABEL[_priorMonths[0]].split(' ')[0]}–${MLABEL[_priorMonths[_priorMonths.length-1]]}`;
+  }
+
+  const _pp=priorTot;
   const mbTotCells=showMB?
-    (tot.mb!=null?`<td class="r"><strong>${tot.mb}</strong></td><td class="r">—</td>`:'<td class="r">—</td><td class="r">—</td>')+
-    (tCPM?`<td class="r">$${Math.round(tCPM)}</td><td class="r">—</td>`:'<td class="r">—</td><td class="r">—</td>')
+    (tot.mb!=null?`<td class="r"><strong>${tot.mb}</strong></td><td class="r">${_pp&&_pp.mb>0?pct(tot.mb,_pp.mb):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')+
+    (tCPM?`<td class="r">$${Math.round(tCPM)}</td><td class="r">${_pp&&_pp.cpm?pct(_pp.cpm,tCPM,false):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')
     :'';
   tbody.innerHTML=dataRows+`<tr class="tfoot">
-    <td>Total / Period</td>
-    <td class="r">${f$(Math.round(tot.spend))}</td><td class="r">—</td>
-    <td class="r">${fN(Math.round(tot.imp))}</td><td class="r">—</td>
-    <td class="r">${fN(Math.round(tot.clicks))}</td><td class="r">—</td>
-    <td class="r">$${tCPC.toFixed(2)}</td><td class="r">—</td>
-    <td class="r">${Math.round(tot.sig)}</td><td class="r">—</td>
-    <td class="r">${tCPSig?'$'+Math.round(tCPSig):'—'}</td><td class="r">—</td>
+    <td>Total</td>
+    <td class="r">${f$(Math.round(tot.spend))}</td><td class="r">${_pp?pct(tot.spend,_pp.spend):'—'}</td>
+    <td class="r">${fN(Math.round(tot.imp))}</td><td class="r">${_pp?pct(tot.imp,_pp.imp):'—'}</td>
+    <td class="r">${fN(Math.round(tot.clicks))}</td><td class="r">${_pp?pct(tot.clicks,_pp.clicks):'—'}</td>
+    <td class="r">$${tCPC.toFixed(2)}</td><td class="r">${_pp&&_pp.cpc?pct(_pp.cpc,tCPC,false):'—'}</td>
+    <td class="r">${Math.round(tot.sig)}</td><td class="r">${_pp?pct(tot.sig,_pp.sig):'—'}</td>
+    <td class="r">${tCPSig?'$'+Math.round(tCPSig):'—'}</td><td class="r">${_pp&&_pp.cpsig?pct(_pp.cpsig,tCPSig,false):'—'}</td>
     ${mbTotCells}
   </tr>`;
+
+  // Update note
+  const noteEl=document.getElementById('ts-note');
+  if(noteEl) noteEl.innerHTML=`Row Δ = month-over-month vs prior month. &nbsp;|&nbsp; Total Δ = selected period vs prior equal period${priorLabel?' ('+priorLabel+')':' — not enough prior data'}.`;
 
   // Account count label + AI summary
   const effSel=getEffectiveTSSel();
