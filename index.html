@@ -608,10 +608,10 @@ tr.managed-row{border-left:2px solid #1D9E75}
           <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
             <div class="ts-date-group" style="padding:5px 10px">
               <span class="ts-date-lbl">From</span>
-              <input class="ts-date-inp" type="date" id="ts-from" value="2025-10-01" onchange="renderTS()">
+              <input class="ts-date-inp" type="date" id="ts-from" value="2025-10-01" max="2026-03-31" onchange="document.getElementById('ts-to').min=this.value;renderTS()">
               <span class="ts-date-sep">—</span>
               <span class="ts-date-lbl">To</span>
-              <input class="ts-date-inp" type="date" id="ts-to" value="2026-03-31" onchange="renderTS()">
+              <input class="ts-date-inp" type="date" id="ts-to" value="2026-03-31" min="2025-10-01" onchange="document.getElementById('ts-from').max=this.value;renderTS()">
             </div>
             <div class="granularity">
               <button class="gran-btn on" id="gran-month" onclick="setGran('month',this)">Monthly</button>
@@ -1717,12 +1717,8 @@ function renderTS(){
   const tCPSig=tot.sig?tot.spend/tot.sig:0;
   const tCPM=tot.mb!=null&&tot.mb>0?tot.spend/tot.mb:null;
 
-  // Prior period: same number of months immediately before the selected range
-  const _fromVal=document.getElementById('ts-from').value;
-  const _toVal=document.getElementById('ts-to').value;
-  const _fromDate=_fromVal?new Date(_fromVal):new Date('2025-10-01');
-  const _toDate=_toVal?new Date(_toVal):new Date('2026-12-31');
-  const _curMonths=MONTHS.filter(m=>{const d=new Date(MONTH_YM[m]+'-02');return d>=_fromDate&&d<=_toDate;});
+  // Prior period: same number of months immediately before the displayed range
+  const _curMonths=data.filter(d=>d.month).map(d=>d.month);
   const _N=_curMonths.length;
   const _earliestIdx=MONTHS.indexOf(_curMonths[0]);
   const _priorMonths=_earliestIdx>=_N?MONTHS.slice(_earliestIdx-_N,_earliestIdx):[];
@@ -1978,9 +1974,9 @@ function renderPoP(){
   }
   document.querySelectorAll('.pop-mb-col').forEach(el=>{el.style.display=mbOk?'':'none';});
 
-  const sel=getEffectiveTSSel();
+  const sel=A.filter(a=>a.spend);
   if(!sel.length){
-    document.getElementById('pop-tbody').innerHTML='<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:16px;font-size:11px">No accounts selected</td></tr>';
+    document.getElementById('pop-tbody').innerHTML='<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:16px;font-size:11px">No accounts found</td></tr>';
     renderPoPSummary([],[],[],aFrom,aTo,bFrom,bTo,mbOk);
     return;
   }
