@@ -2089,7 +2089,7 @@ function renderPoP(){
   }
   document.querySelectorAll('.pop-mb-col').forEach(el=>{el.style.display=mbOk?'':'none';});
 
-  const sel=A.filter(a=>a.spend);
+  const sel=getEffectiveTSSel();
   if(!sel.length){
     document.getElementById('pop-tbody').innerHTML='<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:16px;font-size:11px">No accounts found</td></tr>';
     renderPoPSummary([],[],[],aFrom,aTo,bFrom,bTo,mbOk);
