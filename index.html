@@ -619,7 +619,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
         <div class="card-head">
           <div class="ct">Trend — <span id="ts-acct-label">— accounts</span></div>
           <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
-            <div class="ts-date-group" style="padding:5px 10px;position:relative">
+            <div class="ts-date-group" id="ts-month-picker" style="padding:5px 10px;position:relative">
               <span class="ts-date-lbl">From</span>
               <span class="mpick-val" id="ts-from-disp" onclick="openMPick('from',event)">Oct 2025</span>
               <span class="ts-date-sep">—</span>
@@ -627,6 +627,13 @@ tr.managed-row{border-left:2px solid #1D9E75}
               <span class="mpick-val" id="ts-to-disp" onclick="openMPick('to',event)">Mar 2026</span>
               <input type="hidden" id="ts-from" value="2025-10-01">
               <input type="hidden" id="ts-to" value="2026-03-31">
+            </div>
+            <div class="ts-date-group" id="ts-week-picker" style="padding:5px 10px;display:none">
+              <span class="ts-date-lbl">From week</span>
+              <select id="ts-week-from" onchange="onWeekPickerChange('from')" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18;cursor:pointer;font-family:inherit"></select>
+              <span class="ts-date-sep">—</span>
+              <span class="ts-date-lbl">To week</span>
+              <select id="ts-week-to" onchange="onWeekPickerChange('to')" style="font-size:11px;border:none;background:transparent;outline:none;color:#1a1a18;cursor:pointer;font-family:inherit"></select>
             </div>
             <div class="granularity">
               <button class="gran-btn on" id="gran-month" onclick="setGran('month',this)">Monthly</button>
@@ -1653,48 +1660,60 @@ function setGran(g,el){
   tsGran=g;
   document.querySelectorAll('.gran-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
+  const mp=document.getElementById('ts-month-picker');
+  const wp=document.getElementById('ts-week-picker');
+  if(g==='week'){
+    if(mp) mp.style.display='none';
+    if(wp){wp.style.display='';populateWeekPicker();}
+  } else {
+    if(mp) mp.style.display='';
+    if(wp) wp.style.display='none';
+  }
+  renderTS();
+}
+
+function populateWeekPicker(){
+  const fromSel=document.getElementById('ts-week-from');
+  const toSel=document.getElementById('ts-week-to');
+  if(!fromSel||!toSel||!WEEKLY_DATA.length) return;
+  const prevFrom=fromSel.value, prevTo=toSel.value;
+  const opts=WEEKLY_DATA.map(d=>`<option value="${d.weekStart}">${d.label}</option>`).join('');
+  fromSel.innerHTML=opts;
+  toSel.innerHTML=opts;
+  fromSel.value=prevFrom&&WEEKLY_DATA.some(d=>d.weekStart===prevFrom)?prevFrom:WEEKLY_DATA[0].weekStart;
+  toSel.value=prevTo&&WEEKLY_DATA.some(d=>d.weekStart===prevTo)?prevTo:WEEKLY_DATA[WEEKLY_DATA.length-1].weekStart;
+}
+
+function onWeekPickerChange(which){
+  const f=document.getElementById('ts-week-from');
+  const t=document.getElementById('ts-week-to');
+  if(!f||!t) return;
+  if(which==='from'&&f.value>t.value) t.value=f.value;
+  if(which==='to'&&t.value<f.value) f.value=t.value;
   renderTS();
 }
 
 function getTSData(){
   if(tsGran==='week'){
-    // Use weekly data, aggregate for selected accounts
-    // WEEKLY_DATA already has portfolio-level totals — for per-account weekly we'd need per-account weekly,
-    // but data.json only has monthly per account + aggregate weekly. Use weekly aggregates filtered by proportion
-    // when non-managed are deselected. For simplicity: if all accounts selected use WEEKLY_DATA as-is,
-    // else build monthly-level weekly approximation from monthly per-account.
-    // Filter by date range using weekStart field
-    const fromVal=document.getElementById('ts-from').value||'2025-10-01';
-    const toVal=document.getElementById('ts-to').value||'2026-12-31';
-    const filtered=WEEKLY_DATA.filter(d=>{
-      const ws=d.weekStart||'';
-      return ws>=fromVal&&ws<=toVal;
-    });
-    const allSelected=tsSelectedIds.length===A.length;
-    if(allSelected){
-      return filtered.map((d,i)=>{
-        const pr=i>0?filtered[i-1]:null;
-        return{...d,cpc:d.clicks?d.spend/d.clicks:0,cvr:d.clicks?d.sig/d.clicks*100:0,cpsig:d.sig?d.spend/d.sig:0,cpm:null,pr};
-      });
-    }
-    // Non-standard selection: scale by monthly proportion
+    const fromSel=document.getElementById('ts-week-from');
+    const toSel=document.getElementById('ts-week-to');
+    const fromWS=(fromSel&&fromSel.value)||( WEEKLY_DATA[0]&&WEEKLY_DATA[0].weekStart)||'';
+    const toWS=(toSel&&toSel.value)||(WEEKLY_DATA[WEEKLY_DATA.length-1]&&WEEKLY_DATA[WEEKLY_DATA.length-1].weekStart)||'';
+    const filtered=WEEKLY_DATA.filter(d=>d.weekStart>=fromWS&&d.weekStart<=toWS);
     const sel=getEffectiveTSSel();
-    return filtered.map((d,i,arr)=>{
-      // Derive month key from weekStart (e.g. "2025-10-06" → "oct")
-      const ws=d.weekStart||'';
-      const mo=ws?new Date(ws+'T00:00:00Z').toLocaleString('en-US',{month:'short',timeZone:'UTC'}).toLowerCase():null;
-      let scaleFactor=1;
+    const _wkMo=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    const rows=filtered.map(d=>{
+      let sp=d.spend,cl=d.clicks,si=d.sig,im=d.imp||0;
+      const mo=d.weekStart?_wkMo[parseInt(d.weekStart.slice(5,7),10)-1]:null;
       if(mo){
-        const totSp=A.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
-        const selSp=sel.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
-        scaleFactor=totSp>0?selSp/totSp:0;
+        const totSp=AM.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
+        const selSp=sel.filter(a=>MANAGED_IDS.has(a.id)).reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
+        const sf=totSp>0?selSp/totSp:1;
+        sp=Math.round(sp*sf);cl=Math.round(cl*sf);si=Math.round(si*sf);im=Math.round(im*sf);
       }
-      const sp=Math.round((d.spend||0)*scaleFactor);
-      const cl=Math.round((d.clicks||0)*scaleFactor);
-      const si=Math.round((d.sig||0)*scaleFactor);
-      const pr=i>0?arr[i-1]:null;
-      return{...d,spend:sp,clicks:cl,sig:si,imp:Math.round((d.imp||0)*scaleFactor),cpc:cl?sp/cl:0,cvr:cl?si/cl*100:0,cpsig:si?sp/si:0,cpm:null,pr};
-    }).map((d,i,arr)=>({...d,pr:i>0?arr[i-1]:null}));
+      return{...d,spend:sp,clicks:cl,sig:si,imp:im,cpc:cl?sp/cl:0,cvr:cl?si/cl*100:0,cpsig:si?sp/si:0,cpm:null};
+    });
+    return rows.map((d,i)=>({...d,pr:i>0?rows[i-1]:null}));
   } else {
     const fromVal=document.getElementById('ts-from').value;
     const toVal=document.getElementById('ts-to').value;
@@ -1820,25 +1839,52 @@ function renderTS(){
   const tCPSig=tot.sig?tot.spend/tot.sig:0;
   const tCPM=tot.mb!=null&&tot.mb>0?tot.spend/tot.mb:null;
 
-  // Prior period: same number of months immediately before the displayed range
-  const _curMonths=data.filter(d=>d.month).map(d=>d.month);
-  const _N=_curMonths.length;
-  const _earliestIdx=MONTHS.indexOf(_curMonths[0]);
-  const _priorMonths=_earliestIdx>=_N?MONTHS.slice(_earliestIdx-_N,_earliestIdx):[];
-  const _sel=getEffectiveTSSel();
+  // Prior period
   let priorTot=null,priorLabel='';
-  if(_priorMonths.length===_N){
-    priorTot={
-      spend:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.spend&&a.spend[m]?a.spend[m]:0),0),0),
-      imp:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.imp&&a.imp[m]?a.imp[m]:0),0),0),
-      clicks:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0),0),
-      sig:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.sig&&a.sig[m]?a.sig[m]:0),0),0),
-      mb:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.mb&&a.mb[m]?a.mb[m]:0),0),0),
-    };
-    priorTot.cpc=priorTot.clicks?priorTot.spend/priorTot.clicks:0;
-    priorTot.cpsig=priorTot.sig?priorTot.spend/priorTot.sig:0;
-    priorTot.cpm=priorTot.mb>0?priorTot.spend/priorTot.mb:null;
-    priorLabel=_N===1?MLABEL[_priorMonths[0]]:`${MLABEL[_priorMonths[0]].split(' ')[0]}–${MLABEL[_priorMonths[_priorMonths.length-1]]}`;
+  if(tsGran==='week'){
+    const _fromSel=document.getElementById('ts-week-from');
+    const _fromWS=_fromSel?_fromSel.value:'';
+    const _fromIdx=WEEKLY_DATA.findIndex(d=>d.weekStart===_fromWS);
+    const _numW=data.length;
+    if(_fromIdx>=_numW&&_numW>0){
+      const _priorWeeks=WEEKLY_DATA.slice(_fromIdx-_numW,_fromIdx);
+      const _sel=getEffectiveTSSel();
+      const _wkMo=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+      const _pRows=_priorWeeks.map(d=>{
+        let sp=d.spend,cl=d.clicks,si=d.sig,im=d.imp||0;
+        const mo=d.weekStart?_wkMo[parseInt(d.weekStart.slice(5,7),10)-1]:null;
+        if(mo){
+          const totSp=AM.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
+          const selSp=_sel.filter(a=>MANAGED_IDS.has(a.id)).reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
+          const sf=totSp>0?selSp/totSp:1;
+          sp=Math.round(sp*sf);cl=Math.round(cl*sf);si=Math.round(si*sf);im=Math.round(im*sf);
+        }
+        return{spend:sp,clicks:cl,sig:si,imp:im};
+      });
+      const pTot=_pRows.reduce((t,d)=>({spend:t.spend+d.spend,clicks:t.clicks+d.clicks,sig:t.sig+d.sig,imp:t.imp+d.imp}),{spend:0,clicks:0,sig:0,imp:0});
+      priorTot={...pTot,cpc:pTot.clicks?pTot.spend/pTot.clicks:0,cpsig:pTot.sig?pTot.spend/pTot.sig:0,mb:null,cpm:null};
+      const pw0=_priorWeeks[0],pwN=_priorWeeks[_priorWeeks.length-1];
+      if(pw0&&pwN) priorLabel=pw0.label+(pw0.weekStart!==pwN.weekStart?' – '+pwN.label:'');
+    }
+  } else {
+    const _curMonths=data.filter(d=>d.month).map(d=>d.month);
+    const _N=_curMonths.length;
+    const _earliestIdx=MONTHS.indexOf(_curMonths[0]);
+    const _priorMonths=_earliestIdx>=_N?MONTHS.slice(_earliestIdx-_N,_earliestIdx):[];
+    const _sel=getEffectiveTSSel();
+    if(_priorMonths.length===_N){
+      priorTot={
+        spend:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.spend&&a.spend[m]?a.spend[m]:0),0),0),
+        imp:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.imp&&a.imp[m]?a.imp[m]:0),0),0),
+        clicks:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0),0),
+        sig:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.sig&&a.sig[m]?a.sig[m]:0),0),0),
+        mb:_sel.reduce((s,a)=>s+_priorMonths.reduce((t,m)=>t+(a.mb&&a.mb[m]?a.mb[m]:0),0),0),
+      };
+      priorTot.cpc=priorTot.clicks?priorTot.spend/priorTot.clicks:0;
+      priorTot.cpsig=priorTot.sig?priorTot.spend/priorTot.sig:0;
+      priorTot.cpm=priorTot.mb>0?priorTot.spend/priorTot.mb:null;
+      priorLabel=_N===1?MLABEL[_priorMonths[0]]:`${MLABEL[_priorMonths[0]].split(' ')[0]}–${MLABEL[_priorMonths[_priorMonths.length-1]]}`;
+    }
   }
 
   const _pp=priorTot;
@@ -1881,9 +1927,11 @@ function renderTSSummary(data,effSel){
   if(!data.length){
     periodLbl='no data in range';
   } else if(tsGran==='week'){
-    const fromVal=document.getElementById('ts-from').value;
-    const toVal=document.getElementById('ts-to').value;
-    periodLbl=describePeriod(fromVal,toVal);
+    const wf=document.getElementById('ts-week-from');
+    const wt=document.getElementById('ts-week-to');
+    const wfd=wf?WEEKLY_DATA.find(d=>d.weekStart===wf.value):null;
+    const wtd=wt?WEEKLY_DATA.find(d=>d.weekStart===wt.value):null;
+    periodLbl=(wfd?wfd.label:'—')+(wtd&&wtd.weekStart!==wfd?.weekStart?' – '+wtd.label:'');
   } else {
     const fromVal=document.getElementById('ts-from').value;
     const toVal=document.getElementById('ts-to').value;
