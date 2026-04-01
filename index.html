@@ -684,10 +684,11 @@ tr.managed-row{border-left:2px solid #1D9E75}
           </div>
         </div>
         <div style="padding:0 15px 6px;font-size:9px;color:#B4B2A9">Each cell: Base value (top) · Compare &amp; Δ% (bottom). Click <strong>&gt;&lt;</strong> on any column to expand.</div>
-        <div class="tbl-wrap">
+        <div class="tbl-wrap" style="max-height:360px;overflow-y:auto">
           <table id="pop-table">
             <thead id="pop-thead" style="position:sticky;top:0;z-index:2"></thead>
             <tbody id="pop-tbody"></tbody>
+            <tfoot class="tfoot" id="pop-tfoot"></tfoot>
           </table>
         </div>
         <div class="glossary" style="border:none;padding:9px 15px 11px;margin:0">
@@ -2189,9 +2190,8 @@ function renderPoP(){
   const bTot={sp:sumFn(bD,'sp'),cl:sumFn(bD,'cl'),si:sumFn(bD,'si'),mb:sumFn(bD,'mb')};
   bTot.cps=bTot.si?bTot.sp/bTot.si:null; bTot.cpm=bTot.mb?bTot.sp/bTot.mb:null;
   const totCells=POP_METRICS.filter(m=>!m.mb||mbOk).map(m=>metricCells(aTot,bTot,m)).join('');
-  const totRow=`<tr class="tfoot"><td><strong>Total</strong></td>${totCells}</tr>`;
-
-  document.getElementById('pop-tbody').innerHTML=html+totRow;
+  document.getElementById('pop-tbody').innerHTML=html;
+  document.getElementById('pop-tfoot').innerHTML=`<tr><td><strong>Total</strong></td>${totCells}</tr>`;
   renderPoPSummary(sel,aD,bD,aFrom,aTo,bFrom,bTo,mbOk);
 }
 
