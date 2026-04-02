@@ -2969,11 +2969,12 @@ function renderPacingCharts() {
 
   const chartOpts = (labelA, labelB) => ({
     responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          title: ctx => xLabels[ctx[0].dataIndex] || ('Day ' + (ctx[0].dataIndex + 1)),
+          title: ctx => 'Day ' + (ctx[0].dataIndex + 1),
           label: ctx => ctx.dataset.label + ': $' + (ctx.parsed.y || 0).toLocaleString()
         }
       }
