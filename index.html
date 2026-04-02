@@ -12,16 +12,13 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F7F6F2;color:#1a
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:11px 22px;background:white;border-bottom:0.5px solid #E8E6DF;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
-.cohort-bar{display:flex;align-items:center;gap:6px;padding:6px 22px;background:#FAFAF8;border-bottom:0.5px solid #E8E6DF;position:sticky;top:46px;z-index:99;flex-wrap:wrap}
-.cohort-lbl{font-size:10px;font-weight:600;color:#888780;letter-spacing:.04em;margin-right:2px}
-.cohort-pill{font-size:11px;padding:3px 11px;border-radius:20px;border:1px solid #E8E6DF;background:white;color:#888780;cursor:pointer;white-space:nowrap}
+.cohort-pill{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid #E8E6DF;background:white;color:#888780;cursor:pointer;white-space:nowrap}
 .cohort-pill.on{border-color:transparent;color:white;font-weight:500}
 .cohort-pill.on.all{background:#888780}
 .cohort-pill.on.growth{background:#1D9E75}
 .cohort-pill.on.ready{background:#378ADD}
 .cohort-pill.on.preparing{background:#EF9F27}
-.managed-pill{font-size:11px;padding:3px 11px;border-radius:20px;border:1px solid #E8E6DF;background:white;color:#888780;cursor:pointer}
-.managed-pill.on{background:#085041;color:white;border-color:#085041}
+.cohort-pill-row{display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px 8px}
 .cohort-group-hdr td{font-size:10px;font-weight:600;letter-spacing:.05em;padding:6px 10px 4px;border-top:1px solid #E8E6DF;text-transform:uppercase}
 .cohort-group-hdr.growth td{color:#1D9E75}
 .cohort-group-hdr.ready td{color:#378ADD}
@@ -261,15 +258,6 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
   <div class="topbar-right" id="topbar-right">Loading...</div>
 </div>
 
-<div class="cohort-bar">
-  <span class="cohort-lbl">COHORT</span>
-  <button class="cohort-pill on all"  onclick="setCohort(null,this)">All</button>
-  <button class="cohort-pill growth"  onclick="setCohort('Growth',this)">Growth</button>
-  <button class="cohort-pill ready"   onclick="setCohort('Ready for Growth',this)">Ready for Growth</button>
-  <button class="cohort-pill preparing" onclick="setCohort('Preparing for Growth',this)">Preparing for Growth</button>
-  <span style="color:#E8E6DF;margin:0 2px">|</span>
-  <button class="managed-pill" onclick="setManaged(this)">Managed only</button>
-</div>
 
 <!-- ===== PORTFOLIO (all accounts) ===== -->
 <div id="portfolio" class="view on">
@@ -368,6 +356,17 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
         <div class="fg-body open" style="padding:4px 13px 10px">
           <label class="fcheck"><input type="checkbox" id="port-managed-only" onchange="renderPortfolioTable()"><span class="fcheck-lbl">Managed only</span></label>
           <label class="fcheck"><input type="checkbox" id="port-active-chk" checked onchange="renderPortfolioTable()"><span class="fcheck-lbl">Active only (spend &gt; $0)</span></label>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open">
+          <div class="cohort-pill-row">
+            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
+            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
+            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
+            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          </div>
         </div>
       </div>
       <div class="fg">
@@ -489,12 +488,23 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
           <label class="fcheck"><input type="checkbox" class="m-sig" value="negative" checked onchange="renderManaged()"><span class="fcheck-lbl">Negative (r &lt; 0)</span><span class="fcount" id="m-fc-n">—</span></label>
         </div>
       </div>
-      <div class="fg" style="border-bottom:none">
+      <div class="fg">
         <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">MB trend</span><span class="fg-arrow">▾</span></div>
         <div class="fg-body" style="padding:4px 13px 10px">
           <label class="fcheck"><input type="checkbox" class="m-trend" value="up" checked onchange="renderManaged()"><span class="fcheck-lbl">↑ Trending up</span></label>
           <label class="fcheck"><input type="checkbox" class="m-trend" value="flat" checked onchange="renderManaged()"><span class="fcheck-lbl">→ Flat</span></label>
           <label class="fcheck"><input type="checkbox" class="m-trend" value="down" checked onchange="renderManaged()"><span class="fcheck-lbl">↓ Trending down</span></label>
+        </div>
+      </div>
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open">
+          <div class="cohort-pill-row">
+            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
+            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
+            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
+            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          </div>
         </div>
       </div>
     </div>
@@ -606,6 +616,17 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
           <label class="fcheck"><input type="checkbox" class="ts-sig" value="strong" checked onchange="applyTSFilters()"><span class="fcheck-lbl">Strong (r ≥ 0.5)</span><span class="fcount" id="ts-fc-s">—</span></label>
           <label class="fcheck"><input type="checkbox" class="ts-sig" value="weak" checked onchange="applyTSFilters()"><span class="fcheck-lbl">Weak (0–0.49)</span><span class="fcount" id="ts-fc-w">—</span></label>
           <label class="fcheck"><input type="checkbox" class="ts-sig" value="negative" checked onchange="applyTSFilters()"><span class="fcheck-lbl">Negative (r &lt; 0)</span><span class="fcount" id="ts-fc-n">—</span></label>
+        </div>
+      </div>
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open">
+          <div class="cohort-pill-row">
+            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
+            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
+            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
+            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          </div>
         </div>
       </div>
     </div>
@@ -899,12 +920,23 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
         </div>
       </div>
       <!-- Status filter -->
-      <div class="fg" style="border-bottom:none">
+      <div class="fg">
         <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Pacing status</span><span class="fg-arrow open">▾</span></div>
         <div class="fg-body open" style="padding:4px 13px 10px">
           <label class="fcheck"><input type="checkbox" class="pacing-status-chk" value="hot" checked onchange="renderPacingFromFilter()"><span class="fcheck-lbl" style="color:#D85A30">Hot (&gt;110%)</span><span class="fcount" id="p-fc-hot">—</span></label>
           <label class="fcheck"><input type="checkbox" class="pacing-status-chk" value="on" checked onchange="renderPacingFromFilter()"><span class="fcheck-lbl" style="color:#1D9E75">On Pace (90–110%)</span><span class="fcount" id="p-fc-on">—</span></label>
           <label class="fcheck"><input type="checkbox" class="pacing-status-chk" value="low" checked onchange="renderPacingFromFilter()"><span class="fcheck-lbl">Low (&lt;90%)</span><span class="fcount" id="p-fc-low">—</span></label>
+        </div>
+      </div>
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open">
+          <div class="cohort-pill-row">
+            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
+            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
+            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
+            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1533,9 +1565,8 @@ function renderPortfolioTable(){
     if(!trendChk.includes(getMBTrend(a,m))) return false;
     return true;
   });
-  // Cohort + managed filter
+  // Cohort filter
   if(activeCohort) rows=rows.filter(a=>a.cohort===activeCohort);
-  if(activeManaged) rows=rows.filter(a=>a.isManaged);
 
   // Sort unified array
   const sortFn=(a,b)=>{
@@ -1867,7 +1898,6 @@ document.addEventListener('click',function(e){
 // TIME SERIES
 // ============================
 let activeCohort = null;
-let activeManaged = false;
 
 function cohortRowCls(a) {
   if (!a) return '';
@@ -1879,26 +1909,17 @@ function cohortRowCls(a) {
 
 function setCohort(c, el) {
   activeCohort = c;
-  document.querySelectorAll('.cohort-pill').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
+  // Sync all cohort pill instances across all sidebars
+  const val = c || '';
+  document.querySelectorAll('.cohort-pill').forEach(b => {
+    b.classList.toggle('on', (b.dataset.cohort || '') === val);
+  });
   const active = document.querySelector('.view.on');
   if (!active) return;
   const id = active.id;
   if (id === 'portfolio')  renderPortfolioTable();
   if (id === 'timeseries') { renderTS(); renderPoP(); }
   if (id === 'managed')    renderManaged();
-  if (id === 'pacing')     renderPacing();
-  if (id === 'signals')    renderPoP();
-}
-
-function setManaged(el) {
-  activeManaged = !activeManaged;
-  el.classList.toggle('on', activeManaged);
-  const active = document.querySelector('.view.on');
-  if (!active) return;
-  const id = active.id;
-  if (id === 'portfolio')  renderPortfolioTable();
-  if (id === 'timeseries') { renderTS(); renderPoP(); }
   if (id === 'pacing')     renderPacing();
   if (id === 'signals')    renderPoP();
 }
@@ -1968,7 +1989,6 @@ function getEffectiveTSSel(){
       if(!tsFilters.sigQuality.includes(getSigBand(a.bestR))) return false;
     }
     if(activeCohort && a.cohort !== activeCohort) return false;
-    if(activeManaged && !MANAGED_IDS.has(a.id)) return false;
     return true;
   });
 }
@@ -2946,7 +2966,7 @@ function getPacingRows() {
   const toStr   = now.toISOString().slice(0,10);
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysElapsed = now.getDate();
-  return A.filter(acct => (!activeCohort || acct.cohort === activeCohort) && (!activeManaged || MANAGED_IDS.has(acct.id))).map(acct => {
+  return A.filter(acct => !activeCohort || acct.cohort === activeCohort).map(acct => {
     const cfg = PACING_CONFIG?.budgets?.[acct.id];
     const budget = cfg?.monthly_budget || 0;
     if (!budget) return null;
