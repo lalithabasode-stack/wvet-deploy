@@ -2853,10 +2853,6 @@ function renderPacingCharts() {
   const prevWeeks = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYM);
   const pyWeeks   = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYearYM);
 
-  // Dynamic: use only as many labels as the longest dataset — no minimum padding
-  const maxWeeks = Math.max(curWeeks.length, prevWeeks.length, 1);
-  const labels = Array.from({length: maxWeeks}, (_, i) => 'Wk ' + (i + 1));
-
   const curMonthName  = now.toLocaleString('en-US', {month:'short'}) + ' ' + now.getFullYear();
   const prevMonthName = prevDate.toLocaleString('en-US', {month:'short'}) + ' ' + prevDate.getFullYear();
   const pyMonthName   = now.toLocaleString('en-US', {month:'short'}) + ' ' + (now.getFullYear() - 1);
@@ -2866,7 +2862,16 @@ function renderPacingCharts() {
   document.getElementById('p-yoy-cur-lbl').textContent  = curMonthName;
   document.getElementById('p-yoy-prev-lbl').textContent = pyMonthName;
 
-  const chartOpts = (maxY) => ({
+  // Labels driven purely by current month weeks — grows as month progresses
+  const n = curWeeks.length;
+  const labels = Array.from({length: n}, (_, i) => 'Wk ' + (i + 1));
+  // Prior month: align first N weeks to current month weeks
+  const prevSlice = prevWeeks.slice(0, n);
+  const pySlice   = pyWeeks.slice(0, n);
+
+  const noDataMsg = '<div style="display:flex;align-items:center;justify-content:center;height:180px;font-size:11px;color:#B4B2A9">No weekly data yet · updates daily at 4am PT</div>';
+
+  const chartOpts = () => ({
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toLocaleString() } } },
     scales: {
@@ -2883,33 +2888,33 @@ function renderPacingCharts() {
   });
 
   if (_pMomChart) { _pMomChart.destroy(); _pMomChart = null; }
-  const momCtx = document.getElementById('p-mom-chart');
-  if (momCtx) {
-    _pMomChart = new Chart(momCtx.getContext('2d'), {
+  const momWrap = document.getElementById('p-mom-chart').parentElement;
+  if (n === 0) {
+    momWrap.innerHTML = noDataMsg;
+  } else {
+    if (!momWrap.querySelector('canvas')) momWrap.innerHTML = '<canvas id="p-mom-chart"></canvas>';
+    _pMomChart = new Chart(document.getElementById('p-mom-chart').getContext('2d'), {
       type: 'line',
-      data: {
-        labels,
-        datasets: [
-          mkDataset(curMonthName,  curWeeks.map(w=>w.spend),  '#1D9E75', true),
-          mkDataset(prevMonthName, prevWeeks.map(w=>w.spend), '#B4B2A9', false),
-        ]
-      },
+      data: { labels, datasets: [
+        mkDataset(curMonthName,  curWeeks.map(w=>w.spend),   '#1D9E75', true),
+        mkDataset(prevMonthName, prevSlice.map(w=>w.spend),  '#B4B2A9', false),
+      ]},
       options: chartOpts()
     });
   }
 
   if (_pYoyChart) { _pYoyChart.destroy(); _pYoyChart = null; }
-  const yoyCtx = document.getElementById('p-yoy-chart');
-  if (yoyCtx) {
-    _pYoyChart = new Chart(yoyCtx.getContext('2d'), {
+  const yoyWrap = document.getElementById('p-yoy-chart').parentElement;
+  if (n === 0) {
+    yoyWrap.innerHTML = noDataMsg;
+  } else {
+    if (!yoyWrap.querySelector('canvas')) yoyWrap.innerHTML = '<canvas id="p-yoy-chart"></canvas>';
+    _pYoyChart = new Chart(document.getElementById('p-yoy-chart').getContext('2d'), {
       type: 'line',
-      data: {
-        labels,
-        datasets: [
-          mkDataset(curMonthName, curWeeks.map(w=>w.spend),  '#378ADD', true),
-          mkDataset(pyMonthName,  pyWeeks.map(w=>w.spend),   '#D4D0C8', false),
-        ]
-      },
+      data: { labels, datasets: [
+        mkDataset(curMonthName, curWeeks.map(w=>w.spend),  '#378ADD', true),
+        mkDataset(pyMonthName,  pySlice.map(w=>w.spend),   '#D4D0C8', false),
+      ]},
       options: chartOpts()
     });
   }
