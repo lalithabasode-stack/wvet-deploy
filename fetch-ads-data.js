@@ -8,7 +8,7 @@
  * in the dashboard JS from the daily[] array — no pre-aggregation stored here.
  *
  * Preserves: mb, mb_inv, mb_vet, nc, bestR, bestCR, bestA, recSet,
- *            strong, neg, floor, budget, tier, sigs (set by other scripts).
+ *            strong, neg, floor, budget, tier, sigs, cohort, locationCode (set by other scripts).
  *
  * Requires:  npm install google-ads-api dotenv
  * Usage:     node fetch-ads-data.js
@@ -454,6 +454,9 @@ function buildDailyRows(trafficRows, convRows) {
           budget: prev.budget ?? 450,
           tier:   prev.tier   ?? 'Floor',
           sigs:   prev.sigs   ?? [],
+          // Cohort fields — set by add-cohorts.js, preserved here
+          cohort:       prev.cohort       ?? null,
+          locationCode: prev.locationCode ?? null,
         });
         process.stdout.write('.');
       } catch (err) {

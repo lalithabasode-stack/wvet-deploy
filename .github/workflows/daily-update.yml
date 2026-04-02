@@ -32,6 +32,9 @@ jobs:
           GOOGLE_ADS_LOGIN_CUSTOMER_ID: '8264811884'
         run: node fetch-ads-data.js
 
+      - name: Apply cohort mapping from Google Sheet
+        run: node add-cohorts.js
+
       - name: Commit updated data.json
         run: |
           git config user.name  "github-actions[bot]"
