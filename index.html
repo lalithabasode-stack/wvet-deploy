@@ -2873,9 +2873,6 @@ function renderPacingCharts() {
 
   const noDataMsg = '<div style="display:flex;align-items:center;justify-content:center;height:180px;font-size:11px;color:#B4B2A9">No weekly data yet · updates daily at 4am PT</div>';
 
-  // Labels = exactly the weeks we have, latest week on the right edge, no empty space
-  const labels = Array.from({length: n}, (_, i) => 'Wk ' + (i + 1));
-
   const chartOpts = () => ({
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toLocaleString() } } },
