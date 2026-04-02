@@ -2849,9 +2849,11 @@ function renderPacingCharts() {
   const prevYM = prevDate.toISOString().slice(0, 7);
   const prevYearYM = (now.getFullYear() - 1) + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
-  const curWeeks  = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === curYM);
-  const prevWeeks = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYM);
-  const pyWeeks   = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYearYM);
+  // Assign each week to the month it ENDS in (weekStart + 6 days) — handles weeks crossing month boundaries
+  const weekEndYM = ws => { const d = new Date(ws+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+6); return d.toISOString().slice(0,7); };
+  const curWeeks  = WEEKLY_DATA.filter(w => w.weekStart && weekEndYM(w.weekStart) === curYM);
+  const prevWeeks = WEEKLY_DATA.filter(w => w.weekStart && weekEndYM(w.weekStart) === prevYM);
+  const pyWeeks   = WEEKLY_DATA.filter(w => w.weekStart && weekEndYM(w.weekStart) === prevYearYM);
 
   const curMonthName  = now.toLocaleString('en-US', {month:'short'}) + ' ' + now.getFullYear();
   const prevMonthName = prevDate.toLocaleString('en-US', {month:'short'}) + ' ' + prevDate.getFullYear();
