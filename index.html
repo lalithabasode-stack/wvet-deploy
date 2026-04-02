@@ -12,13 +12,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F7F6F2;color:#1a
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:11px 22px;background:white;border-bottom:0.5px solid #E8E6DF;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
-.cohort-pill{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid #E8E6DF;background:white;color:#888780;cursor:pointer;white-space:nowrap}
-.cohort-pill.on{border-color:transparent;color:white;font-weight:500}
-.cohort-pill.on.all{background:#888780}
-.cohort-pill.on.growth{background:#1D9E75}
-.cohort-pill.on.ready{background:#378ADD}
-.cohort-pill.on.preparing{background:#EF9F27}
-.cohort-pill-row{display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px 8px}
 .cohort-group-hdr td{font-size:10px;font-weight:600;letter-spacing:.05em;padding:6px 10px 4px;border-top:1px solid #E8E6DF;text-transform:uppercase}
 .cohort-group-hdr.growth td{color:#1D9E75}
 .cohort-group-hdr.ready td{color:#378ADD}
@@ -361,11 +354,11 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
       <div class="fg">
         <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
         <div class="fg-body open">
-          <div class="cohort-pill-row">
-            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
-            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
-            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
-            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          <div style="padding:4px 13px 10px">
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value=""                   checked onchange="setCohort(null)"><span class="fcheck-lbl">All</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Growth"             onchange="setCohort('Growth')"><span class="fcheck-lbl">Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Ready for Growth"   onchange="setCohort('Ready for Growth')"><span class="fcheck-lbl">Ready for Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Preparing for Growth" onchange="setCohort('Preparing for Growth')"><span class="fcheck-lbl">Preparing for Growth</span></label>
           </div>
         </div>
       </div>
@@ -499,11 +492,11 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
       <div class="fg" style="border-bottom:none">
         <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
         <div class="fg-body open">
-          <div class="cohort-pill-row">
-            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
-            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
-            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
-            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          <div style="padding:4px 13px 10px">
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value=""                   checked onchange="setCohort(null)"><span class="fcheck-lbl">All</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Growth"             onchange="setCohort('Growth')"><span class="fcheck-lbl">Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Ready for Growth"   onchange="setCohort('Ready for Growth')"><span class="fcheck-lbl">Ready for Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Preparing for Growth" onchange="setCohort('Preparing for Growth')"><span class="fcheck-lbl">Preparing for Growth</span></label>
           </div>
         </div>
       </div>
@@ -621,11 +614,11 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
       <div class="fg" style="border-bottom:none">
         <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
         <div class="fg-body open">
-          <div class="cohort-pill-row">
-            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
-            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
-            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
-            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          <div style="padding:4px 13px 10px">
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value=""                   checked onchange="setCohort(null)"><span class="fcheck-lbl">All</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Growth"             onchange="setCohort('Growth')"><span class="fcheck-lbl">Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Ready for Growth"   onchange="setCohort('Ready for Growth')"><span class="fcheck-lbl">Ready for Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Preparing for Growth" onchange="setCohort('Preparing for Growth')"><span class="fcheck-lbl">Preparing for Growth</span></label>
           </div>
         </div>
       </div>
@@ -931,11 +924,11 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
       <div class="fg" style="border-bottom:none">
         <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
         <div class="fg-body open">
-          <div class="cohort-pill-row">
-            <button class="cohort-pill on all"     data-cohort=""                   onclick="setCohort(null,this)">All</button>
-            <button class="cohort-pill growth"     data-cohort="Growth"             onclick="setCohort('Growth',this)">Growth</button>
-            <button class="cohort-pill ready"      data-cohort="Ready for Growth"   onclick="setCohort('Ready for Growth',this)">Ready</button>
-            <button class="cohort-pill preparing"  data-cohort="Preparing for Growth" onclick="setCohort('Preparing for Growth',this)">Preparing</button>
+          <div style="padding:4px 13px 10px">
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value=""                   checked onchange="setCohort(null)"><span class="fcheck-lbl">All</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Growth"             onchange="setCohort('Growth')"><span class="fcheck-lbl">Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Ready for Growth"   onchange="setCohort('Ready for Growth')"><span class="fcheck-lbl">Ready for Growth</span></label>
+            <label class="fcheck"><input type="radio" class="cohort-radio" name="cohort" value="Preparing for Growth" onchange="setCohort('Preparing for Growth')"><span class="fcheck-lbl">Preparing for Growth</span></label>
           </div>
         </div>
       </div>
@@ -1907,13 +1900,10 @@ function cohortRowCls(a) {
   return '';
 }
 
-function setCohort(c, el) {
+function setCohort(c) {
   activeCohort = c;
-  // Sync all cohort pill instances across all sidebars
   const val = c || '';
-  document.querySelectorAll('.cohort-pill').forEach(b => {
-    b.classList.toggle('on', (b.dataset.cohort || '') === val);
-  });
+  document.querySelectorAll('.cohort-radio').forEach(r => { r.checked = r.value === val; });
   const active = document.querySelector('.view.on');
   if (!active) return;
   const id = active.id;
