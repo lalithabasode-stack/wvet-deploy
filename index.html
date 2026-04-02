@@ -12,6 +12,19 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F7F6F2;color:#1a
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:11px 22px;background:white;border-bottom:0.5px solid #E8E6DF;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
+.cohort-bar{display:flex;align-items:center;gap:6px;padding:6px 22px;background:#FAFAF8;border-bottom:0.5px solid #E8E6DF;position:sticky;top:46px;z-index:99;flex-wrap:wrap}
+.cohort-lbl{font-size:10px;font-weight:600;color:#888780;letter-spacing:.04em;margin-right:2px}
+.cohort-pill{font-size:11px;padding:3px 11px;border-radius:20px;border:1px solid #E8E6DF;background:white;color:#888780;cursor:pointer;white-space:nowrap}
+.cohort-pill.on{border-color:transparent;color:white;font-weight:500}
+.cohort-pill.on.all{background:#888780}
+.cohort-pill.on.growth{background:#1D9E75}
+.cohort-pill.on.ready{background:#378ADD}
+.cohort-pill.on.preparing{background:#EF9F27}
+.cohort-group-hdr td{font-size:10px;font-weight:600;letter-spacing:.05em;padding:6px 10px 4px;border-top:1px solid #E8E6DF;text-transform:uppercase}
+.cohort-group-hdr.growth td{color:#1D9E75}
+.cohort-group-hdr.ready td{color:#378ADD}
+.cohort-group-hdr.preparing td{color:#EF9F27}
+.cohort-group-hdr.none td{color:#B4B2A9}
 .logo{font-size:14px;font-weight:600;letter-spacing:-0.3px}.logo span{color:#1D9E75}
 .tabs{display:flex;gap:2px;background:#F0EEE8;border-radius:10px;padding:3px}
 .tab{font-size:11px;padding:4px 12px;border-radius:7px;border:none;background:transparent;color:#888780;cursor:pointer;white-space:nowrap}
@@ -242,6 +255,14 @@ tr.managed-row{border-left:2px solid #1D9E75}
     <button class="tab" onclick="sw('pacing',this)">Pacing</button>
   </div>
   <div class="topbar-right" id="topbar-right">Loading...</div>
+</div>
+
+<div class="cohort-bar">
+  <span class="cohort-lbl">COHORT</span>
+  <button class="cohort-pill on all"  onclick="setCohort(null,this)">All</button>
+  <button class="cohort-pill growth"  onclick="setCohort('Growth',this)">Growth</button>
+  <button class="cohort-pill ready"   onclick="setCohort('Ready for Growth',this)">Ready for Growth</button>
+  <button class="cohort-pill preparing" onclick="setCohort('Preparing for Growth',this)">Preparing for Growth</button>
 </div>
 
 <!-- ===== PORTFOLIO (all accounts) ===== -->
@@ -1506,6 +1527,8 @@ function renderPortfolioTable(){
     if(!trendChk.includes(getMBTrend(a,m))) return false;
     return true;
   });
+  // Cohort filter
+  if(activeCohort) rows=rows.filter(a=>a.cohort===activeCohort);
 
   // Sort unified array
   const sortFn=(a,b)=>{
@@ -1530,9 +1553,23 @@ function renderPortfolioTable(){
   document.getElementById('port-acct-count').textContent=`(${acctChk.size})`;
   document.getElementById('port-row-count').textContent=`Showing ${rows.length} of ${A.length} accounts`;
 
-  // Build HTML — one flat table, no section separators
+  // Build HTML
   const mbSplit=mbExpanded;
+  const COHORT_ORD={'Growth':0,'Ready for Growth':1,'Preparing for Growth':2};
+  const cohortCls=c=>c==='Growth'?'growth':c==='Ready for Growth'?'ready':c==='Preparing for Growth'?'preparing':'none';
+  if(!activeCohort){
+    const si=rows.map((a,i)=>({a,i}));
+    si.sort((x,y)=>{const ca=COHORT_ORD[x.a.cohort]??3,cb=COHORT_ORD[y.a.cohort]??3;return ca!==cb?ca-cb:x.i-y.i;});
+    rows=si.map(({a})=>a);
+  }
+  let _lastCohort='__init__';
   const html=rows.map(a=>{
+    let hdr='';
+    if(!activeCohort&&a.cohort!==_lastCohort){
+      _lastCohort=a.cohort;
+      hdr=`<tr class="cohort-group-hdr ${cohortCls(a.cohort)}"><td colspan="20">${a.cohort||'Uncategorized'}</td></tr>`;
+    }
+    return hdr+(()=>{
     if(a.isManaged){
       return`<tr class="managed-row">
         <td class="hn-cell"><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
@@ -1577,7 +1614,8 @@ function renderPortfolioTable(){
       <td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
       <td class="r" ${dim}>—</td>
     </tr>`;
-  }).join('')||'<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match current filters</td></tr>';
+  })();
+}).join('')||'<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match current filters</td></tr>';
 
   document.getElementById('port-tbody').innerHTML=html;
 
@@ -1693,6 +1731,7 @@ function renderManaged(){
     if(!sigChk.includes(getSigBand(a.bestR)))return false;
     if(!trendChk.includes(getMBTrend(a,mDate)))return false;
     if(!campChk.includes(a.ct))return false;
+    if(activeCohort && a.cohort !== activeCohort) return false;
     return true;
   });
 
@@ -1820,6 +1859,22 @@ document.addEventListener('click',function(e){
 
 // TIME SERIES
 // ============================
+let activeCohort = null;
+function setCohort(c, el) {
+  activeCohort = c;
+  document.querySelectorAll('.cohort-pill').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  // Re-render whichever tab is currently visible
+  const active = document.querySelector('.view.on');
+  if (!active) return;
+  const id = active.id;
+  if (id === 'portfolio')  renderPortfolioTable();
+  if (id === 'timeseries') { renderTS(); renderPoP(); }
+  if (id === 'managed')    renderManaged();
+  if (id === 'pacing')     renderPacing();
+  if (id === 'signals')    renderPoP();
+}
+
 let tsGran='month', tsCompare='mom', tsCharts={c1:null,c2:null,c3:null,c4:null}, tsSelectedIds=[], tsInited=false, tsPortfolioExpanded=false;
 let tsFilters={managedOnly:false,campTypes:['pmax_test','pmax_std'],sigQuality:['strong','weak','negative']};
 
@@ -1884,6 +1939,7 @@ function getEffectiveTSSel(){
     if(MANAGED_IDS.has(a.id) && a.bestR!==undefined){
       if(!tsFilters.sigQuality.includes(getSigBand(a.bestR))) return false;
     }
+    if(activeCohort && a.cohort !== activeCohort) return false;
     return true;
   });
 }
@@ -2860,7 +2916,7 @@ function getPacingRows() {
   const toStr   = now.toISOString().slice(0,10);
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysElapsed = now.getDate();
-  return A.map(acct => {
+  return A.filter(acct => !activeCohort || acct.cohort === activeCohort).map(acct => {
     const cfg = PACING_CONFIG?.budgets?.[acct.id];
     const budget = cfg?.monthly_budget || 0;
     if (!budget) return null;
