@@ -2,7 +2,7 @@ name: Daily data refresh
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # 6am UTC = 1am PT / 2am MT / midnight HI
+    - cron: '0 11 * * *'  # 11am UTC = 4am PT (PDT) / 5am MT / 7am ET
   workflow_dispatch:        # also lets you run it manually from GitHub
 
 jobs:

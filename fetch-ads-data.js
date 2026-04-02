@@ -376,6 +376,42 @@ function getCustomer(cid) {
   });
 }
 
+// ── Weekly totals accumulator (keyed by weekStart YYYY-MM-DD) ─────────────────
+const weeklyTotals = {}; // { 'YYYY-MM-DD': { spend, imp, clicks, sig } }
+
+function accumulateWeeklyTraffic(rows) {
+  for (const row of rows) {
+    const ws = row.segments.week; // 'YYYY-MM-DD' (Monday of week)
+    if (!ws || ws < START_DATE) continue;
+    if (!weeklyTotals[ws]) weeklyTotals[ws] = { spend:0, imp:0, clicks:0, sig:0 };
+    weeklyTotals[ws].spend  += Math.round((row.metrics.cost_micros || 0) / 1_000_000);
+    weeklyTotals[ws].imp    += row.metrics.impressions || 0;
+    weeklyTotals[ws].clicks += row.metrics.clicks      || 0;
+  }
+}
+
+function accumulateWeeklyConversions(rows) {
+  for (const row of rows) {
+    const ws   = row.segments.week;
+    const name = row.segments.conversion_action_name;
+    if (!ws || ws < START_DATE) continue;
+    if (!weeklyTotals[ws]) weeklyTotals[ws] = { spend:0, imp:0, clicks:0, sig:0 };
+    const val = Math.round(row.metrics.all_conversions || 0);
+    if (
+      name === 'Appointment Booked (Conversion) (call extensions)' ||
+      name === 'Appointment Booked (Conversion) (web page calls)'  ||
+      name === 'New Client (Industry) (call extensions)'           ||
+      name === 'New Client (Industry) (web page calls)'
+    ) { weeklyTotals[ws].sig += val; }
+  }
+}
+
+function buildWeekLabel(ws) {
+  // ws = 'YYYY-MM-DD' → e.g. 'Oct 6'
+  const d = new Date(ws + 'T12:00:00Z');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+
 // ── Aggregate rows ────────────────────────────────────────────────────────────
 function aggregateTraffic(rows) {
   const spend = {}, imp = {}, clicks = {};
@@ -436,6 +472,19 @@ function aggregateConversions(rows) {
     AND segments.conversion_action_name IN (${actionList})
     ORDER BY segments.month`;
 
+  const weeklyTrafficQuery = `
+    SELECT segments.week, metrics.cost_micros, metrics.impressions, metrics.clicks
+    FROM campaign
+    WHERE segments.date BETWEEN '${START_DATE}' AND '${dateTo}'
+    ORDER BY segments.week`;
+
+  const weeklyConvQuery = `
+    SELECT segments.week, segments.conversion_action_name, metrics.all_conversions
+    FROM campaign
+    WHERE segments.date BETWEEN '${START_DATE}' AND '${dateTo}'
+    AND segments.conversion_action_name IN (${actionList})
+    ORDER BY segments.week`;
+
   console.log(`Fetching ${ACCOUNTS.length} accounts (${START_DATE} → ${dateTo})...`);
 
   const updatedAccounts = [];
@@ -447,12 +496,16 @@ function aggregateConversions(rows) {
     await Promise.all(batch.map(async acct => {
       try {
         const customer = getCustomer(acct.cid);
-        const [trafficRows, convRows] = await Promise.all([
+        const [trafficRows, convRows, wkTrafficRows, wkConvRows] = await Promise.all([
           customer.query(trafficQuery),
           customer.query(convQuery),
+          customer.query(weeklyTrafficQuery),
+          customer.query(weeklyConvQuery),
         ]);
         const { spend, imp, clicks }  = aggregateTraffic(trafficRows);
         const { sig, convByAction, nca } = aggregateConversions(convRows);
+        accumulateWeeklyTraffic(wkTrafficRows);
+        accumulateWeeklyConversions(wkConvRows);
         const prev = existingMap[acct.id] || {};
         const mb   = prev.mb || {};
         const cpm  = {};
@@ -501,11 +554,24 @@ function aggregateConversions(rows) {
     };
   });
 
+  // Build fresh weekly array from accumulated totals (all 300 accounts)
+  const weekly = Object.keys(weeklyTotals)
+    .sort()
+    .map(ws => ({
+      weekStart: ws,
+      label:     buildWeekLabel(ws),
+      spend:     weeklyTotals[ws].spend,
+      imp:       weeklyTotals[ws].imp,
+      clicks:    weeklyTotals[ws].clicks,
+      sig:       weeklyTotals[ws].sig,
+      mb:        null, // matchback has monthly lag only
+    }));
+
   const output = {
     _updated: dateTo,
-    _note: 'spend/imp/clicks/sig/convByAction from Google Ads API. mb from matchback (Invoca+Vetstoria, 4-6wk lag). cpm = spend/mb.',
+    _note: 'spend/imp/clicks/sig/convByAction from Google Ads API. mb from matchback (Invoca+Vetstoria, 4-6wk lag). cpm = spend/mb. weekly = all 300 accounts aggregated.',
     accounts: updatedAccounts,
-    weekly:   existing.weekly || [],
+    weekly,
     monthly,
   };
 
