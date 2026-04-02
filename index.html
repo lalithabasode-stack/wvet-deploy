@@ -640,6 +640,10 @@ tr.managed-row{border-left:2px solid #1D9E75}
               <button class="gran-btn on" id="gran-month" onclick="setGran('month',this)">Monthly</button>
               <button class="gran-btn" id="gran-week" onclick="setGran('week',this)">Weekly</button>
             </div>
+            <div class="granularity" id="ts-compare-wrap">
+              <button class="gran-btn on" id="cmp-mom" onclick="setCompare('mom',this)">MoM</button>
+              <button class="gran-btn" id="cmp-yoy" onclick="setCompare('yoy',this)">YoY</button>
+            </div>
             <div style="font-size:10px;background:#FAEEDA;border-radius:5px;padding:2px 8px;border:0.5px solid #FAC775;color:#854F0B">† Matchback: monthly only</div>
             <button class="btn-sm" onclick="downloadXLSX('ts-tbody',null,'WesternVet_TimeSeries')">↓ XLSX</button>
           </div>
@@ -1816,7 +1820,7 @@ document.addEventListener('click',function(e){
 
 // TIME SERIES
 // ============================
-let tsGran='month', tsCharts={c1:null,c2:null,c3:null,c4:null}, tsSelectedIds=[], tsInited=false, tsPortfolioExpanded=false;
+let tsGran='month', tsCompare='mom', tsCharts={c1:null,c2:null,c3:null,c4:null}, tsSelectedIds=[], tsInited=false, tsPortfolioExpanded=false;
 let tsFilters={managedOnly:false,campTypes:['pmax_test','pmax_std'],sigQuality:['strong','weak','negative']};
 
 function initTSSidebar(){
@@ -1908,13 +1912,24 @@ function setGran(g,el){
   el.classList.add('on');
   const mp=document.getElementById('ts-month-picker');
   const wp=document.getElementById('ts-week-picker');
+  const cw=document.getElementById('ts-compare-wrap');
   if(g==='week'){
     if(mp) mp.style.display='none';
     if(wp){wp.style.display='';populateWeekPicker();}
+    if(cw) cw.style.display='none';
+    tsCompare='mom';
   } else {
     if(mp) mp.style.display='';
     if(wp) wp.style.display='none';
+    if(cw) cw.style.display='';
   }
+  renderTS();
+}
+
+function setCompare(c,el){
+  tsCompare=c;
+  document.querySelectorAll('#ts-compare-wrap .gran-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
   renderTS();
 }
 
@@ -1937,6 +1952,22 @@ function onWeekPickerChange(which){
   if(which==='from'&&f.value>t.value) t.value=f.value;
   if(which==='to'&&t.value<f.value) f.value=t.value;
   renderTS();
+}
+
+function getYoYPrior(sel, currentYM){
+  const [y,mo]=currentYM.split('-');
+  const priorYM=(parseInt(y)-1)+'-'+mo;
+  let sp=0,cl=0,si=0,im=0;
+  for(const a of sel){
+    for(const d of (a.daily||[])){
+      if(d.date.slice(0,7)!==priorYM) continue;
+      sp+=d.spend||0; cl+=d.clicks||0;
+      si+=(d.nc_call||0)+(d.nc_web||0)+(d.appt_call||0)+(d.appt_web||0);
+      im+=d.imp||0;
+    }
+  }
+  if(sp===0&&cl===0) return null;
+  return{spend:sp,clicks:cl,sig:si,imp:im,cpc:cl?sp/cl:0,cpsig:si?sp/si:0,mb:null,cpm:null};
 }
 
 function getTSData(){
@@ -1981,7 +2012,10 @@ function getTSData(){
       const im=sel.reduce((s,a)=>s+(a.imp&&a.imp[m]?a.imp[m]:0),0);
       return{label:MLABEL[m],month:m,spend:sp,clicks:cl,sig:si,mb,imp:im,cpc:cl?sp/cl:0,cvr:cl?si/cl*100:0,cpsig:si?sp/si:0,cpm:mb?sp/mb:null};
     });
-    return aggRows.map((d,i)=>({...d,pr:i>0?aggRows[i-1]:null}));
+    return aggRows.map((d,i)=>({
+      ...d,
+      pr: tsCompare==='yoy' ? getYoYPrior(sel,MONTH_YM[d.month]) : (i>0?aggRows[i-1]:null)
+    }));
   }
 }
 
@@ -2010,7 +2044,8 @@ function renderTS(){
   const lbls=data.map(d=>d.label);
   const showMB=tsGran==='month';
 
-  document.querySelectorAll('#ts-table .ts-mom-lbl').forEach(el=>el.textContent='Δ');
+  const _cmpLbl=tsCompare==='yoy'?'YoY Δ':'Δ';
+  document.querySelectorAll('#ts-table .ts-mom-lbl').forEach(el=>el.textContent=_cmpLbl);
 
   // Show/hide matchback columns in weekly view
   ['ts-mb-head','ts-mb-head-mom','ts-cpm-head','ts-cpm-head-mom'].forEach(id=>{
@@ -2112,6 +2147,19 @@ function renderTS(){
       const pw0=_priorWeeks[0],pwN=_priorWeeks[_priorWeeks.length-1];
       if(pw0&&pwN) priorLabel=pw0.label+(pw0.weekStart!==pwN.weekStart?' – '+pwN.label:'');
     }
+  } else if(tsCompare==='yoy'){
+    const _curMonths=data.filter(d=>d.month).map(d=>d.month);
+    const _sel=getEffectiveTSSel();
+    let yoyTot={spend:0,clicks:0,sig:0,imp:0};
+    let hasAny=false;
+    for(const m of _curMonths){
+      const pr=getYoYPrior(_sel,MONTH_YM[m]);
+      if(pr){yoyTot.spend+=pr.spend;yoyTot.clicks+=pr.clicks;yoyTot.sig+=pr.sig;yoyTot.imp+=pr.imp;hasAny=true;}
+    }
+    if(hasAny){
+      priorTot={...yoyTot,cpc:yoyTot.clicks?yoyTot.spend/yoyTot.clicks:0,cpsig:yoyTot.sig?yoyTot.spend/yoyTot.sig:0,mb:null,cpm:null};
+      priorLabel='same period 2025';
+    }
   } else {
     const _curMonths=data.filter(d=>d.month).map(d=>d.month);
     const _N=_curMonths.length;
@@ -2151,7 +2199,7 @@ function renderTS(){
 
   // Update note
   const noteEl=document.getElementById('ts-note');
-  const _granLabel=tsGran==='week'?'week-over-week vs prior week':'month-over-month vs prior month';
+  const _granLabel=tsGran==='week'?'week-over-week vs prior week':tsCompare==='yoy'?'year-over-year vs same month 2025':'month-over-month vs prior month';
   if(noteEl) noteEl.innerHTML=`Row Δ = ${_granLabel}. &nbsp;|&nbsp; Total Δ = selected period vs prior equal period${priorLabel?' ('+priorLabel+')':' — not enough prior data'}.`;
 
   // Account count label + AI summary
