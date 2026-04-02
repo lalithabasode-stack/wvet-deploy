@@ -1,20 +1,17 @@
 #!/usr/bin/env node
 /**
  * fetch-ads-data.js
- * Pulls Google Ads metrics for all WesternVet accounts and writes data.json.
- * Auto-discovers all enabled sub-accounts from MCC, or uses the hardcoded list below.
- * Preserves matchback (mb), cpm, and correlation fields from existing data.json.
+ * Daily grain: stores spend, clicks, impressions, and conversions by action
+ * for every day from START_DATE → today, for all 300 WesternVet accounts.
+ *
+ * All aggregations (monthly, weekly, YoY, pacing %, CPA, etc.) are computed
+ * in the dashboard JS from the daily[] array — no pre-aggregation stored here.
+ *
+ * Preserves: mb, mb_inv, mb_vet, nc, bestR, bestCR, bestA, recSet,
+ *            strong, neg, floor, budget, tier, sigs (set by other scripts).
  *
  * Requires:  npm install google-ads-api dotenv
- *
- * Environment variables (.env or GitHub Secrets):
- *   GOOGLE_ADS_CLIENT_ID
- *   GOOGLE_ADS_CLIENT_SECRET
- *   GOOGLE_ADS_DEVELOPER_TOKEN
- *   GOOGLE_ADS_REFRESH_TOKEN
- *   GOOGLE_ADS_LOGIN_CUSTOMER_ID   (MCC: 8264811884)
- *
- * Usage:  node fetch-ads-data.js
+ * Usage:     node fetch-ads-data.js
  */
 
 const fs   = require('fs');
@@ -22,7 +19,8 @@ const path = require('path');
 require('dotenv').config();
 const { GoogleAdsApi } = require('google-ads-api');
 
-const MCC_ID = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || '8264811884';
+const MCC_ID     = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || '8264811884';
+const START_DATE = '2025-01-01';
 
 // ── Full account list (300 enabled accounts from MCC) ─────────────────────────
 const ACCOUNTS = [
@@ -335,33 +333,21 @@ const VALIDATED_ACTIONS = [
   'Appointment Booked (Conversion) (web page calls)',
 ];
 
-// NC Appt — shown for reference only, negative correlation with matchback (never include in signal)
-const NCA_ACTIONS = [
+// ── Conversion actions ─────────────────────────────────────────────────────────
+// Validated signal: nc_call + nc_web + appt_call + appt_web
+// NCA (nca_call + nca_web): stored for reference only — negative correlation with matchback, never include in signal
+const CONV_ACTIONS = [
+  'New Client (Industry) (call extensions)',
+  'New Client (Industry) (web page calls)',
+  'Appointment Booked (Conversion) (call extensions)',
+  'Appointment Booked (Conversion) (web page calls)',
   'New Client Appointment (call extensions)',
   'New Client Appointment (web page calls)',
 ];
 
-// Month window auto-generates from START_DATE → today.
-// Keys are unique within a fiscal year (Oct–Sep). No manual update needed.
-const START_DATE = '2025-10-01';
-const _MO_SHORT = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-function buildMonthKeys(startStr) {
-  const keys = {};
-  const now = new Date();
-  const [sy, sm] = startStr.slice(0,7).split('-').map(Number);
-  let d = new Date(sy, sm - 1, 1);
-  while (d <= now) {
-    const yyyy = d.getFullYear(), mo = d.getMonth();
-    keys[`${yyyy}-${String(mo+1).padStart(2,'0')}-01`] = _MO_SHORT[mo];
-    d = new Date(yyyy, mo + 1, 1);
-  }
-  return keys;
-}
-const MONTH_KEYS = buildMonthKeys(START_DATE);
-
 function today() { return new Date().toISOString().slice(0, 10); }
 
-// ── Google Ads client ─────────────────────────────────────────────────────────
+// ── Google Ads client ──────────────────────────────────────────────────────────
 const client = new GoogleAdsApi({
   client_id:       process.env.GOOGLE_ADS_CLIENT_ID,
   client_secret:   process.env.GOOGLE_ADS_CLIENT_SECRET,
@@ -376,149 +362,88 @@ function getCustomer(cid) {
   });
 }
 
-// ── Weekly totals accumulator (keyed by weekStart YYYY-MM-DD) ─────────────────
-const weeklyTotals = {}; // { 'YYYY-MM-DD': { spend, imp, clicks, sig } }
+// ── Build daily rows from API responses ───────────────────────────────────────
+// Returns array sorted by date: [{date, spend, clicks, imp, nc_call, nc_web, appt_call, appt_web, nca_call, nca_web}]
+function buildDailyRows(trafficRows, convRows) {
+  const byDate = {};
 
-function accumulateWeeklyTraffic(rows) {
-  for (const row of rows) {
-    const ws = row.segments.week; // 'YYYY-MM-DD' (Monday of week)
-    if (!ws || ws < START_DATE) continue;
-    if (!weeklyTotals[ws]) weeklyTotals[ws] = { spend:0, imp:0, clicks:0, sig:0 };
-    weeklyTotals[ws].spend  += Math.round((row.metrics.cost_micros || 0) / 1_000_000);
-    weeklyTotals[ws].imp    += row.metrics.impressions || 0;
-    weeklyTotals[ws].clicks += row.metrics.clicks      || 0;
+  for (const row of trafficRows) {
+    const date = row.segments.date;
+    if (!byDate[date]) byDate[date] = { date, spend: 0, clicks: 0, imp: 0, nc_call: 0, nc_web: 0, appt_call: 0, appt_web: 0, nca_call: 0, nca_web: 0 };
+    byDate[date].spend  += (row.metrics.cost_micros || 0) / 1_000_000;
+    byDate[date].clicks += row.metrics.clicks       || 0;
+    byDate[date].imp    += row.metrics.impressions  || 0;
   }
-}
 
-function accumulateWeeklyConversions(rows) {
-  for (const row of rows) {
-    const ws   = row.segments.week;
+  for (const row of convRows) {
+    const date = row.segments.date;
     const name = row.segments.conversion_action_name;
-    if (!ws || ws < START_DATE) continue;
-    if (!weeklyTotals[ws]) weeklyTotals[ws] = { spend:0, imp:0, clicks:0, sig:0 };
-    const val = Math.round(row.metrics.all_conversions || 0);
-    if (
-      name === 'Appointment Booked (Conversion) (call extensions)' ||
-      name === 'Appointment Booked (Conversion) (web page calls)'  ||
-      name === 'New Client (Industry) (call extensions)'           ||
-      name === 'New Client (Industry) (web page calls)'
-    ) { weeklyTotals[ws].sig += val; }
+    const val  = row.metrics.all_conversions || 0;
+    if (!byDate[date]) byDate[date] = { date, spend: 0, clicks: 0, imp: 0, nc_call: 0, nc_web: 0, appt_call: 0, appt_web: 0, nca_call: 0, nca_web: 0 };
+    if (name === 'New Client (Industry) (call extensions)')           byDate[date].nc_call   += val;
+    if (name === 'New Client (Industry) (web page calls)')            byDate[date].nc_web    += val;
+    if (name === 'Appointment Booked (Conversion) (call extensions)') byDate[date].appt_call += val;
+    if (name === 'Appointment Booked (Conversion) (web page calls)')  byDate[date].appt_web  += val;
+    if (name === 'New Client Appointment (call extensions)')          byDate[date].nca_call  += val;
+    if (name === 'New Client Appointment (web page calls)')           byDate[date].nca_web   += val;
   }
-}
 
-function buildWeekLabel(ws) {
-  // ws = 'YYYY-MM-DD' → e.g. 'Oct 6'
-  const d = new Date(ws + 'T12:00:00Z');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
-}
-
-// ── Aggregate rows ────────────────────────────────────────────────────────────
-function aggregateTraffic(rows) {
-  const spend = {}, imp = {}, clicks = {};
-  for (const mk of Object.values(MONTH_KEYS)) { spend[mk]=0; imp[mk]=0; clicks[mk]=0; }
-  for (const row of rows) {
-    const mk = MONTH_KEYS[row.segments.month];
-    if (!mk) continue;
-    spend[mk]  += Math.round((row.metrics.cost_micros || 0) / 1_000_000);
-    imp[mk]    += row.metrics.impressions || 0;
-    clicks[mk] += row.metrics.clicks      || 0;
-  }
-  return { spend, imp, clicks };
-}
-
-function aggregateConversions(rows) {
-  const sig = {}, convByAction = {}, nca = {};
-  for (const mk of Object.values(MONTH_KEYS)) {
-    sig[mk] = 0;
-    convByAction[mk] = { appt_call:0, appt_web:0, nci_call:0, nci_web:0, nca_call:0, nca_web:0 };
-    nca[mk] = 0;
-  }
-  for (const row of rows) {
-    const mk  = MONTH_KEYS[row.segments.month];
-    if (!mk) continue;
-    const name = row.segments.conversion_action_name;
-    const val  = Math.round(row.metrics.all_conversions || 0);
-    if (name === 'Appointment Booked (Conversion) (call extensions)') { convByAction[mk].appt_call += val; sig[mk] += val; }
-    if (name === 'Appointment Booked (Conversion) (web page calls)')  { convByAction[mk].appt_web  += val; sig[mk] += val; }
-    if (name === 'New Client (Industry) (call extensions)')           { convByAction[mk].nci_call  += val; sig[mk] += val; }
-    if (name === 'New Client (Industry) (web page calls)')            { convByAction[mk].nci_web   += val; sig[mk] += val; }
-    if (name === 'New Client Appointment (call extensions)')          { convByAction[mk].nca_call  += val; nca[mk] += val; }
-    if (name === 'New Client Appointment (web page calls)')           { convByAction[mk].nca_web   += val; nca[mk] += val; }
-  }
-  return { sig, convByAction, nca };
+  return Object.values(byDate)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map(d => ({ ...d, spend: Math.round(d.spend * 100) / 100 }));
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 (async () => {
-  const jsonPath = path.join(__dirname, 'data.json');
-  const existing = fs.existsSync(jsonPath)
+  const jsonPath    = path.join(__dirname, 'data.json');
+  const existing    = fs.existsSync(jsonPath)
     ? JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
-    : { accounts: [], weekly: [], monthly: [] };
+    : { accounts: [] };
   const existingMap = Object.fromEntries((existing.accounts || []).map(a => [a.id, a]));
 
-  const dateTo = today();
-  const actionList = [...VALIDATED_ACTIONS, ...NCA_ACTIONS].map(a => `'${a}'`).join(', ');
+  const dateTo     = today();
+  const actionList = CONV_ACTIONS.map(a => `'${a}'`).join(', ');
 
+  // Two queries per account — merged by date in buildDailyRows()
   const trafficQuery = `
-    SELECT segments.month, metrics.cost_micros, metrics.impressions, metrics.clicks
+    SELECT segments.date, metrics.cost_micros, metrics.clicks, metrics.impressions
     FROM campaign
     WHERE segments.date BETWEEN '${START_DATE}' AND '${dateTo}'
-    ORDER BY segments.month`;
+    ORDER BY segments.date`;
 
   const convQuery = `
-    SELECT segments.month, segments.conversion_action_name, metrics.all_conversions
+    SELECT segments.date, segments.conversion_action_name, metrics.all_conversions
     FROM campaign
     WHERE segments.date BETWEEN '${START_DATE}' AND '${dateTo}'
     AND segments.conversion_action_name IN (${actionList})
-    ORDER BY segments.month`;
-
-  const weeklyTrafficQuery = `
-    SELECT segments.week, metrics.cost_micros, metrics.impressions, metrics.clicks
-    FROM campaign
-    WHERE segments.date BETWEEN '${START_DATE}' AND '${dateTo}'
-    ORDER BY segments.week`;
-
-  const weeklyConvQuery = `
-    SELECT segments.week, segments.conversion_action_name, metrics.all_conversions
-    FROM campaign
-    WHERE segments.date BETWEEN '${START_DATE}' AND '${dateTo}'
-    AND segments.conversion_action_name IN (${actionList})
-    ORDER BY segments.week`;
+    ORDER BY segments.date`;
 
   console.log(`Fetching ${ACCOUNTS.length} accounts (${START_DATE} → ${dateTo})...`);
 
   const updatedAccounts = [];
-
-  // Process in batches of 10 to avoid rate limits
   const BATCH = 10;
+
   for (let i = 0; i < ACCOUNTS.length; i += BATCH) {
     const batch = ACCOUNTS.slice(i, i + BATCH);
     await Promise.all(batch.map(async acct => {
       try {
         const customer = getCustomer(acct.cid);
-        const [trafficRows, convRows, wkTrafficRows, wkConvRows] = await Promise.all([
+        const [trafficRows, convRows] = await Promise.all([
           customer.query(trafficQuery),
           customer.query(convQuery),
-          customer.query(weeklyTrafficQuery),
-          customer.query(weeklyConvQuery),
         ]);
-        const { spend, imp, clicks }  = aggregateTraffic(trafficRows);
-        const { sig, convByAction, nca } = aggregateConversions(convRows);
-        accumulateWeeklyTraffic(wkTrafficRows);
-        accumulateWeeklyConversions(wkConvRows);
-        const prev = existingMap[acct.id] || {};
-        const mb   = prev.mb || {};
-        const cpm  = {};
-        for (const mk of Object.values(MONTH_KEYS)) {
-          cpm[mk] = (mb[mk] && mb[mk] > 0)
-            ? Math.round(spend[mk] / mb[mk])
-            : (prev.cpm?.[mk] || 0);
-        }
+        const daily = buildDailyRows(trafficRows, convRows);
+        const prev  = existingMap[acct.id] || {};
         updatedAccounts.push({
           id: acct.id, name: acct.name, cid: acct.cid,
-          ct: acct.ct || prev.ct || 'pmax_std',
-          spend, imp, clicks, sig, mb, cpm, convByAction, nca,
-          mb_inv: prev.mb_inv, mb_vet: prev.mb_vet, nc: prev.nc,
+          ct:     acct.ct  || prev.ct     || 'pmax_std',
+          daily,
+          // Matchback fields — set by parse-matchback.js, preserved here
+          mb:     prev.mb     || {},
+          mb_inv: prev.mb_inv || {},
+          mb_vet: prev.mb_vet || {},
+          nc:     prev.nc     || null,
+          // Performance/tier fields — set by other tooling, preserved here
           bestR:  prev.bestR  ?? 0,
           bestCR: prev.bestCR ?? 0,
           bestA:  prev.bestA  ?? '',
@@ -533,48 +458,33 @@ function aggregateConversions(rows) {
         process.stdout.write('.');
       } catch (err) {
         process.stdout.write('x');
-        if (existingMap[acct.id]) updatedAccounts.push(existingMap[acct.id]);
-        else updatedAccounts.push({ id: acct.id, name: acct.name, cid: acct.cid, ct: 'pmax_std',
-          spend:{}, imp:{}, clicks:{}, sig:{}, mb:{}, cpm:{}, convByAction:{},
-          bestR:0, bestCR:0, bestA:'', recSet:'', strong:0, neg:0, floor:450, budget:450, tier:'Floor', sigs:[] });
+        const prev = existingMap[acct.id];
+        if (prev) {
+          updatedAccounts.push(prev); // keep existing data on API error
+        } else {
+          updatedAccounts.push({
+            id: acct.id, name: acct.name, cid: acct.cid, ct: 'pmax_std',
+            daily: [], mb: {}, mb_inv: {}, mb_vet: {}, nc: null,
+            bestR: 0, bestCR: 0, bestA: '', recSet: '',
+            strong: 0, neg: 0, floor: 450, budget: 450, tier: 'Floor', sigs: [],
+          });
+        }
       }
     }));
-    console.log(` ${Math.min(i+BATCH, ACCOUNTS.length)}/${ACCOUNTS.length}`);
+    console.log(` ${Math.min(i + BATCH, ACCOUNTS.length)}/${ACCOUNTS.length}`);
   }
-
-  // Rebuild monthly totals
-  const monthly = (existing.monthly || []).map(m => {
-    const mk = m.month;
-    return {
-      ...m,
-      spend:  updatedAccounts.reduce((s, a) => s + (a.spend[mk]  || 0), 0),
-      imp:    updatedAccounts.reduce((s, a) => s + (a.imp[mk]    || 0), 0),
-      clicks: updatedAccounts.reduce((s, a) => s + (a.clicks[mk] || 0), 0),
-      sig:    updatedAccounts.reduce((s, a) => s + (a.sig[mk]    || 0), 0),
-    };
-  });
-
-  // Build fresh weekly array from accumulated totals (all 300 accounts)
-  const weekly = Object.keys(weeklyTotals)
-    .sort()
-    .map(ws => ({
-      weekStart: ws,
-      label:     buildWeekLabel(ws),
-      spend:     weeklyTotals[ws].spend,
-      imp:       weeklyTotals[ws].imp,
-      clicks:    weeklyTotals[ws].clicks,
-      sig:       weeklyTotals[ws].sig,
-      mb:        null, // matchback has monthly lag only
-    }));
 
   const output = {
     _updated: dateTo,
-    _note: 'spend/imp/clicks/sig/convByAction from Google Ads API. mb from matchback (Invoca+Vetstoria, 4-6wk lag). cpm = spend/mb. weekly = all 300 accounts aggregated.',
+    _note: [
+      'Daily grain: spend/clicks/imp/nc_call/nc_web/appt_call/appt_web/nca_call/nca_web from Google Ads API.',
+      'Validated signal = nc_call + nc_web + appt_call + appt_web. NCA stored for reference only.',
+      'mb/mb_inv/mb_vet set by parse-matchback.js (Invoca + Vetstoria, 4-6wk lag).',
+      'All aggregations (monthly, weekly, YoY, pacing %, CPA) computed in dashboard JS.',
+    ].join(' '),
     accounts: updatedAccounts,
-    weekly,
-    monthly,
   };
 
-  fs.writeFileSync(jsonPath, JSON.stringify(output, null, 2));
-  console.log(`\nDone. Wrote ${updatedAccounts.length} accounts to data.json`);
+  fs.writeFileSync(jsonPath, JSON.stringify(output));
+  console.log(`\nDone. ${updatedAccounts.length} accounts written to data.json`);
 })();

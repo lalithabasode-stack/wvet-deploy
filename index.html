@@ -1044,6 +1044,68 @@ const BUDGET_LOWER=550;  // per-account minimum floor
 let A=[], AM=[], MANAGED_IDS=new Set(), WEEKLY_DATA=[], MONTHLY_TS=[];
 
 // ============================
+// DAILY DATA HELPERS
+// ============================
+
+// Build per-account monthly aggregates (spend, clicks, imp, sig, nca, convByAction, cpm)
+// from a.daily[] rows. Populates the short-key monthly objects the existing tabs expect.
+function computeFromDaily(accounts){
+  const ymToMk = Object.fromEntries(Object.entries(MONTH_YM).map(([mk,ym])=>[ym,mk]));
+  for(const a of accounts){
+    a.spend={}; a.clicks={}; a.imp={}; a.sig={}; a.nca={}; a.convByAction={};
+    for(const mk of MONTHS){
+      a.spend[mk]=0; a.clicks[mk]=0; a.imp[mk]=0; a.sig[mk]=0; a.nca[mk]=0;
+      a.convByAction[mk]={nci_call:0,nci_web:0,appt_call:0,appt_web:0,nca_call:0,nca_web:0};
+    }
+    for(const d of (a.daily||[])){
+      const mk=ymToMk[d.date.slice(0,7)];
+      if(!mk) continue;
+      a.spend[mk]  +=d.spend  ||0;
+      a.clicks[mk] +=d.clicks ||0;
+      a.imp[mk]    +=d.imp    ||0;
+      a.sig[mk]    +=(d.nc_call||0)+(d.nc_web||0)+(d.appt_call||0)+(d.appt_web||0);
+      a.nca[mk]    +=(d.nca_call||0)+(d.nca_web||0);
+      a.convByAction[mk].nci_call  +=d.nc_call   ||0;
+      a.convByAction[mk].nci_web   +=d.nc_web    ||0;
+      a.convByAction[mk].appt_call +=d.appt_call ||0;
+      a.convByAction[mk].appt_web  +=d.appt_web  ||0;
+      a.convByAction[mk].nca_call  +=d.nca_call  ||0;
+      a.convByAction[mk].nca_web   +=d.nca_web   ||0;
+    }
+    for(const mk of MONTHS) a.spend[mk]=Math.round(a.spend[mk]*100)/100;
+    // cpm = spend / matchback (matchback still stored as monthly short-key object)
+    a.cpm={};
+    for(const mk of MONTHS){
+      const mb=a.mb&&a.mb[mk]?a.mb[mk]:0;
+      a.cpm[mk]=mb>0?Math.round(a.spend[mk]/mb):0;
+    }
+  }
+}
+
+// Rebuild WEEKLY_DATA from daily rows across all accounts
+function buildWeeklyFromDaily(accounts){
+  const byWeek={};
+  for(const a of accounts){
+    for(const d of (a.daily||[])){
+      const dt=new Date(d.date+'T12:00:00Z');
+      const day=dt.getUTCDay();
+      const diff=day===0?-6:1-day;
+      const mon=new Date(dt); mon.setUTCDate(dt.getUTCDate()+diff);
+      const ws=mon.toISOString().slice(0,10);
+      if(!byWeek[ws]) byWeek[ws]={weekStart:ws,spend:0,clicks:0,imp:0,sig:0};
+      byWeek[ws].spend  +=d.spend  ||0;
+      byWeek[ws].clicks +=d.clicks ||0;
+      byWeek[ws].imp    +=d.imp    ||0;
+      byWeek[ws].sig    +=(d.nc_call||0)+(d.nc_web||0)+(d.appt_call||0)+(d.appt_web||0);
+    }
+  }
+  return Object.values(byWeek)
+    .sort((a,b)=>a.weekStart.localeCompare(b.weekStart))
+    .map(w=>({...w,spend:Math.round(w.spend*100)/100,
+      label:new Date(w.weekStart+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}));
+}
+
+// ============================
 // UTILITIES
 // ============================
 function pct(a,b,lowerBetter){
@@ -2227,13 +2289,16 @@ function isFullMonth(fromStr,toStr){
 }
 
 function getPeriodAcctData(fromStr,toStr,accts){
+  // spend/clicks/sig: true daily grain — exact date filtering
+  // matchback: monthly grain — include months whose 2nd falls within range (same as before)
   const from=new Date(fromStr+'T12:00:00'), to=new Date(toStr+'T12:00:00');
-  const months=MONTHS.filter(m=>{const d=new Date(MONTH_YM[m]+'-02');return d>=from&&d<=to;});
+  const mbMonths=MONTHS.filter(m=>{const d=new Date(MONTH_YM[m]+'-02');return d>=from&&d<=to;});
   return accts.map(a=>{
-    const sp=months.reduce((s,m)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
-    const cl=months.reduce((s,m)=>s+(a.clicks&&a.clicks[m]?a.clicks[m]:0),0);
-    const si=months.reduce((s,m)=>s+(a.sig&&a.sig[m]?a.sig[m]:0),0);
-    const mb=months.reduce((s,m)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0);
+    const days=(a.daily||[]).filter(d=>d.date>=fromStr&&d.date<=toStr);
+    const sp=days.reduce((s,d)=>s+(d.spend||0),0);
+    const cl=days.reduce((s,d)=>s+(d.clicks||0),0);
+    const si=days.reduce((s,d)=>s+(d.nc_call||0)+(d.nc_web||0)+(d.appt_call||0)+(d.appt_web||0),0);
+    const mb=mbMonths.reduce((s,m)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0);
     return{sp,cl,si,mb,cps:si?sp/si:null,cpm:mb?sp/mb:null};
   });
 }
@@ -2642,11 +2707,13 @@ function initPortResize(){initTableResize('port-table');}
     if(!r.ok)throw new Error('data.json fetch failed: '+r.status);
     const d=await r.json();
     A=d.accounts;
-    WEEKLY_DATA=d.weekly||[];
-    MONTHLY_TS=d.monthly||[];
 
     // Detect managed accounts
     AM=A.filter(a=>a.mb&&typeof a.mb==='object'&&Object.keys(a.mb).length>0&&a.bestR!==undefined);
+
+    // Compute all aggregations from daily grain
+    computeFromDaily(A);
+    WEEKLY_DATA=buildWeeklyFromDaily(A);
     MANAGED_IDS=new Set(AM.map(a=>a.id));
 
     // Update topbar
@@ -2738,16 +2805,18 @@ function renderPacingFromFilter() {
 
 function getPacingRows() {
   const now = new Date();
-  const MKS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  const curMk = MKS[now.getMonth()];
+  const curYM = now.toISOString().slice(0,7); // e.g. '2026-04'
+  const fromStr = curYM + '-01';
+  const toStr   = now.toISOString().slice(0,10);
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysElapsed = now.getDate();
   return A.map(acct => {
     const cfg = PACING_CONFIG?.budgets?.[acct.id];
     const budget = cfg?.monthly_budget || 0;
     if (!budget) return null;
-    const spendMtd = acct.spend?.[curMk] || 0;
-    const sigMtd   = acct.sig?.[curMk]   || 0;
+    const days = (acct.daily||[]).filter(d=>d.date>=fromStr&&d.date<=toStr);
+    const spendMtd = days.reduce((s,d)=>s+(d.spend||0),0);
+    const sigMtd   = days.reduce((s,d)=>s+(d.nc_call||0)+(d.nc_web||0)+(d.appt_call||0)+(d.appt_web||0),0);
     const expected = (budget / daysInMonth) * daysElapsed;
     const pacingPct = expected > 0 ? Math.round((spendMtd / expected) * 1000) / 10 : null;
     const status = pacingPct === null ? 'unknown' : pacingPct > 110 ? 'hot' : pacingPct < 90 ? 'low' : 'on';
