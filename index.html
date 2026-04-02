@@ -2873,13 +2873,19 @@ function renderPacingCharts() {
 
   const noDataMsg = '<div style="display:flex;align-items:center;justify-content:center;height:180px;font-size:11px;color:#B4B2A9">No weekly data yet · updates daily at 4am PT</div>';
 
+  // Full month always shows 5 week slots so 1 point doesn't squish to left edge
+  const FULL_MONTH_WEEKS = 5;
+  const paddedLabels = Array.from({length: FULL_MONTH_WEEKS}, (_, i) => 'Wk ' + (i + 1));
+  const padData = arr => { const out = [...arr]; while(out.length < FULL_MONTH_WEEKS) out.push(null); return out; };
+
   const chartOpts = () => ({
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toLocaleString() } } },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y != null ? '$' + ctx.parsed.y.toLocaleString() : '' } } },
     scales: {
       x: { grid: { color: '#F5F4F0' }, ticks: { font: { size: 9 } } },
       y: { beginAtZero: true, grid: { color: '#F5F4F0' }, ticks: { font: { size: 9 }, callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) } }
-    }
+    },
+    spanGaps: false
   });
 
   const mkDataset = (label, data, color, fill) => ({
@@ -2897,9 +2903,9 @@ function renderPacingCharts() {
     if (!momWrap.querySelector('canvas')) momWrap.innerHTML = '<canvas id="p-mom-chart"></canvas>';
     _pMomChart = new Chart(document.getElementById('p-mom-chart').getContext('2d'), {
       type: 'line',
-      data: { labels, datasets: [
-        mkDataset(curMonthName,  curWeeks.map(w=>w.spend),   '#1D9E75', true),
-        mkDataset(prevMonthName, prevSlice.map(w=>w.spend),  '#B4B2A9', false),
+      data: { labels: paddedLabels, datasets: [
+        mkDataset(curMonthName,  padData(curWeeks.map(w=>w.spend)),   '#1D9E75', true),
+        mkDataset(prevMonthName, padData(prevSlice.map(w=>w.spend)),  '#B4B2A9', false),
       ]},
       options: chartOpts()
     });
@@ -2913,9 +2919,9 @@ function renderPacingCharts() {
     if (!yoyWrap.querySelector('canvas')) yoyWrap.innerHTML = '<canvas id="p-yoy-chart"></canvas>';
     _pYoyChart = new Chart(document.getElementById('p-yoy-chart').getContext('2d'), {
       type: 'line',
-      data: { labels, datasets: [
-        mkDataset(curMonthName, curWeeks.map(w=>w.spend),  '#378ADD', true),
-        mkDataset(pyMonthName,  pySlice.map(w=>w.spend),   '#D4D0C8', false),
+      data: { labels: paddedLabels, datasets: [
+        mkDataset(curMonthName, padData(curWeeks.map(w=>w.spend)),  '#378ADD', true),
+        mkDataset(pyMonthName,  padData(pySlice.map(w=>w.spend)),   '#D4D0C8', false),
       ]},
       options: chartOpts()
     });
