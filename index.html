@@ -1077,7 +1077,7 @@ function computeFromDaily(accounts){
     a.cpm={};
     for(const mk of MONTHS){
       const mb=a.mb&&a.mb[mk]?a.mb[mk]:0;
-      a.cpm[mk]=mb>0?Math.round(a.spend[mk]/mb):0;
+      a.cpm[mk]=mb>0?a.spend[mk]/mb:0;
     }
   }
 }
@@ -1117,6 +1117,8 @@ function pct(a,b,lowerBetter){
 }
 function f$(v){return '$'+Math.round(v).toLocaleString()}
 function fN(v){return Math.round(v).toLocaleString()}
+function fConv(v){return v!=null?(Math.round(v*100)/100).toLocaleString(undefined,{maximumFractionDigits:2}):'—'}
+function fCPA(v){return v!=null?'$'+(Math.round(v*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
 function rC(r){return r>=0.5?'#1D9E75':r>=0.3?'#EF9F27':r>=0?'#B4B2A9':'#E24B4A'}
 function rBar(r){
   const p=Math.min(100,Math.round(Math.abs(r)*100));
@@ -1233,9 +1235,9 @@ function renderPortfolioKPIs(){
   const totMB=AM.reduce((s,a)=>s+(a.mb&&a.mb[m]?a.mb[m]:0),0);
   const totSig=AM.reduce((s,a)=>s+(a.sig&&a.sig[m]?a.sig[m]:0),0);
   const totMSpend=AM.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0);
-  const avgCPM=totMB>0?Math.round(totMSpend/totMB):0;
-  document.getElementById('port-ms-mb').textContent=totMB+' appts';
-  document.getElementById('port-ms-cpm').textContent=avgCPM>0?'$'+avgCPM:'—';
+  const avgCPM=totMB>0?totMSpend/totMB:0;
+  document.getElementById('port-ms-mb').textContent=fConv(totMB)+' appts';
+  document.getElementById('port-ms-cpm').textContent=avgCPM>0?fCPA(avgCPM):'—';
   document.getElementById('port-ms-sig').textContent=fN(totSig);
   document.getElementById('port-month-lbl').textContent=MLABEL[m];
   document.getElementById('port-managed-count').textContent=AM.length;
@@ -1474,8 +1476,8 @@ function renderPortfolioTable(){
     const appt_bP=p&&a.convByAction&&a.convByAction[p]?((a.convByAction[p].appt_call||0)+(a.convByAction[p].appt_web||0)):null;
     const ncaP=p&&a.nca&&a.nca[p]!=null?a.nca[p]:null;
     const cpmP=p&&isManaged&&a.cpm&&a.cpm[p]?a.cpm[p]:0;
-    const cps=nci!=null&&appt_b!=null&&(nci+appt_b)>0?Math.round(sp/(nci+appt_b)):null;
-    const cpsP=p&&nciP!=null&&appt_bP!=null&&(nciP+appt_bP)>0?Math.round(spp/(nciP+appt_bP)):null;
+    const cps=nci!=null&&appt_b!=null&&(nci+appt_b)>0?sp/(nci+appt_b):null;
+    const cpsP=p&&nciP!=null&&appt_bP!=null&&(nciP+appt_bP)>0?spp/(nciP+appt_bP):null;
     return{...a,sp,spp,im,cl,si,mb,cpm,cpc,isManaged,mb_inv,mb_vet,nc,nci,appt_b,nca,mbP,mb_invP,mb_vetP,nciP,appt_bP,ncaP,cpmP,cps,cpsP};
   };
 
@@ -1532,21 +1534,21 @@ function renderPortfolioTable(){
         <td class="hn-cell"><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
         <td class="r">${f$(a.sp)}</td>
         <td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
-        <td class="r">${a.nci!=null?a.nci:'—'}</td>
+        <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td>
         <td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
-        <td class="r">${a.appt_b!=null?a.appt_b:'—'}</td>
+        <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td>
         <td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
-        <td class="r" style="color:#888780">${a.nca!=null?a.nca:'—'}</td>
+        <td class="r" style="color:#888780">${a.nca!=null?fConv(a.nca):'—'}</td>
         <td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
-        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}><strong>${a.mb}</strong></td>
+        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}><strong>${fConv(a.mb)}</strong></td>
         <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p?pct(a.mb,a.mbP,true):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_inv!=null?a.mb_inv:'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_inv!=null?fConv(a.mb_inv):'—'}</td>
         <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_inv!=null&&a.mb_invP!=null?pct(a.mb_inv,a.mb_invP,true):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_vet!=null?a.mb_vet:'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_vet!=null?fConv(a.mb_vet):'—'}</td>
         <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_vet!=null&&a.mb_vetP!=null?pct(a.mb_vet,a.mb_vetP,true):'—'}</td>
-        <td class="r">${a.cpm?'$'+a.cpm:'—'}</td>
+        <td class="r">${a.cpm?fCPA(a.cpm):'—'}</td>
         <td class="r">${p&&a.cpm&&a.cpmP?pct(a.cpm,a.cpmP,true):'—'}</td>
-        <td class="r">${a.cps!=null?'$'+a.cps:'—'}</td>
+        <td class="r">${a.cps!=null?fCPA(a.cps):'—'}</td>
         <td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
         <td class="r">${rBar(a.bestR)}</td>
       </tr>`;
@@ -1556,9 +1558,9 @@ function renderPortfolioTable(){
       <td class="hn-cell"><span class="hn">${a.name}</span></td>
       <td class="r">${f$(a.sp)}</td>
       <td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
-      <td class="r">${a.nci!=null?a.nci:'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
-      <td class="r">${a.appt_b!=null?a.appt_b:'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
-      <td class="r" style="color:#888780">${a.nca!=null?a.nca:'—'}</td><td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
+      <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
+      <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
+      <td class="r" style="color:#888780">${a.nca!=null?fConv(a.nca):'—'}</td><td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
       <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
       <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
       <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
@@ -1567,7 +1569,7 @@ function renderPortfolioTable(){
       <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
       <td class="r" ${dim}>—</td>
       <td class="r" ${dim}>—</td>
-      <td class="r">${a.cps!=null?'$'+a.cps:'—'}</td>
+      <td class="r">${a.cps!=null?fCPA(a.cps):'—'}</td>
       <td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
       <td class="r" ${dim}>—</td>
     </tr>`;
@@ -1599,31 +1601,31 @@ function renderPortfolioTable(){
   const prevMb=p?mRows.reduce((s,a)=>s+a.mbP,0):0;
   const prevInv=p?mRows.reduce((s,a)=>s+(a.mb_invP!=null?a.mb_invP:0),0):0;
   const prevVet=p?mRows.reduce((s,a)=>s+(a.mb_vetP!=null?a.mb_vetP:0),0):0;
-  const avgCPM2=totMb?Math.round(totSp/totMb):0;
-  const prevCPM=p&&prevMb>0?Math.round(totSpP/prevMb):0;
+  const avgCPM2=totMb?totSp/totMb:0;
+  const prevCPM=p&&prevMb>0?totSpP/prevMb:0;
   const totSigs=rows.reduce((s,a)=>s+(a.nci||0)+(a.appt_b||0),0);
   const prevSigs=p?rows.reduce((s,a)=>s+(a.nciP||0)+(a.appt_bP||0),0):0;
-  const totCPS=totSigs>0?Math.round(totSp/totSigs):0;
-  const prevCPS=p&&prevSigs>0?Math.round(totSpP/prevSigs):0;
+  const totCPS=totSigs>0?totSp/totSigs:0;
+  const prevCPS=p&&prevSigs>0?totSpP/prevSigs:0;
   document.getElementById('port-tfoot').innerHTML=`<tr>
     <td>Total (${rows.length})</td>
     <td class="r">${f$(totSp)}</td>
     <td class="r">${p?pct(totSp,totSpP,true):'—'}</td>
-    <td class="r">${totNci}</td>
+    <td class="r">${fConv(totNci)}</td>
     <td class="r">${p?pct(totNci,prevNci,true):'—'}</td>
-    <td class="r">${totAppt}</td>
+    <td class="r">${fConv(totAppt)}</td>
     <td class="r">${p?pct(totAppt,prevAppt,true):'—'}</td>
-    <td class="r" style="color:#888780">${totNca}</td>
+    <td class="r" style="color:#888780">${fConv(totNca)}</td>
     <td class="r" style="color:#888780">${p?pct(totNca,prevNca,false):'—'}</td>
-    <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}><strong>${totMb}</strong></td>
+    <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}><strong>${fConv(totMb)}</strong></td>
     <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}>${p?pct(totMb,prevMb,true):'—'}</td>
-    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${totInv}</strong></td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${fConv(totInv)}</strong></td>
     <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totInv,prevInv,true):'—'}</td>
-    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${totVet}</strong></td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${fConv(totVet)}</strong></td>
     <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totVet,prevVet,true):'—'}</td>
-    <td class="r">${avgCPM2>0?'$'+avgCPM2:'—'}</td>
+    <td class="r">${avgCPM2>0?fCPA(avgCPM2):'—'}</td>
     <td class="r">${p&&avgCPM2&&prevCPM?pct(avgCPM2,prevCPM,true):'—'}</td>
-    <td class="r">${totCPS>0?'$'+totCPS:'—'}</td>
+    <td class="r">${totCPS>0?fCPA(totCPS):'—'}</td>
     <td class="r">${p&&totCPS&&prevCPS?pct(totCPS,prevCPS,true):'—'}</td>
     <td></td>
   </tr>`;
@@ -1695,7 +1697,7 @@ function renderManaged(){
     const sig=a.sig[mDate]||0,sigp=p2?a.sig[p2]||0:0;
     const sp=a.spend[mDate]||0,spp=p2?a.spend[p2]||0:0;
     const cpm=a.cpm[mDate]||0,cpmp=p2?a.cpm[p2]||0:0;
-    const cpsig=sig?Math.round(sp/sig):0,cpsigp=sigp?Math.round(spp/sigp):0;
+    const cpsig=sig?sp/sig:0,cpsigp=sigp?spp/sigp:0;
     const mbMom=mbp?(mb-mbp)/mbp:0;
     const cpmMom=cpmp?(cpmp-cpm)/cpmp:0;
     const sigMom=sigp?(sig-sigp)/sigp:0;
@@ -1712,10 +1714,10 @@ function renderManaged(){
     const score=scoreA(a);const rec=recFromScore(a,score);
     return`<tr>
       <td><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
-      <td class="r"><strong>${a.mb}</strong></td><td class="r">${pct(a.mb,a.mbp)}</td>
-      <td class="r">${a.cpm?'$'+a.cpm:'—'}</td><td class="r">${pct(a.cpmp,a.cpm,true)}</td>
-      <td class="r">${a.sig}</td><td class="r">${pct(a.sig,a.sigp)}</td>
-      <td class="r">${a.cpsig?'$'+a.cpsig:'—'}</td><td class="r">${pct(a.cpsigp,a.cpsig,true)}</td>
+      <td class="r"><strong>${fConv(a.mb)}</strong></td><td class="r">${pct(a.mb,a.mbp)}</td>
+      <td class="r">${a.cpm?fCPA(a.cpm):'—'}</td><td class="r">${pct(a.cpmp,a.cpm,true)}</td>
+      <td class="r">${fConv(a.sig)}</td><td class="r">${pct(a.sig,a.sigp)}</td>
+      <td class="r">${a.cpsig?fCPA(a.cpsig):'—'}</td><td class="r">${pct(a.cpsigp,a.cpsig,true)}</td>
       <td class="r">${f$(a.sp)}</td>
       <td class="r">${rBar(a.bestR)}</td>
       <td>${recPill(rec.type,rec.label)}</td>
@@ -1724,15 +1726,15 @@ function renderManaged(){
 
   document.getElementById('m-tbody').innerHTML=html||'<tr><td colspan="12" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match filters</td></tr>';
   document.getElementById('m-cnt').textContent=rows.length;
-  const tCPM=tMB?Math.round(tSp/tMB):0,tCPMp=tMBp?Math.round(tSpP/tMBp):0;
-  const tCPSig=tSig?Math.round(tSp/tSig):0,tCPSigP=tSigP?Math.round(tSpP/tSigP):0;
-  document.getElementById('mf-mb').textContent=tMB;
+  const tCPM=tMB?tSp/tMB:0,tCPMp=tMBp?tSpP/tMBp:0;
+  const tCPSig=tSig?tSp/tSig:0,tCPSigP=tSigP?tSpP/tSigP:0;
+  document.getElementById('mf-mb').textContent=fConv(tMB);
   document.getElementById('mf-mb-m').innerHTML=pct(tMB,tMBp);
-  document.getElementById('mf-cpm').textContent=tCPM?'$'+tCPM:'—';
+  document.getElementById('mf-cpm').textContent=tCPM?fCPA(tCPM):'—';
   document.getElementById('mf-cpm-m').innerHTML=pct(tCPMp,tCPM,false);
-  document.getElementById('mf-sig').textContent=tSig;
+  document.getElementById('mf-sig').textContent=fConv(tSig);
   document.getElementById('mf-sig-m').innerHTML=pct(tSig,tSigP);
-  document.getElementById('mf-cpsig').textContent=tCPSig?'$'+tCPSig:'—';
+  document.getElementById('mf-cpsig').textContent=tCPSig?fCPA(tCPSig):'—';
   document.getElementById('mf-cpsig-m').innerHTML=pct(tCPSigP,tCPSig,false);
   document.getElementById('mf-sp').textContent=f$(tSp);
 }
@@ -2063,8 +2065,8 @@ function renderTS(){
   const dataRows=data.map(d=>{
     const pr=d.pr;
     const mbCells=showMB?
-      (d.mb!=null?`<td class="r"><strong>${d.mb}</strong></td><td class="r">${pr&&pr.mb!=null?pct(d.mb,pr.mb):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')+
-      (d.cpm!=null?`<td class="r">$${Math.round(d.cpm).toLocaleString()}</td><td class="r">${pr&&pr.cpm?pct(pr.cpm,d.cpm,false):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')
+      (d.mb!=null?`<td class="r"><strong>${fConv(d.mb)}</strong></td><td class="r">${pr&&pr.mb!=null?pct(d.mb,pr.mb):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')+
+      (d.cpm!=null?`<td class="r">${fCPA(d.cpm)}</td><td class="r">${pr&&pr.cpm?pct(pr.cpm,d.cpm,false):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')
       :'';
     return`<tr>
       <td style="font-weight:500">${d.label}</td>
@@ -2072,8 +2074,8 @@ function renderTS(){
       <td class="r">${fN(Math.round(d.imp||0))}</td><td class="r">${pr?pct(d.imp||0,pr.imp||0):'—'}</td>
       <td class="r">${fN(Math.round(d.clicks))}</td><td class="r">${pr?pct(d.clicks,pr.clicks):'—'}</td>
       <td class="r">$${d.cpc.toFixed(2)}</td><td class="r">${pr?pct(pr.cpc,d.cpc,false):'—'}</td>
-      <td class="r">${Math.round(d.sig)}</td><td class="r">${pr?pct(d.sig,pr.sig):'—'}</td>
-      <td class="r">${d.cpsig?'$'+Math.round(d.cpsig).toLocaleString():'—'}</td><td class="r">${pr?pct(pr.cpsig,d.cpsig,false):'—'}</td>
+      <td class="r">${fConv(d.sig)}</td><td class="r">${pr?pct(d.sig,pr.sig):'—'}</td>
+      <td class="r">${fCPA(d.cpsig)}</td><td class="r">${pr?pct(pr.cpsig,d.cpsig,false):'—'}</td>
       ${mbCells}
     </tr>`;
   }).join('');
@@ -2133,8 +2135,8 @@ function renderTS(){
 
   const _pp=priorTot;
   const mbTotCells=showMB?
-    (tot.mb!=null?`<td class="r"><strong>${tot.mb}</strong></td><td class="r">${_pp&&_pp.mb>0?pct(tot.mb,_pp.mb):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')+
-    (tCPM?`<td class="r">$${Math.round(tCPM).toLocaleString()}</td><td class="r">${_pp&&_pp.cpm?pct(_pp.cpm,tCPM,false):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')
+    (tot.mb!=null?`<td class="r"><strong>${fConv(tot.mb)}</strong></td><td class="r">${_pp&&_pp.mb>0?pct(tot.mb,_pp.mb):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')+
+    (tCPM?`<td class="r">${fCPA(tCPM)}</td><td class="r">${_pp&&_pp.cpm?pct(_pp.cpm,tCPM,false):'—'}</td>`:'<td class="r">—</td><td class="r">—</td>')
     :'';
   tbody.innerHTML=dataRows+`<tr class="tfoot">
     <td>Total</td>
@@ -2142,8 +2144,8 @@ function renderTS(){
     <td class="r">${fN(Math.round(tot.imp))}</td><td class="r">${_pp?pct(tot.imp,_pp.imp):'—'}</td>
     <td class="r">${fN(Math.round(tot.clicks))}</td><td class="r">${_pp?pct(tot.clicks,_pp.clicks):'—'}</td>
     <td class="r">$${tCPC.toFixed(2)}</td><td class="r">${_pp&&_pp.cpc?pct(_pp.cpc,tCPC,false):'—'}</td>
-    <td class="r">${Math.round(tot.sig)}</td><td class="r">${_pp?pct(tot.sig,_pp.sig):'—'}</td>
-    <td class="r">${tCPSig?'$'+Math.round(tCPSig).toLocaleString():'—'}</td><td class="r">${_pp&&_pp.cpsig?pct(_pp.cpsig,tCPSig,false):'—'}</td>
+    <td class="r">${fConv(tot.sig)}</td><td class="r">${_pp?pct(tot.sig,_pp.sig):'—'}</td>
+    <td class="r">${fCPA(tCPSig)}</td><td class="r">${_pp&&_pp.cpsig?pct(_pp.cpsig,tCPSig,false):'—'}</td>
     ${mbTotCells}
   </tr>`;
 
@@ -2349,10 +2351,10 @@ function renderPoP(){
   const POP_METRICS=[
     {key:'sp',  label:'Spend',       fmt:f$,                               lb:false, mb:false},
     {key:'cl',  label:'Clicks',      fmt:fN,                               lb:false, mb:false},
-    {key:'si',  label:'GA Sigs',     fmt:v=>String(Math.round(v||0)),      lb:false, mb:false},
-    {key:'cps', label:'CP Sigs',     fmt:v=>v?'$'+Math.round(v):'—',      lb:true,  mb:false},
-    {key:'mb',  label:'Matchback†',  fmt:v=>String(Math.round(v||0)),      lb:false, mb:true},
-    {key:'cpm', label:'CP Match†',   fmt:v=>v?'$'+Math.round(v):'—',      lb:true,  mb:true},
+    {key:'si',  label:'GA Sigs',     fmt:v=>fConv(v||0),                   lb:false, mb:false},
+    {key:'cps', label:'CP Sigs',     fmt:v=>fCPA(v||null),                 lb:true,  mb:false},
+    {key:'mb',  label:'Matchback†',  fmt:v=>fConv(v||0),                   lb:false, mb:true},
+    {key:'cpm', label:'CP Match†',   fmt:v=>fCPA(v||null),                 lb:true,  mb:true},
   ];
 
   // Format a date string as "M/D/YYYY"
@@ -2820,7 +2822,7 @@ function getPacingRows() {
     const expected = (budget / daysInMonth) * daysElapsed;
     const pacingPct = expected > 0 ? Math.round((spendMtd / expected) * 1000) / 10 : null;
     const status = pacingPct === null ? 'unknown' : pacingPct > 110 ? 'hot' : pacingPct < 90 ? 'low' : 'on';
-    const cpa = sigMtd > 0 ? Math.round(spendMtd / sigMtd) : null;
+    const cpa = sigMtd > 0 ? spendMtd / sigMtd : null;
     const cpaGoal = cfg?.cpa_goal || null;
     const cpaDelta = (cpa !== null && cpaGoal) ? Math.round((cpa - cpaGoal) / cpaGoal * 100) : null;
     const eomSig   = daysElapsed > 0 && sigMtd > 0   ? Math.round((sigMtd   / daysElapsed) * daysInMonth) : null;
@@ -2842,12 +2844,12 @@ function renderPacingKPIs(rows) {
   const daysElapsed = now.getDate();
   const totalExpected = rows.reduce((s, r) => s + (r.budget / daysInMonth) * daysElapsed, 0);
   const portPacing = totalExpected > 0 ? Math.round((totalSpend / totalExpected) * 1000) / 10 : null;
-  const portCpa = totalSig > 0 ? Math.round(totalSpend / totalSig) : null;
+  const portCpa = totalSig > 0 ? totalSpend / totalSig : null;
 
   // Prior month spend (for MoM delta)
   const prevSpend = A.reduce((s, a) => s + (a.spend?.[prevMk] || 0), 0);
   const prevSig   = A.reduce((s, a) => s + (a.sig?.[prevMk]   || 0), 0);
-  const prevCpa   = prevSig > 0 ? Math.round(prevSpend / prevSig) : null;
+  const prevCpa   = prevSig > 0 ? prevSpend / prevSig : null;
 
   // Hot / On / Low counts
   const hot = rows.filter(r => r.status === 'hot');
@@ -2873,7 +2875,7 @@ function renderPacingKPIs(rows) {
   pacD.textContent = portPacing === null ? '—' : portPacing > 110 ? 'Running hot' : portPacing < 90 ? 'Running low' : 'On pace';
   pacD.className = 'p-kd ' + (portPacing > 110 ? 'dn' : portPacing < 90 ? '' : 'up');
 
-  document.getElementById('p-kv-conv').textContent = totalSig.toLocaleString();
+  document.getElementById('p-kv-conv').textContent = fConv(totalSig);
   const convD = document.getElementById('p-kd-conv');
   if (prevSig > 0) {
     const d = Math.round((totalSig / prevSig * 100) - 100);
@@ -2881,7 +2883,7 @@ function renderPacingKPIs(rows) {
     convD.className = 'p-kd ' + (d >= 0 ? 'up' : 'dn');
   } else { convD.textContent = '—'; convD.className = 'p-kd'; }
 
-  document.getElementById('p-kv-cpa').textContent = portCpa !== null ? '$' + portCpa : '—';
+  document.getElementById('p-kv-cpa').textContent = fCPA(portCpa);
   const cpaD = document.getElementById('p-kd-cpa');
   if (portCpa !== null && prevCpa !== null && prevCpa > 0) {
     const d = Math.round((portCpa / prevCpa * 100) - 100);
@@ -3044,7 +3046,7 @@ function renderPacingTable(rows) {
 
   document.getElementById('p-tbl-count').textContent = filtered.length + ' accounts';
 
-  const fmt$ = v => v !== null ? '$' + v.toLocaleString() : '—';
+  const fmt$ = v => v !== null ? f$(Math.round(v)) : '—';
   const fmtPct = v => v !== null ? v + '%' : '—';
   const fmtDelta = v => v !== null ? (v >= 0 ? '+' : '') + v + '%' : '—';
   const deltaColor = v => v === null ? '' : v > 0 ? 'color:#D85A30' : v < 0 ? 'color:#1D9E75' : '';
@@ -3071,8 +3073,8 @@ function renderPacingTable(rows) {
     <td class="r">${fmt$(r.spendMtd)}</td>
     <td class="r">${pctBar(r.pacingPct, r.status)}</td>
     <td class="r">${badge(r.status)}</td>
-    <td class="r">${r.sigMtd || '—'}</td>
-    <td class="r" style="${r.cpa && r.cpaGoal && r.cpa > r.cpaGoal ? 'color:#D85A30' : ''}">${fmt$(r.cpa)}</td>
+    <td class="r">${r.sigMtd > 0 ? fConv(r.sigMtd) : '—'}</td>
+    <td class="r" style="${r.cpa && r.cpaGoal && r.cpa > r.cpaGoal ? 'color:#D85A30' : ''}">${fCPA(r.cpa)}</td>
     <td class="r">${fmt$(r.cpaGoal)}</td>
     <td class="r" style="${deltaColor(r.cpaDelta)}">${fmtDelta(r.cpaDelta)}</td>
   </tr>`).join('');
@@ -3081,14 +3083,14 @@ function renderPacingTable(rows) {
   const totBudget  = filtered.reduce((s,r)=>s+r.budget,0);
   const totSpend   = filtered.reduce((s,r)=>s+r.spendMtd,0);
   const totSig     = filtered.reduce((s,r)=>s+r.sigMtd,0);
-  const totCpa     = totSig > 0 ? Math.round(totSpend/totSig) : null;
+  const totCpa     = totSig > 0 ? totSpend/totSig : null;
   document.getElementById('p-tfoot').innerHTML = `<tr>
     <td>Total (${filtered.length})</td>
     <td class="r">${fmt$(totBudget)}</td>
     <td class="r">${fmt$(totSpend)}</td>
     <td class="r">—</td><td class="r">—</td>
-    <td class="r">${totSig || '—'}</td>
-    <td class="r">${fmt$(totCpa)}</td>
+    <td class="r">${totSig > 0 ? fConv(totSig) : '—'}</td>
+    <td class="r">${fCPA(totCpa)}</td>
     <td class="r">—</td><td class="r">—</td>
   </tr>`;
 }
