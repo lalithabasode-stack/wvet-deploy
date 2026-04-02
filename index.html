@@ -2864,10 +2864,14 @@ function renderPacingCharts() {
   document.getElementById('p-yoy-cur-lbl').textContent  = curMonthName;
   document.getElementById('p-yoy-prev-lbl').textContent = pyMonthName;
 
-  // Labels driven purely by current month weeks — grows as month progresses
+  // Right-aligned: always 5 slots, current week at right edge, empty slots on left
   const n = curWeeks.length;
-  const labels = Array.from({length: n}, (_, i) => 'Wk ' + (i + 1));
-  // Prior month: align first N weeks to current month weeks
+  const MAX_WKS = 5;
+  const labels = Array.from({length: MAX_WKS}, (_, i) => {
+    const wk = i - (MAX_WKS - n);
+    return wk >= 0 ? 'Wk ' + (wk + 1) : '';
+  });
+  const rightAlign = arr => { const out = Array(MAX_WKS).fill(null); arr.forEach((v,i) => { out[MAX_WKS - n + i] = v; }); return out; };
   const prevSlice = prevWeeks.slice(0, n);
   const pySlice   = pyWeeks.slice(0, n);
 
@@ -2898,8 +2902,8 @@ function renderPacingCharts() {
     _pMomChart = new Chart(document.getElementById('p-mom-chart').getContext('2d'), {
       type: 'line',
       data: { labels, datasets: [
-        mkDataset(curMonthName,  curWeeks.map(w=>w.spend),  '#1D9E75', true),
-        mkDataset(prevMonthName, prevSlice.map(w=>w.spend), '#B4B2A9', false),
+        mkDataset(curMonthName,  rightAlign(curWeeks.map(w=>w.spend)),  '#1D9E75', true),
+        mkDataset(prevMonthName, rightAlign(prevSlice.map(w=>w.spend)), '#B4B2A9', false),
       ]},
       options: chartOpts()
     });
@@ -2914,8 +2918,8 @@ function renderPacingCharts() {
     _pYoyChart = new Chart(document.getElementById('p-yoy-chart').getContext('2d'), {
       type: 'line',
       data: { labels, datasets: [
-        mkDataset(curMonthName, curWeeks.map(w=>w.spend),  '#378ADD', true),
-        mkDataset(pyMonthName,  pySlice.map(w=>w.spend),   '#D4D0C8', false),
+        mkDataset(curMonthName, rightAlign(curWeeks.map(w=>w.spend)),  '#378ADD', true),
+        mkDataset(pyMonthName,  rightAlign(pySlice.map(w=>w.spend)),   '#D4D0C8', false),
       ]},
       options: chartOpts()
     });
