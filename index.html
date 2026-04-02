@@ -826,12 +826,6 @@ tr.managed-row{border-left:2px solid #1D9E75}
 <!-- ============================  PACING VIEW  ============================ -->
 <div id="pacing" class="view">
 <style>
-#pacing .p-filters{display:flex;gap:8px;align-items:center;background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:9px 14px;margin-bottom:12px;flex-wrap:wrap}
-#pacing .p-chips{display:flex;gap:4px}
-#pacing .p-chip{font-size:10px;padding:3px 9px;border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;color:#888780;cursor:pointer;white-space:nowrap;font-family:inherit}
-#pacing .p-chip:hover{background:#E8E6DF}
-#pacing .p-chip.on{background:#E8F5F0;color:#0F6E56;border-color:#9FE1CB;font-weight:500}
-#pacing .p-search{font-size:11px;padding:4px 9px;border:0.5px solid #E8E6DF;border-radius:6px;background:#F5F4F0;color:#1a1a18;outline:none;width:190px;margin-left:auto;font-family:inherit}
 #pacing .p-kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}
 #pacing .p-kpi{background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:12px 15px}
 #pacing .p-kl{font-size:10px;font-weight:500;color:#888780;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
@@ -850,137 +844,162 @@ tr.managed-row{border-left:2px solid #1D9E75}
 #pacing .p-pct-txt{font-size:10px;font-weight:500;min-width:36px}
 </style>
 
-  <!-- FILTERS -->
-  <div class="p-filters">
-    <span class="p-kl" style="margin-bottom:0;white-space:nowrap">Status</span>
-    <div class="p-chips">
-      <button class="p-chip on" onclick="setPacingFilter('all',this)">All (<span id="p-chip-all">—</span>)</button>
-      <button class="p-chip" onclick="setPacingFilter('hot',this)">Hot (<span id="p-chip-hot">—</span>)</button>
-      <button class="p-chip" onclick="setPacingFilter('on',this)">On Pace (<span id="p-chip-on">—</span>)</button>
-      <button class="p-chip" onclick="setPacingFilter('low',this)">Low (<span id="p-chip-low">—</span>)</button>
-    </div>
-    <input class="p-search" id="p-search" type="text" placeholder="Search hospital…" oninput="renderPacingTable()">
-    <span id="p-updated" style="font-size:10px;color:#B4B2A9"></span>
-  </div>
-
-  <!-- PRIMARY KPIs -->
-  <div class="p-kpi-row">
-    <div class="p-kpi" style="background:#0F6E56;border-color:#0F6E56">
-      <div class="p-kl" style="color:#9FE1CB">Total Budget</div>
-      <div class="p-kv" style="color:white" id="p-kv-budget">—</div>
-      <div class="p-kd" style="color:#5DCAA5" id="p-kd-budget">—</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl">Portfolio Pacing</div>
-      <div class="p-kv" id="p-kv-pacing">—</div>
-      <div class="p-kd" id="p-kd-pacing">—</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl">MTD Conversions</div>
-      <div class="p-kv" id="p-kv-conv">—</div>
-      <div class="p-kd" id="p-kd-conv">—</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl">Portfolio CPA</div>
-      <div class="p-kv" id="p-kv-cpa">—</div>
-      <div class="p-kd" id="p-kd-cpa">—</div>
-    </div>
-  </div>
-
-  <!-- SECONDARY KPIs -->
-  <div class="p-kpi-row">
-    <div class="p-kpi">
-      <div class="p-kl">% to Conv Goal</div>
-      <div class="p-kv-sm" id="p-kv-convgoal">—</div>
-      <div class="p-kd" id="p-kd-convgoal" style="color:#888780">—</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl">CPA vs Goal</div>
-      <div class="p-kv-sm" id="p-kv-cpagoal">—</div>
-      <div class="p-kd" id="p-kd-cpagoal" style="color:#888780">—</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl">Expected Conv (EOM)</div>
-      <div class="p-kv-sm" id="p-kv-eomconv">—</div>
-      <div class="p-kd" style="color:#888780">If trend continues</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl">Expected CPA (EOM)</div>
-      <div class="p-kv-sm" id="p-kv-eomcpa">—</div>
-      <div class="p-kd" style="color:#888780">If trend continues</div>
-    </div>
-  </div>
-
-  <!-- STATUS BREAKDOWN -->
-  <div class="p-status-row">
-    <div class="p-kpi">
-      <div class="p-kl" style="color:#D85A30">Hot accounts (&gt;110%)</div>
-      <div class="p-kv" id="p-sv-hot" style="color:#D85A30">—</div>
-      <div class="p-kd" id="p-sd-hot">—</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl" style="color:#1D9E75">On pace (90–110%)</div>
-      <div class="p-kv" id="p-sv-on" style="color:#1D9E75">—</div>
-      <div class="p-kd" id="p-sd-on">—</div>
-    </div>
-    <div class="p-kpi">
-      <div class="p-kl">Low accounts (&lt;90%)</div>
-      <div class="p-kv" id="p-sv-low">—</div>
-      <div class="p-kd" id="p-sd-low">—</div>
-    </div>
-  </div>
-
-  <!-- CHARTS -->
-  <div class="p-chart-grid">
-    <div class="card" style="margin-bottom:0">
-      <div class="card-head"><div class="ct">Month-over-month spend by week</div></div>
-      <div style="padding:12px 15px">
-        <div style="position:relative;height:180px"><canvas id="p-mom-chart"></canvas></div>
-        <div style="display:flex;gap:14px;margin-top:8px">
-          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#1D9E75"></span><span id="p-mom-cur-lbl">This month</span></div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#B4B2A9"></span><span id="p-mom-prev-lbl">Prior month</span></div>
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-top">
+        <span class="sb-title">Filters</span>
+        <span id="p-updated" style="font-size:10px;color:#B4B2A9"></span>
+        <button class="sb-clear" onclick="clearPacingFilters()">Clear all</button>
+      </div>
+      <!-- Account list -->
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)">
+          <span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="p-acct-count">(—)</span></span>
+          <span style="margin-left:auto;display:flex;gap:4px;margin-right:4px" onclick="event.stopPropagation()">
+            <button class="acct-tog-btn" onclick="pacingSelectAll()">All</button>
+            <button class="acct-tog-btn" onclick="pacingClearAccts()">Clear</button>
+          </span>
+          <span class="fg-arrow open">▾</span>
+        </div>
+        <div class="fg-body open">
+          <div style="padding:0 8px 6px"><input class="sb-search" id="p-acct-srch" placeholder="Type to search accounts..." oninput="filterPacingAcctList(this.value)" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
+          <div class="acct-list" id="p-acct-list" style="max-height:220px"></div>
+        </div>
+      </div>
+      <!-- Status filter -->
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Pacing status</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="pacing-status-chk" value="hot" checked onchange="renderPacingFromFilter()"><span class="fcheck-lbl" style="color:#D85A30">Hot (&gt;110%)</span><span class="fcount" id="p-fc-hot">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="pacing-status-chk" value="on" checked onchange="renderPacingFromFilter()"><span class="fcheck-lbl" style="color:#1D9E75">On Pace (90–110%)</span><span class="fcount" id="p-fc-on">—</span></label>
+          <label class="fcheck"><input type="checkbox" class="pacing-status-chk" value="low" checked onchange="renderPacingFromFilter()"><span class="fcheck-lbl">Low (&lt;90%)</span><span class="fcount" id="p-fc-low">—</span></label>
         </div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:0">
-      <div class="card-head"><div class="ct">Year-over-year spend by week</div></div>
-      <div style="padding:12px 15px">
-        <div style="position:relative;height:180px"><canvas id="p-yoy-chart"></canvas></div>
-        <div style="display:flex;gap:14px;margin-top:8px">
-          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#378ADD"></span><span id="p-yoy-cur-lbl">This month</span></div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#D4D0C8"></span><span id="p-yoy-prev-lbl">Same month prior year</span></div>
+
+    <!-- MAIN CONTENT -->
+    <div>
+      <!-- PRIMARY KPIs -->
+      <div class="p-kpi-row">
+        <div class="p-kpi" style="background:#0F6E56;border-color:#0F6E56">
+          <div class="p-kl" style="color:#9FE1CB">Total Budget</div>
+          <div class="p-kv" style="color:white" id="p-kv-budget">—</div>
+          <div class="p-kd" style="color:#5DCAA5" id="p-kd-budget">—</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl">Portfolio Pacing</div>
+          <div class="p-kv" id="p-kv-pacing">—</div>
+          <div class="p-kd" id="p-kd-pacing">—</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl">MTD Conversions</div>
+          <div class="p-kv" id="p-kv-conv">—</div>
+          <div class="p-kd" id="p-kd-conv">—</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl">Portfolio CPA</div>
+          <div class="p-kv" id="p-kv-cpa">—</div>
+          <div class="p-kd" id="p-kd-cpa">—</div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- TABLE -->
-  <div class="card" style="margin-bottom:0">
-    <div class="card-head">
-      <div class="ct">Account-level pacing</div>
-      <span id="p-tbl-count" style="font-size:10px;color:#888780">—</span>
-    </div>
-    <div class="tbl-wrap" style="max-height:400px;overflow-y:auto">
-      <table id="p-table">
-        <thead><tr>
-          <th>Hospital</th>
-          <th class="r">Budget</th>
-          <th class="r">MTD Spend</th>
-          <th class="r">Pacing %</th>
-          <th class="r">Status</th>
-          <th class="r">MTD Conv</th>
-          <th class="r">CPA Actual</th>
-          <th class="r">CPA Goal</th>
-          <th class="r">Δ CPA</th>
-        </tr></thead>
-        <tbody id="p-tbody"></tbody>
-        <tfoot class="tfoot" id="p-tfoot"></tfoot>
-      </table>
-    </div>
-    <div style="padding:8px 14px;font-size:9px;color:#888780;border-top:0.5px solid #E8E6DF;background:#FAFAF8">
-      Budget = March 2026 actual spend (placeholder until real budgets provided). CPA Goal = TBD. Pacing % = MTD spend ÷ (daily budget × days elapsed). Hot &gt;110% · On Pace 90–110% · Low &lt;90%.
-    </div>
-  </div>
+      <!-- SECONDARY KPIs -->
+      <div class="p-kpi-row">
+        <div class="p-kpi">
+          <div class="p-kl">% to Conv Goal</div>
+          <div class="p-kv-sm" id="p-kv-convgoal">—</div>
+          <div class="p-kd" id="p-kd-convgoal">—</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl">CPA vs Goal</div>
+          <div class="p-kv-sm" id="p-kv-cpagoal">—</div>
+          <div class="p-kd" id="p-kd-cpagoal">—</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl">Expected Conv (EOM)</div>
+          <div class="p-kv-sm" id="p-kv-eomconv">—</div>
+          <div class="p-kd">If trend continues</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl">Expected CPA (EOM)</div>
+          <div class="p-kv-sm" id="p-kv-eomcpa">—</div>
+          <div class="p-kd">If trend continues</div>
+        </div>
+      </div>
+
+      <!-- STATUS BREAKDOWN -->
+      <div class="p-status-row">
+        <div class="p-kpi">
+          <div class="p-kl" style="color:#D85A30">Hot accounts (&gt;110%)</div>
+          <div class="p-kv" id="p-sv-hot" style="color:#D85A30">—</div>
+          <div class="p-kd" id="p-sd-hot">—</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl" style="color:#1D9E75">On pace (90–110%)</div>
+          <div class="p-kv" id="p-sv-on" style="color:#1D9E75">—</div>
+          <div class="p-kd" id="p-sd-on">—</div>
+        </div>
+        <div class="p-kpi">
+          <div class="p-kl">Low accounts (&lt;90%)</div>
+          <div class="p-kv" id="p-sv-low">—</div>
+          <div class="p-kd" id="p-sd-low">—</div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="p-chart-grid">
+        <div class="card" style="margin-bottom:0">
+          <div class="card-head"><div class="ct">Month-over-month spend by week</div></div>
+          <div style="padding:12px 15px">
+            <div style="position:relative;height:180px"><canvas id="p-mom-chart"></canvas></div>
+            <div style="display:flex;gap:14px;margin-top:8px">
+              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#1D9E75"></span><span id="p-mom-cur-lbl">This month</span></div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#B4B2A9"></span><span id="p-mom-prev-lbl">Prior month</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-head"><div class="ct">Year-over-year spend by week</div></div>
+          <div style="padding:12px 15px">
+            <div style="position:relative;height:180px"><canvas id="p-yoy-chart"></canvas></div>
+            <div style="display:flex;gap:14px;margin-top:8px">
+              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#378ADD"></span><span id="p-yoy-cur-lbl">This month</span></div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#D4D0C8"></span><span id="p-yoy-prev-lbl">Same month prior year</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card" style="margin-bottom:0">
+        <div class="card-head">
+          <div class="ct">Account-level pacing</div>
+          <span id="p-tbl-count" style="font-size:10px;color:#888780">—</span>
+        </div>
+        <div class="tbl-wrap" style="max-height:400px;overflow-y:auto">
+          <table id="p-table">
+            <thead><tr>
+              <th>Hospital</th>
+              <th class="r">Budget</th>
+              <th class="r">MTD Spend</th>
+              <th class="r">Pacing %</th>
+              <th class="r">Status</th>
+              <th class="r">MTD Conv</th>
+              <th class="r">CPA Actual</th>
+              <th class="r">CPA Goal</th>
+              <th class="r">Δ CPA</th>
+            </tr></thead>
+            <tbody id="p-tbody"></tbody>
+            <tfoot class="tfoot" id="p-tfoot"></tfoot>
+          </table>
+        </div>
+        <div style="padding:8px 14px;font-size:9px;color:#888780;border-top:0.5px solid #E8E6DF;background:#FAFAF8">
+          Budget = March 2026 actual spend (placeholder). CPA Goal = TBD. Pacing % = MTD spend ÷ (daily budget × days elapsed). Hot &gt;110% · On Pace 90–110% · Low &lt;90%.
+        </div>
+      </div>
+    </div><!-- /main -->
+  </div><!-- /layout -->
 
 </div>
 
@@ -2663,8 +2682,8 @@ function initPortResize(){initTableResize('port-table');}
 // PACING TAB
 // ============================
 let PACING_CONFIG = null;
-let _pacingFilter = 'all';
-let _pacingRows = [];
+let _allPacingRows = [];
+let _pacingInited = false;
 let _pMomChart = null, _pYoyChart = null;
 
 async function loadPacingConfig() {
@@ -2676,6 +2695,45 @@ async function loadPacingConfig() {
     console.error('westernvet-config.json load failed', e);
     PACING_CONFIG = { budgets: {} };
   }
+}
+
+function initPacingFilters() {
+  const el = document.getElementById('p-acct-list');
+  el.innerHTML = _allPacingRows.map(a =>
+    `<label class="fcheck"><input type="checkbox" class="pacing-acct" value="${a.id}" checked onchange="renderPacingFromFilter()"><span class="fcheck-lbl">${a.name}</span></label>`
+  ).join('');
+  document.getElementById('p-acct-count').textContent = `(${_allPacingRows.length})`;
+}
+
+function filterPacingAcctList(val) {
+  const q = val.toLowerCase();
+  document.querySelectorAll('#p-acct-list label').forEach(l => {
+    l.style.display = l.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+  });
+}
+
+function pacingSelectAll() { document.querySelectorAll('.pacing-acct').forEach(c => c.checked = true); renderPacingFromFilter(); }
+function pacingClearAccts() { document.querySelectorAll('.pacing-acct').forEach(c => c.checked = false); renderPacingFromFilter(); }
+function clearPacingFilters() {
+  document.getElementById('p-acct-srch').value = '';
+  document.querySelectorAll('.pacing-acct,.pacing-status-chk').forEach(c => c.checked = true);
+  filterPacingAcctList('');
+  renderPacingFromFilter();
+}
+
+function getFilteredPacingRows() {
+  const selIds = new Set([...document.querySelectorAll('.pacing-acct:checked')].map(c => c.value));
+  const statuses = new Set([...document.querySelectorAll('.pacing-status-chk:checked')].map(c => c.value));
+  return _allPacingRows.filter(r =>
+    (selIds.size === 0 || selIds.has(r.id)) &&
+    (statuses.size === 0 || statuses.has(r.status))
+  );
+}
+
+function renderPacingFromFilter() {
+  const rows = getFilteredPacingRows();
+  renderPacingKPIs(rows);
+  renderPacingTable(rows);
 }
 
 function getPacingRows() {
@@ -2727,11 +2785,13 @@ function renderPacingKPIs(rows) {
   const on  = rows.filter(r => r.status === 'on');
   const low = rows.filter(r => r.status === 'low');
 
-  // Chip counts
-  document.getElementById('p-chip-all').textContent = rows.length;
-  document.getElementById('p-chip-hot').textContent = hot.length;
-  document.getElementById('p-chip-on').textContent  = on.length;
-  document.getElementById('p-chip-low').textContent = low.length;
+  // Sidebar status counts (always from full unfiltered set)
+  const allHot = _allPacingRows.filter(r => r.status === 'hot');
+  const allOn  = _allPacingRows.filter(r => r.status === 'on');
+  const allLow = _allPacingRows.filter(r => r.status === 'low');
+  document.getElementById('p-fc-hot').textContent = allHot.length;
+  document.getElementById('p-fc-on').textContent  = allOn.length;
+  document.getElementById('p-fc-low').textContent = allLow.length;
 
   // Primary KPIs
   document.getElementById('p-kv-budget').textContent = '$' + totalBudget.toLocaleString();
@@ -2784,17 +2844,17 @@ function renderPacingKPIs(rows) {
 
 function renderPacingCharts() {
   const now = new Date();
-  const curYM  = now.toISOString().slice(0, 7);                          // e.g. "2026-04"
+  const curYM  = now.toISOString().slice(0, 7);
   const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const prevYM = prevDate.toISOString().slice(0, 7);                     // e.g. "2026-03"
-  const prevYearYM = (now.getFullYear() - 1) + '-' + String(now.getMonth() + 1).padStart(2, '0'); // "2025-04"
+  const prevYM = prevDate.toISOString().slice(0, 7);
+  const prevYearYM = (now.getFullYear() - 1) + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
   const curWeeks  = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === curYM);
   const prevWeeks = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYM);
   const pyWeeks   = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYearYM);
 
-  // Build labels from whichever month has more weeks
-  const maxWeeks = Math.max(curWeeks.length, prevWeeks.length, 4);
+  // Dynamic: use only as many labels as the longest dataset — no minimum padding
+  const maxWeeks = Math.max(curWeeks.length, prevWeeks.length, 1);
   const labels = Array.from({length: maxWeeks}, (_, i) => 'Wk ' + (i + 1));
 
   const curMonthName  = now.toLocaleString('en-US', {month:'short'}) + ' ' + now.getFullYear();
@@ -2855,13 +2915,8 @@ function renderPacingCharts() {
   }
 }
 
-function renderPacingTable() {
-  const search = (document.getElementById('p-search')?.value || '').toLowerCase();
-  const filtered = _pacingRows.filter(r => {
-    if (_pacingFilter !== 'all' && r.status !== _pacingFilter) return false;
-    if (search && !r.name.toLowerCase().includes(search)) return false;
-    return true;
-  });
+function renderPacingTable(rows) {
+  const filtered = rows || getFilteredPacingRows();
 
   document.getElementById('p-tbl-count').textContent = filtered.length + ' accounts';
 
@@ -2914,20 +2969,17 @@ function renderPacingTable() {
   </tr>`;
 }
 
-function setPacingFilter(status, btn) {
-  _pacingFilter = status;
-  document.querySelectorAll('#pacing .p-chip').forEach(c => c.classList.remove('on'));
-  btn.classList.add('on');
-  renderPacingTable();
-}
-
 async function renderPacing() {
   await loadPacingConfig();
-  _pacingRows = getPacingRows();
-  renderPacingKPIs(_pacingRows);
+  _allPacingRows = getPacingRows();
+  if (!_pacingInited) {
+    initPacingFilters();
+    _pacingInited = true;
+  }
+  const filtered = getFilteredPacingRows();
+  renderPacingKPIs(filtered);
   renderPacingCharts();
-  renderPacingTable();
-  // Updated label
+  renderPacingTable(filtered);
   const now = new Date();
   document.getElementById('p-updated').textContent = now.toLocaleString('en-US',{month:'short',day:'numeric'}) + ' · MTD';
 }
