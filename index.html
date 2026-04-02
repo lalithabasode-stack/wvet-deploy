@@ -239,6 +239,7 @@ tr.managed-row{border-left:2px solid #1D9E75}
     <button class="tab" onclick="sw('timeseries',this)">Time Series</button>
     <button class="tab" onclick="sw('signals',this)">Signals</button>
     <button class="tab" onclick="sw('budget',this)">Budget</button>
+    <button class="tab" onclick="sw('pacing',this)">Pacing</button>
   </div>
   <div class="topbar-right" id="topbar-right">Loading...</div>
 </div>
@@ -820,6 +821,167 @@ tr.managed-row{border-left:2px solid #1D9E75}
     <div class="gl-title">Budget scoring model</div>
     <div class="gl-note"><strong>Guardrails:</strong> Every account stays between <strong>$550 (floor)</strong> and <strong>$1,800 (ceiling)</strong> regardless of score. No account can be recommended below $550 or above $1,800. The mini bar on each row shows where the recommendation sits within the $550–$1,800 range. <strong>Score:</strong> Signal r ≥ 0.7 (+3), ≥ 0.5 (+2), ≥ 0.3 (+1), negative (−2) · MB up 2 consecutive months (+3), net up (+1), 2 down (−1) · CPA improving both months (+2), one (+1), both worse (−1) · CPA &gt;$600 (−1), &gt;$800 (−1 more). Uses last 3 months with data — not fixed months. <strong>Allocation:</strong> Surplus pool = cap − sum of floors. Distributed by score × tier weight (Elite 1.3×, High 1.15×, Mid 1.0×, Floor 0.85×).</div>
   </div>
+</div>
+
+<!-- ============================  PACING VIEW  ============================ -->
+<div id="pacing" class="view">
+<style>
+#pacing .p-filters{display:flex;gap:8px;align-items:center;background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:9px 14px;margin-bottom:12px;flex-wrap:wrap}
+#pacing .p-chips{display:flex;gap:4px}
+#pacing .p-chip{font-size:10px;padding:3px 9px;border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;color:#888780;cursor:pointer;white-space:nowrap;font-family:inherit}
+#pacing .p-chip:hover{background:#E8E6DF}
+#pacing .p-chip.on{background:#E8F5F0;color:#0F6E56;border-color:#9FE1CB;font-weight:500}
+#pacing .p-search{font-size:11px;padding:4px 9px;border:0.5px solid #E8E6DF;border-radius:6px;background:#F5F4F0;color:#1a1a18;outline:none;width:190px;margin-left:auto;font-family:inherit}
+#pacing .p-kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}
+#pacing .p-kpi{background:white;border:0.5px solid #E8E6DF;border-radius:11px;padding:12px 15px}
+#pacing .p-kl{font-size:10px;font-weight:500;color:#888780;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+#pacing .p-kv{font-size:22px;font-weight:300;letter-spacing:-0.8px;color:#1a1a18;line-height:1;margin-bottom:2px}
+#pacing .p-kv-sm{font-size:16px;font-weight:300;letter-spacing:-0.5px;color:#1a1a18;line-height:1;margin-bottom:2px}
+#pacing .p-kd{font-size:11px;font-weight:500;color:#888780}
+#pacing .p-kd.up{color:#1D9E75}#pacing .p-kd.dn{color:#D85A30}
+#pacing .p-status-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+#pacing .p-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-bottom:12px}
+#pacing .p-badge{display:inline-block;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+#pacing .p-badge.hot{background:rgba(216,90,48,.1);color:#D85A30}
+#pacing .p-badge.on{background:rgba(29,158,117,.1);color:#1D9E75}
+#pacing .p-badge.low{background:#F5F4F0;color:#888780}
+#pacing .p-pct-wrap{display:inline-flex;align-items:center;gap:5px}
+#pacing .p-pct-bar{height:3px;border-radius:2px;display:inline-block}
+#pacing .p-pct-txt{font-size:10px;font-weight:500;min-width:36px}
+</style>
+
+  <!-- FILTERS -->
+  <div class="p-filters">
+    <span class="p-kl" style="margin-bottom:0;white-space:nowrap">Status</span>
+    <div class="p-chips">
+      <button class="p-chip on" onclick="setPacingFilter('all',this)">All (<span id="p-chip-all">—</span>)</button>
+      <button class="p-chip" onclick="setPacingFilter('hot',this)">Hot (<span id="p-chip-hot">—</span>)</button>
+      <button class="p-chip" onclick="setPacingFilter('on',this)">On Pace (<span id="p-chip-on">—</span>)</button>
+      <button class="p-chip" onclick="setPacingFilter('low',this)">Low (<span id="p-chip-low">—</span>)</button>
+    </div>
+    <input class="p-search" id="p-search" type="text" placeholder="Search hospital…" oninput="renderPacingTable()">
+    <span id="p-updated" style="font-size:10px;color:#B4B2A9"></span>
+  </div>
+
+  <!-- PRIMARY KPIs -->
+  <div class="p-kpi-row">
+    <div class="p-kpi" style="background:#0F6E56;border-color:#0F6E56">
+      <div class="p-kl" style="color:#9FE1CB">Total Budget</div>
+      <div class="p-kv" style="color:white" id="p-kv-budget">—</div>
+      <div class="p-kd" style="color:#5DCAA5" id="p-kd-budget">—</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl">Portfolio Pacing</div>
+      <div class="p-kv" id="p-kv-pacing">—</div>
+      <div class="p-kd" id="p-kd-pacing">—</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl">MTD Conversions</div>
+      <div class="p-kv" id="p-kv-conv">—</div>
+      <div class="p-kd" id="p-kd-conv">—</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl">Portfolio CPA</div>
+      <div class="p-kv" id="p-kv-cpa">—</div>
+      <div class="p-kd" id="p-kd-cpa">—</div>
+    </div>
+  </div>
+
+  <!-- SECONDARY KPIs -->
+  <div class="p-kpi-row">
+    <div class="p-kpi">
+      <div class="p-kl">% to Conv Goal</div>
+      <div class="p-kv-sm" id="p-kv-convgoal">—</div>
+      <div class="p-kd" id="p-kd-convgoal" style="color:#888780">—</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl">CPA vs Goal</div>
+      <div class="p-kv-sm" id="p-kv-cpagoal">—</div>
+      <div class="p-kd" id="p-kd-cpagoal" style="color:#888780">—</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl">Expected Conv (EOM)</div>
+      <div class="p-kv-sm" id="p-kv-eomconv">—</div>
+      <div class="p-kd" style="color:#888780">If trend continues</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl">Expected CPA (EOM)</div>
+      <div class="p-kv-sm" id="p-kv-eomcpa">—</div>
+      <div class="p-kd" style="color:#888780">If trend continues</div>
+    </div>
+  </div>
+
+  <!-- STATUS BREAKDOWN -->
+  <div class="p-status-row">
+    <div class="p-kpi">
+      <div class="p-kl" style="color:#D85A30">Hot accounts (&gt;110%)</div>
+      <div class="p-kv" id="p-sv-hot" style="color:#D85A30">—</div>
+      <div class="p-kd" id="p-sd-hot">—</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl" style="color:#1D9E75">On pace (90–110%)</div>
+      <div class="p-kv" id="p-sv-on" style="color:#1D9E75">—</div>
+      <div class="p-kd" id="p-sd-on">—</div>
+    </div>
+    <div class="p-kpi">
+      <div class="p-kl">Low accounts (&lt;90%)</div>
+      <div class="p-kv" id="p-sv-low">—</div>
+      <div class="p-kd" id="p-sd-low">—</div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="p-chart-grid">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-head"><div class="ct">Month-over-month spend by week</div></div>
+      <div style="padding:12px 15px">
+        <div style="position:relative;height:180px"><canvas id="p-mom-chart"></canvas></div>
+        <div style="display:flex;gap:14px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#1D9E75"></span><span id="p-mom-cur-lbl">This month</span></div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#B4B2A9"></span><span id="p-mom-prev-lbl">Prior month</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-head"><div class="ct">Year-over-year spend by week</div></div>
+      <div style="padding:12px 15px">
+        <div style="position:relative;height:180px"><canvas id="p-yoy-chart"></canvas></div>
+        <div style="display:flex;gap:14px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#378ADD"></span><span id="p-yoy-cur-lbl">This month</span></div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:#888780"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#D4D0C8"></span><span id="p-yoy-prev-lbl">Same month prior year</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card" style="margin-bottom:0">
+    <div class="card-head">
+      <div class="ct">Account-level pacing</div>
+      <span id="p-tbl-count" style="font-size:10px;color:#888780">—</span>
+    </div>
+    <div class="tbl-wrap" style="max-height:400px;overflow-y:auto">
+      <table id="p-table">
+        <thead><tr>
+          <th>Hospital</th>
+          <th class="r">Budget</th>
+          <th class="r">MTD Spend</th>
+          <th class="r">Pacing %</th>
+          <th class="r">Status</th>
+          <th class="r">MTD Conv</th>
+          <th class="r">CPA Actual</th>
+          <th class="r">CPA Goal</th>
+          <th class="r">Δ CPA</th>
+        </tr></thead>
+        <tbody id="p-tbody"></tbody>
+        <tfoot class="tfoot" id="p-tfoot"></tfoot>
+      </table>
+    </div>
+    <div style="padding:8px 14px;font-size:9px;color:#888780;border-top:0.5px solid #E8E6DF;background:#FAFAF8">
+      Budget = March 2026 actual spend (placeholder until real budgets provided). CPA Goal = TBD. Pacing % = MTD spend ÷ (daily budget × days elapsed). Hot &gt;110% · On Pace 90–110% · Low &lt;90%.
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -2353,6 +2515,7 @@ function sw(id,btn){
   }
   if(id==='budget')renderBudget();
   if(id==='signals')renderSignals();
+  if(id==='pacing')renderPacing();
 }
 
 // ============================
@@ -2495,6 +2658,279 @@ function initPortResize(){initTableResize('port-table');}
     document.body.innerHTML='<div style="padding:40px;font-family:system-ui;color:#c00"><strong>Dashboard data unavailable.</strong><br>Make sure data.json is served alongside this file (use a local HTTP server — not file://).<br><small>'+e.message+'</small></div>';
   }
 })();
+
+// ============================
+// PACING TAB
+// ============================
+let PACING_CONFIG = null;
+let _pacingFilter = 'all';
+let _pacingRows = [];
+let _pMomChart = null, _pYoyChart = null;
+
+async function loadPacingConfig() {
+  if (PACING_CONFIG) return;
+  try {
+    const r = await fetch('westernvet-config.json?v=' + Date.now());
+    PACING_CONFIG = await r.json();
+  } catch(e) {
+    console.error('westernvet-config.json load failed', e);
+    PACING_CONFIG = { budgets: {} };
+  }
+}
+
+function getPacingRows() {
+  const now = new Date();
+  const MKS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const curMk = MKS[now.getMonth()];
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysElapsed = now.getDate();
+  return A.map(acct => {
+    const cfg = PACING_CONFIG?.budgets?.[acct.id];
+    const budget = cfg?.monthly_budget || 0;
+    if (!budget) return null;
+    const spendMtd = acct.spend?.[curMk] || 0;
+    const sigMtd   = acct.sig?.[curMk]   || 0;
+    const expected = (budget / daysInMonth) * daysElapsed;
+    const pacingPct = expected > 0 ? Math.round((spendMtd / expected) * 1000) / 10 : null;
+    const status = pacingPct === null ? 'unknown' : pacingPct > 110 ? 'hot' : pacingPct < 90 ? 'low' : 'on';
+    const cpa = sigMtd > 0 ? Math.round(spendMtd / sigMtd) : null;
+    const cpaGoal = cfg?.cpa_goal || null;
+    const cpaDelta = (cpa !== null && cpaGoal) ? Math.round((cpa - cpaGoal) / cpaGoal * 100) : null;
+    const eomSig   = daysElapsed > 0 && sigMtd > 0   ? Math.round((sigMtd   / daysElapsed) * daysInMonth) : null;
+    const eomSpend = daysElapsed > 0 && spendMtd > 0 ? Math.round((spendMtd / daysElapsed) * daysInMonth) : null;
+    const eomCpa   = (eomSig && eomSig > 0 && eomSpend) ? Math.round(eomSpend / eomSig) : null;
+    return { id: acct.id, name: acct.name, budget, spendMtd, sigMtd, pacingPct, status, cpa, cpaGoal, cpaDelta, eomSig, eomCpa };
+  }).filter(Boolean).sort((a, b) => (b.pacingPct || 0) - (a.pacingPct || 0));
+}
+
+function renderPacingKPIs(rows) {
+  const now = new Date();
+  const MKS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const prevMk = MKS[(now.getMonth() + 11) % 12];
+
+  const totalBudget = rows.reduce((s, r) => s + r.budget, 0);
+  const totalSpend  = rows.reduce((s, r) => s + r.spendMtd, 0);
+  const totalSig    = rows.reduce((s, r) => s + r.sigMtd, 0);
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysElapsed = now.getDate();
+  const totalExpected = rows.reduce((s, r) => s + (r.budget / daysInMonth) * daysElapsed, 0);
+  const portPacing = totalExpected > 0 ? Math.round((totalSpend / totalExpected) * 1000) / 10 : null;
+  const portCpa = totalSig > 0 ? Math.round(totalSpend / totalSig) : null;
+
+  // Prior month spend (for MoM delta)
+  const prevSpend = A.reduce((s, a) => s + (a.spend?.[prevMk] || 0), 0);
+  const prevSig   = A.reduce((s, a) => s + (a.sig?.[prevMk]   || 0), 0);
+  const prevCpa   = prevSig > 0 ? Math.round(prevSpend / prevSig) : null;
+
+  // Hot / On / Low counts
+  const hot = rows.filter(r => r.status === 'hot');
+  const on  = rows.filter(r => r.status === 'on');
+  const low = rows.filter(r => r.status === 'low');
+
+  // Chip counts
+  document.getElementById('p-chip-all').textContent = rows.length;
+  document.getElementById('p-chip-hot').textContent = hot.length;
+  document.getElementById('p-chip-on').textContent  = on.length;
+  document.getElementById('p-chip-low').textContent = low.length;
+
+  // Primary KPIs
+  document.getElementById('p-kv-budget').textContent = '$' + totalBudget.toLocaleString();
+  document.getElementById('p-kd-budget').textContent = rows.length + ' accounts';
+
+  const pacEl = document.getElementById('p-kv-pacing');
+  pacEl.textContent = portPacing !== null ? portPacing + '%' : '—';
+  pacEl.style.color = portPacing === null ? '' : portPacing > 110 ? '#D85A30' : portPacing < 90 ? '#888780' : '#1D9E75';
+  const pacD = document.getElementById('p-kd-pacing');
+  pacD.textContent = portPacing === null ? '—' : portPacing > 110 ? 'Running hot' : portPacing < 90 ? 'Running low' : 'On pace';
+  pacD.className = 'p-kd ' + (portPacing > 110 ? 'dn' : portPacing < 90 ? '' : 'up');
+
+  document.getElementById('p-kv-conv').textContent = totalSig.toLocaleString();
+  const convD = document.getElementById('p-kd-conv');
+  if (prevSig > 0) {
+    const d = Math.round((totalSig / prevSig * 100) - 100);
+    convD.textContent = (d >= 0 ? '+' : '') + d + '% vs ' + prevMk.charAt(0).toUpperCase() + prevMk.slice(1);
+    convD.className = 'p-kd ' + (d >= 0 ? 'up' : 'dn');
+  } else { convD.textContent = '—'; convD.className = 'p-kd'; }
+
+  document.getElementById('p-kv-cpa').textContent = portCpa !== null ? '$' + portCpa : '—';
+  const cpaD = document.getElementById('p-kd-cpa');
+  if (portCpa !== null && prevCpa !== null && prevCpa > 0) {
+    const d = Math.round((portCpa / prevCpa * 100) - 100);
+    cpaD.textContent = (d >= 0 ? '+' : '') + d + '% vs ' + prevMk.charAt(0).toUpperCase() + prevMk.slice(1);
+    cpaD.className = 'p-kd ' + (d <= 0 ? 'up' : 'dn');
+  } else { cpaD.textContent = '—'; cpaD.className = 'p-kd'; }
+
+  // Secondary KPIs (goals = null for now)
+  document.getElementById('p-kv-convgoal').textContent = '—';
+  document.getElementById('p-kd-convgoal').textContent = 'Conv targets not yet set';
+  document.getElementById('p-kv-cpagoal').textContent = '—';
+  document.getElementById('p-kd-cpagoal').textContent = 'CPA goals not yet set';
+
+  // EOM projections (portfolio)
+  const eomSigTot = rows.reduce((s, r) => s + (r.eomSig || 0), 0);
+  const eomCpaVals = rows.filter(r => r.eomCpa).map(r => r.eomCpa);
+  const eomCpaAvg = eomCpaVals.length ? Math.round(eomCpaVals.reduce((s,v)=>s+v,0) / eomCpaVals.length) : null;
+  document.getElementById('p-kv-eomconv').textContent = eomSigTot > 0 ? '~' + eomSigTot.toLocaleString() : '—';
+  document.getElementById('p-kv-eomcpa').textContent  = eomCpaAvg ? '~$' + eomCpaAvg : '—';
+
+  // Status breakdown cards
+  document.getElementById('p-sv-hot').textContent = hot.length;
+  document.getElementById('p-sd-hot').textContent = '$' + hot.reduce((s,r)=>s+r.spendMtd,0).toLocaleString() + ' MTD spend';
+  document.getElementById('p-sv-on').textContent  = on.length;
+  document.getElementById('p-sd-on').textContent  = '$' + on.reduce((s,r)=>s+r.spendMtd,0).toLocaleString() + ' MTD spend';
+  document.getElementById('p-sv-low').textContent = low.length;
+  document.getElementById('p-sd-low').textContent = '$' + low.reduce((s,r)=>s+r.spendMtd,0).toLocaleString() + ' MTD spend';
+}
+
+function renderPacingCharts() {
+  const now = new Date();
+  const curYM  = now.toISOString().slice(0, 7);                          // e.g. "2026-04"
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevYM = prevDate.toISOString().slice(0, 7);                     // e.g. "2026-03"
+  const prevYearYM = (now.getFullYear() - 1) + '-' + String(now.getMonth() + 1).padStart(2, '0'); // "2025-04"
+
+  const curWeeks  = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === curYM);
+  const prevWeeks = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYM);
+  const pyWeeks   = WEEKLY_DATA.filter(w => w.weekStart && w.weekStart.slice(0,7) === prevYearYM);
+
+  // Build labels from whichever month has more weeks
+  const maxWeeks = Math.max(curWeeks.length, prevWeeks.length, 4);
+  const labels = Array.from({length: maxWeeks}, (_, i) => 'Wk ' + (i + 1));
+
+  const curMonthName  = now.toLocaleString('en-US', {month:'short'}) + ' ' + now.getFullYear();
+  const prevMonthName = prevDate.toLocaleString('en-US', {month:'short'}) + ' ' + prevDate.getFullYear();
+  const pyMonthName   = now.toLocaleString('en-US', {month:'short'}) + ' ' + (now.getFullYear() - 1);
+
+  document.getElementById('p-mom-cur-lbl').textContent  = curMonthName;
+  document.getElementById('p-mom-prev-lbl').textContent = prevMonthName;
+  document.getElementById('p-yoy-cur-lbl').textContent  = curMonthName;
+  document.getElementById('p-yoy-prev-lbl').textContent = pyMonthName;
+
+  const chartOpts = (maxY) => ({
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toLocaleString() } } },
+    scales: {
+      x: { grid: { color: '#F5F4F0' }, ticks: { font: { size: 9 } } },
+      y: { beginAtZero: true, grid: { color: '#F5F4F0' }, ticks: { font: { size: 9 }, callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) } }
+    }
+  });
+
+  const mkDataset = (label, data, color, fill) => ({
+    label, data,
+    borderColor: color, backgroundColor: color + (fill ? '18' : '00'),
+    borderWidth: 2, pointRadius: 3, pointBackgroundColor: color,
+    pointBorderColor: 'white', pointBorderWidth: 1.5, tension: 0.3, fill
+  });
+
+  if (_pMomChart) { _pMomChart.destroy(); _pMomChart = null; }
+  const momCtx = document.getElementById('p-mom-chart');
+  if (momCtx) {
+    _pMomChart = new Chart(momCtx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          mkDataset(curMonthName,  curWeeks.map(w=>w.spend),  '#1D9E75', true),
+          mkDataset(prevMonthName, prevWeeks.map(w=>w.spend), '#B4B2A9', false),
+        ]
+      },
+      options: chartOpts()
+    });
+  }
+
+  if (_pYoyChart) { _pYoyChart.destroy(); _pYoyChart = null; }
+  const yoyCtx = document.getElementById('p-yoy-chart');
+  if (yoyCtx) {
+    _pYoyChart = new Chart(yoyCtx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          mkDataset(curMonthName, curWeeks.map(w=>w.spend),  '#378ADD', true),
+          mkDataset(pyMonthName,  pyWeeks.map(w=>w.spend),   '#D4D0C8', false),
+        ]
+      },
+      options: chartOpts()
+    });
+  }
+}
+
+function renderPacingTable() {
+  const search = (document.getElementById('p-search')?.value || '').toLowerCase();
+  const filtered = _pacingRows.filter(r => {
+    if (_pacingFilter !== 'all' && r.status !== _pacingFilter) return false;
+    if (search && !r.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  document.getElementById('p-tbl-count').textContent = filtered.length + ' accounts';
+
+  const fmt$ = v => v !== null ? '$' + v.toLocaleString() : '—';
+  const fmtPct = v => v !== null ? v + '%' : '—';
+  const fmtDelta = v => v !== null ? (v >= 0 ? '+' : '') + v + '%' : '—';
+  const deltaColor = v => v === null ? '' : v > 0 ? 'color:#D85A30' : v < 0 ? 'color:#1D9E75' : '';
+
+  const pctBar = (pct, status) => {
+    if (pct === null) return '—';
+    const w = Math.min(Math.max(pct, 0), 130);
+    const fill = status === 'hot' ? '#D85A30' : status === 'low' ? '#C0BEB8' : '#1D9E75';
+    const txtColor = status === 'hot' ? 'color:#D85A30' : status === 'on' ? 'color:#1D9E75' : '';
+    return `<span class="p-pct-wrap"><span class="p-pct-bar" style="width:${w/4}px;background:${fill}"></span><span class="p-pct-txt" style="${txtColor}">${pct}%</span></span>`;
+  };
+
+  const badge = s => {
+    if (s === 'hot') return '<span class="p-badge hot">HOT</span>';
+    if (s === 'on')  return '<span class="p-badge on">ON</span>';
+    if (s === 'low') return '<span class="p-badge low">LOW</span>';
+    return '—';
+  };
+
+  const tbody = document.getElementById('p-tbody');
+  tbody.innerHTML = filtered.map(r => `<tr>
+    <td style="font-weight:500">${r.name}</td>
+    <td class="r">${fmt$(r.budget)}</td>
+    <td class="r">${fmt$(r.spendMtd)}</td>
+    <td class="r">${pctBar(r.pacingPct, r.status)}</td>
+    <td class="r">${badge(r.status)}</td>
+    <td class="r">${r.sigMtd || '—'}</td>
+    <td class="r" style="${r.cpa && r.cpaGoal && r.cpa > r.cpaGoal ? 'color:#D85A30' : ''}">${fmt$(r.cpa)}</td>
+    <td class="r">${fmt$(r.cpaGoal)}</td>
+    <td class="r" style="${deltaColor(r.cpaDelta)}">${fmtDelta(r.cpaDelta)}</td>
+  </tr>`).join('');
+
+  // Totals row
+  const totBudget  = filtered.reduce((s,r)=>s+r.budget,0);
+  const totSpend   = filtered.reduce((s,r)=>s+r.spendMtd,0);
+  const totSig     = filtered.reduce((s,r)=>s+r.sigMtd,0);
+  const totCpa     = totSig > 0 ? Math.round(totSpend/totSig) : null;
+  document.getElementById('p-tfoot').innerHTML = `<tr>
+    <td>Total (${filtered.length})</td>
+    <td class="r">${fmt$(totBudget)}</td>
+    <td class="r">${fmt$(totSpend)}</td>
+    <td class="r">—</td><td class="r">—</td>
+    <td class="r">${totSig || '—'}</td>
+    <td class="r">${fmt$(totCpa)}</td>
+    <td class="r">—</td><td class="r">—</td>
+  </tr>`;
+}
+
+function setPacingFilter(status, btn) {
+  _pacingFilter = status;
+  document.querySelectorAll('#pacing .p-chip').forEach(c => c.classList.remove('on'));
+  btn.classList.add('on');
+  renderPacingTable();
+}
+
+async function renderPacing() {
+  await loadPacingConfig();
+  _pacingRows = getPacingRows();
+  renderPacingKPIs(_pacingRows);
+  renderPacingCharts();
+  renderPacingTable();
+  // Updated label
+  const now = new Date();
+  document.getElementById('p-updated').textContent = now.toLocaleString('en-US',{month:'short',day:'numeric'}) + ' · MTD';
+}
 </script>
 <div class="mpick-popup" id="mpick-popup">
   <div class="mpick-yr">
