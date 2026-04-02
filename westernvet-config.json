@@ -1,0 +1,1960 @@
+{
+  "_note": "monthly_budget = March 2026 actual spend (placeholder until real budgets provided). cpa_goal and conversion_target TBD.",
+  "_updated": "2026-04-02",
+  "_budget_source": "Account performance.xlsx — March 1-31 2026 actual spend",
+  "budgets": {
+    "cascade_animal_clinic": {
+      "name": "Cascade Animal Clinic",
+      "cid": "6938616188",
+      "monthly_budget": 538,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "country_view_veterinary_clinic": {
+      "name": "Country View Veterinary Clinic",
+      "cid": "6889451119",
+      "monthly_budget": 710,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "clear_creek_animal_hospital": {
+      "name": "Clear Creek Animal Hospital",
+      "cid": "2697788721",
+      "monthly_budget": 399,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "airport_veterinary_clinic": {
+      "name": "Airport Veterinary Clinic",
+      "cid": "2061180966",
+      "monthly_budget": 695,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_hospital_of_laveen": {
+      "name": "Animal Hospital of Laveen",
+      "cid": "6372169968",
+      "monthly_budget": 391,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "mebane_veterinary_hospital": {
+      "name": "Mebane Veterinary Hospital",
+      "cid": "6494297723",
+      "monthly_budget": 673,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "legacy_animal_hospital": {
+      "name": "Legacy Animal Hospital",
+      "cid": "9357769145",
+      "monthly_budget": 397,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "incline_veterinary_hospital": {
+      "name": "Incline Veterinary Hospital",
+      "cid": "3762476313",
+      "monthly_budget": 715,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "startz_veterinary": {
+      "name": "Startz Veterinary",
+      "cid": "2681310839",
+      "monthly_budget": 537,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "purrfurably_cats_veterinary_hospital": {
+      "name": "Purrfurably Cats Veterinary Hospital",
+      "cid": "7199657898",
+      "monthly_budget": 398,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_dental_clinic": {
+      "name": "Animal Dental Clinic",
+      "cid": "8233498631",
+      "monthly_budget": 703,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "mukilteo": {
+      "name": "Mukilteo Veterinary Hospital",
+      "cid": "6224647299",
+      "monthly_budget": 1216,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_care_clinic": {
+      "name": "Animal Care Clinic",
+      "cid": "4513310498",
+      "monthly_budget": 704,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cat_care_professionals": {
+      "name": "Cat Care Professionals",
+      "cid": "8428630694",
+      "monthly_budget": 394,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "village_square_portola_valley_veterinary": {
+      "name": "Village Square Portola Valley Veterinary Clinic",
+      "cid": "5992179929",
+      "monthly_budget": 515,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "mountain_view_animal_hospital": {
+      "name": "Mountain View Animal Hospital",
+      "cid": "7639033192",
+      "monthly_budget": 346,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "ohio_drive_animal_hospital": {
+      "name": "Ohio Drive Animal Hospital",
+      "cid": "5200895295",
+      "monthly_budget": 704,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "medford_animal_hospital": {
+      "name": "Medford Animal Hospital",
+      "cid": "5708678772",
+      "monthly_budget": 533,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "compass_veterinary_clinic": {
+      "name": "Compass Veterinary Clinic",
+      "cid": "8037923984",
+      "monthly_budget": 532,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "magic_valley_veterinary_hospital": {
+      "name": "Magic Valley Veterinary Hospital",
+      "cid": "5690694391",
+      "monthly_budget": 186,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "reidsville_veterinary_hospital": {
+      "name": "Reidsville Veterinary Hospital",
+      "cid": "1382340117",
+      "monthly_budget": 713,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_medical_service": {
+      "name": "Animal Medical Service",
+      "cid": "3993871256",
+      "monthly_budget": 511,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "frontier_veterinary_care": {
+      "name": "Frontier Veterinary Care",
+      "cid": "8364820482",
+      "monthly_budget": 106,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "crossroads_animal_hospital": {
+      "name": "Crossroads Animal Hospital",
+      "cid": "3943428539",
+      "monthly_budget": 393,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "lower_columbia_veterinary_clinic": {
+      "name": "Lower Columbia Veterinary Clinic",
+      "cid": "7460484942",
+      "monthly_budget": 710,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "sheridan_animal_hospital": {
+      "name": "Sheridan Animal Hospital",
+      "cid": "3851301233",
+      "monthly_budget": 391,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "southpark_animal_clinic": {
+      "name": "SouthPark Animal Clinic",
+      "cid": "3576267090",
+      "monthly_budget": 495,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "branson_veterinary_hospital_g1": {
+      "name": "Branson Veterinary Hospital G1",
+      "cid": "3675135315",
+      "monthly_budget": 407,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "tanglewilde_veterinary_clinic_g3": {
+      "name": "Tanglewilde Veterinary Clinic G3",
+      "cid": "7503336623",
+      "monthly_budget": 373,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "westside_pet_hospital": {
+      "name": "Westside Pet Hospital",
+      "cid": "5647891148",
+      "monthly_budget": 509,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "ohana_pet_hospital_of_agoura_hills": {
+      "name": "Ohana Pet Hospital of Agoura Hills",
+      "cid": "7146796192",
+      "monthly_budget": 627,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "park_city_animal_clinic": {
+      "name": "Park City Animal Clinic",
+      "cid": "2205779619",
+      "monthly_budget": 528,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "loving_family_animal_hospital_g2": {
+      "name": "Loving Family Animal Hospital G2",
+      "cid": "7911019601",
+      "monthly_budget": 530,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "kierland_animal_clinic_g1": {
+      "name": "Kierland Animal Clinic G1",
+      "cid": "5432034070",
+      "monthly_budget": 695,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "aspen_tree_animal_care_center_g1": {
+      "name": "Aspen Tree Animal Care Center G1",
+      "cid": "1615030795",
+      "monthly_budget": 695,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "wildwood_animal_clinic_portland": {
+      "name": "Wildwood Animal Clinic (Portland)",
+      "cid": "1157025246",
+      "monthly_budget": 548,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "carr_veterinary_hospital": {
+      "name": "Carr Veterinary Hospital",
+      "cid": "6720964851",
+      "monthly_budget": 367,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "companion_veterinary_hospital": {
+      "name": "Companion Veterinary Hospital",
+      "cid": "9375679882",
+      "monthly_budget": 536,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "hometown_animal_clinic": {
+      "name": "Hometown Animal Clinic",
+      "cid": "3449115719",
+      "monthly_budget": 717,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "midway_vets": {
+      "name": "Midway Vets",
+      "cid": "4805975825",
+      "monthly_budget": 518,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pinebrook_animal_hospital": {
+      "name": "Pinebrook Animal Hospital",
+      "cid": "4469752641",
+      "monthly_budget": 710,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "island_cats_veterinary_hospital_g1": {
+      "name": "Island Cats Veterinary Hospital G1",
+      "cid": "1953517811",
+      "monthly_budget": 667,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "river_valley_animal_hospital_g1": {
+      "name": "River Valley Animal Hospital G1",
+      "cid": "2930734729",
+      "monthly_budget": 612,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "chimney_rock_animal_hospital_g1": {
+      "name": "Chimney Rock Animal Hospital G1",
+      "cid": "5576333780",
+      "monthly_budget": 388,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "all_west_veterinary_hospital_g2": {
+      "name": "All West Veterinary Hospital G2",
+      "cid": "6553742672",
+      "monthly_budget": 899,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "sonoran_veterinary_center": {
+      "name": "Sonoran Veterinary Center",
+      "cid": "4000016525",
+      "monthly_budget": 387,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "stetson_hills_animal_hospital": {
+      "name": "Stetson Hills Animal Hospital",
+      "cid": "7444278566",
+      "monthly_budget": 521,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "blackhawk_veterinary_hospital_g1": {
+      "name": "Blackhawk Veterinary Hospital G1",
+      "cid": "5707202654",
+      "monthly_budget": 713,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "river_valley_vet": {
+      "name": "River Valley Vet",
+      "cid": "9768078644",
+      "monthly_budget": 1291,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "vetcare_animal_hospital": {
+      "name": "VetCare Animal Hospital",
+      "cid": "9193705343",
+      "monthly_budget": 695,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "south_arlington_animal_clinic": {
+      "name": "South Arlington Animal Clinic",
+      "cid": "5367641315",
+      "monthly_budget": 396,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pawsitive_veterinary_care": {
+      "name": "Pawsitive Veterinary Care",
+      "cid": "1310981449",
+      "monthly_budget": 491,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "vista_vet_animal_hospital_pet_lodge": {
+      "name": "Vista Vet Animal Hospital & Pet Lodge",
+      "cid": "6759761846",
+      "monthly_budget": 390,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cimarron": {
+      "name": "Cimarron Animal Hospital",
+      "cid": "3135177197",
+      "monthly_budget": 895,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "hammocks_veterinary_hospital": {
+      "name": "Hammocks Veterinary Hospital",
+      "cid": "4214442999",
+      "monthly_budget": 424,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "dallas_animal_clinic": {
+      "name": "Dallas Animal Clinic",
+      "cid": "1994789119",
+      "monthly_budget": 701,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "tender_care_animal_hospital": {
+      "name": "Tender Care Animal Hospital",
+      "cid": "9756395805",
+      "monthly_budget": 830,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "shoreline_veterinary_hospital": {
+      "name": "Shoreline Veterinary Hospital",
+      "cid": "7852845394",
+      "monthly_budget": 640,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "parkway_animal_hospital": {
+      "name": "Parkway Animal Hospital",
+      "cid": "5039276701",
+      "monthly_budget": 356,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "tualatin_animal_clinic": {
+      "name": "Tualatin Animal Clinic",
+      "cid": "9396977600",
+      "monthly_budget": 664,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "littleton_west_animal_hospital": {
+      "name": "Littleton West Animal Hospital",
+      "cid": "6424860346",
+      "monthly_budget": 389,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pine_forest_animal_clinic": {
+      "name": "Pine Forest Animal Clinic",
+      "cid": "8975948921",
+      "monthly_budget": 114,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bay_animal_hospital_mi": {
+      "name": "Bay Animal Hospital (MI)",
+      "cid": "1459171396",
+      "monthly_budget": 686,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pine_castle_animal_care_center": {
+      "name": "Pine Castle Animal Care Center",
+      "cid": "8624010258",
+      "monthly_budget": 532,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "belle_city_veterinary_hospital": {
+      "name": "Belle City Veterinary Hospital",
+      "cid": "7997792929",
+      "monthly_budget": 392,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "del_norte_animal_clinic": {
+      "name": "Del Norte Animal Clinic",
+      "cid": "6275283611",
+      "monthly_budget": 534,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "brooklyn_road_veterinary_clinic": {
+      "name": "Brooklyn Road Veterinary Clinic",
+      "cid": "9320579195",
+      "monthly_budget": 391,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "alta_vista_animal_hospital": {
+      "name": "Alta Vista Animal Hospital",
+      "cid": "2327546696",
+      "monthly_budget": 375,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cats_dogs_animal_hospital": {
+      "name": "Cats & Dogs Animal Hospital",
+      "cid": "8826834648",
+      "monthly_budget": 18,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "intown_animal_hospital": {
+      "name": "Intown Animal Hospital",
+      "cid": "5015889541",
+      "monthly_budget": 990,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "best_friends_animal_clinic": {
+      "name": "Best Friends Animal Clinic",
+      "cid": "9214123596",
+      "monthly_budget": 719,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "churchland_animal_clinic": {
+      "name": "Churchland Animal Clinic",
+      "cid": "5271941713",
+      "monthly_budget": 390,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_medical_and_surgical_hospital_tul": {
+      "name": "Animal Medical and Surgical Hospital (Tulsa & Broken Arrow)",
+      "cid": "1622051292",
+      "monthly_budget": 420,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "foland_veterinary_services": {
+      "name": "Foland Veterinary Services",
+      "cid": "6556327839",
+      "monthly_budget": 383,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "wellspring_animal_hospital": {
+      "name": "Wellspring Animal Hospital",
+      "cid": "7114245750",
+      "monthly_budget": 397,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_care_center_salem": {
+      "name": "Animal Care Center (Salem)",
+      "cid": "8427045431",
+      "monthly_budget": 677,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "riverwalk_animal_hospital": {
+      "name": "Riverwalk Animal Hospital",
+      "cid": "3654124309",
+      "monthly_budget": 727,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "worthington_woods_animal_care_center": {
+      "name": "Worthington Woods Animal Care Center",
+      "cid": "7731120507",
+      "monthly_budget": 495,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "altitude_animal_hospital": {
+      "name": "Altitude Animal Hospital",
+      "cid": "6490230933",
+      "monthly_budget": 646,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "meadowbrook_breckenridge_veterinary_clin": {
+      "name": "Meadowbrook & Breckenridge Veterinary Clinic",
+      "cid": "8181759086",
+      "monthly_budget": 1300,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pine_woods_animal_hospital": {
+      "name": "Pine Woods Animal Hospital",
+      "cid": "8074247121",
+      "monthly_budget": 534,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "adobe_animal_hospital_of_soquel": {
+      "name": "Adobe Animal Hospital of Soquel",
+      "cid": "7968571707",
+      "monthly_budget": 703,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "jenks_veterinary_hospital": {
+      "name": "Jenks Veterinary Hospital",
+      "cid": "2823664360",
+      "monthly_budget": 533,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "south_texas_veterinary_clinic": {
+      "name": "South Texas Veterinary Clinic",
+      "cid": "4143207819",
+      "monthly_budget": 698,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "acacia_animal_hospital": {
+      "name": "Acacia Animal Hospital",
+      "cid": "7817938033",
+      "monthly_budget": 455,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "los_lunas_animal_clinic": {
+      "name": "Los Lunas Animal Clinic",
+      "cid": "7412652445",
+      "monthly_budget": 548,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "union_park_veterinary_hospital": {
+      "name": "Union Park Veterinary Hospital",
+      "cid": "9094303701",
+      "monthly_budget": 392,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "reynolds_road_animal_hospital": {
+      "name": "Reynolds Road Animal Hospital",
+      "cid": "3977503172",
+      "monthly_budget": 535,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "moreland_animal_hospital": {
+      "name": "Moreland Animal Hospital",
+      "cid": "9046124003",
+      "monthly_budget": 518,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "north_phoenix_animal_clinic": {
+      "name": "North Phoenix Animal Clinic",
+      "cid": "5727585303",
+      "monthly_budget": 538,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "kingman_animal_hospital": {
+      "name": "Kingman Animal Hospital",
+      "cid": "1100439156",
+      "monthly_budget": 385,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "claremont_veterinary_hospital": {
+      "name": "Claremont Veterinary Hospital",
+      "cid": "1046475605",
+      "monthly_budget": 288,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "east_bend_animal_hospital": {
+      "name": "East Bend Animal Hospital",
+      "cid": "9720098309",
+      "monthly_budget": 538,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "arkansas": {
+      "name": "Arkansas Veterinary Clinic",
+      "cid": "9751991111",
+      "monthly_budget": 695,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "hatton_veterinary_hospital": {
+      "name": "Hatton Veterinary Hospital",
+      "cid": "9364056229",
+      "monthly_budget": 705,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "council_veterinary_hospital": {
+      "name": "Council Veterinary Hospital",
+      "cid": "6065216449",
+      "monthly_budget": 540,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_care_center_hardin": {
+      "name": "Animal Care Center, Hardin",
+      "cid": "1466472576",
+      "monthly_budget": 692,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bellevue_animal_hospital": {
+      "name": "Bellevue Animal Hospital",
+      "cid": "4314092137",
+      "monthly_budget": 640,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "hillside_veterinary_associates": {
+      "name": "Hillside Veterinary Associates",
+      "cid": "5157887744",
+      "monthly_budget": 476,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "first_capitol_animal_hospital": {
+      "name": "First Capitol Animal Hospital",
+      "cid": "2430870509",
+      "monthly_budget": 388,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pontchartrain_animal_hospital": {
+      "name": "Pontchartrain Animal Hospital",
+      "cid": "3177191803",
+      "monthly_budget": 701,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "abel": {
+      "name": "Abel Pet Clinic",
+      "cid": "2728843725",
+      "monthly_budget": 692,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "wellshire_animal_hospital": {
+      "name": "Wellshire Animal Hospital",
+      "cid": "7120900048",
+      "monthly_budget": 692,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "mill_creek_veterinary_hospital": {
+      "name": "Mill Creek Veterinary Hospital",
+      "cid": "8463170603",
+      "monthly_budget": 548,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_clinic_of_kalispell": {
+      "name": "Animal Clinic of Kalispell",
+      "cid": "3485935586",
+      "monthly_budget": 539,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "burlingame_road_animal_hospital": {
+      "name": "Burlingame Road Animal Hospital",
+      "cid": "6310645597",
+      "monthly_budget": 531,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "circle_l_animal_hospital": {
+      "name": "Circle L Animal Hospital",
+      "cid": "9401375460",
+      "monthly_budget": 370,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "payson": {
+      "name": "Payson Family Pet Hospital",
+      "cid": "7717887648",
+      "monthly_budget": 1790,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "hayden_pet_medical_center": {
+      "name": "Hayden Pet Medical Center",
+      "cid": "8195346307",
+      "monthly_budget": 537,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "sanford_oaks_animal_clinic": {
+      "name": "Sanford Oaks Animal Clinic",
+      "cid": "6638592748",
+      "monthly_budget": 540,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_medical_center_of_troy": {
+      "name": "Animal Medical Center of Troy",
+      "cid": "5495066856",
+      "monthly_budget": 501,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "community_animal_hospital": {
+      "name": "Community Animal Hospital",
+      "cid": "8521171321",
+      "monthly_budget": 373,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "kings": {
+      "name": "Kings Trail Animal Hospital",
+      "cid": "1707255460",
+      "monthly_budget": 447,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bay_animal_hospital": {
+      "name": "Bay Animal Hospital",
+      "cid": "2358626298",
+      "monthly_budget": 677,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cross_lanes_veterinary_hospital": {
+      "name": "Cross Lanes Veterinary Hospital",
+      "cid": "5346794966",
+      "monthly_budget": 704,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "main_street_animal_clinic": {
+      "name": "Main Street Animal Clinic",
+      "cid": "3643400094",
+      "monthly_budget": 667,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "ohana_pet_hospital": {
+      "name": "Ohana Pet Hospital",
+      "cid": "4178354539",
+      "monthly_budget": 586,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "chalco_hills_animal_hospital": {
+      "name": "Chalco Hills Animal Hospital",
+      "cid": "5394715507",
+      "monthly_budget": 392,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "arlington_veterinary_center": {
+      "name": "Arlington Veterinary Center",
+      "cid": "2406914721",
+      "monthly_budget": 388,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "waccamaw_regional_veterinary_center": {
+      "name": "Waccamaw Regional Veterinary Center",
+      "cid": "2527565300",
+      "monthly_budget": 541,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "foothill_farms_veterinary_hospital": {
+      "name": "Foothill Farms Veterinary Hospital",
+      "cid": "7258131341",
+      "monthly_budget": 539,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "friarsgate_ballentine_animal_hospital": {
+      "name": "Friarsgate-Ballentine Animal Hospital",
+      "cid": "2053605746",
+      "monthly_budget": 596,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "south_shores_animal_hospital": {
+      "name": "South Shores Animal Hospital",
+      "cid": "4488488542",
+      "monthly_budget": 368,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "newark_veterinary_hospital": {
+      "name": "Newark Veterinary Hospital",
+      "cid": "4000769901",
+      "monthly_budget": 673,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "parvin_animal_clinic": {
+      "name": "Parvin Animal Clinic",
+      "cid": "2569010545",
+      "monthly_budget": 716,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "allegheny_veterinary_associates": {
+      "name": "Allegheny Veterinary Associates",
+      "cid": "7452927599",
+      "monthly_budget": 677,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "port_st_john_veterinary_hospital": {
+      "name": "Port St. John Veterinary Hospital",
+      "cid": "2729578276",
+      "monthly_budget": 356,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "brown_animal_hospital": {
+      "name": "Brown Animal Hospital",
+      "cid": "7890596841",
+      "monthly_budget": 702,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "petsvet_animal_hospital": {
+      "name": "PetsVet Animal Hospital",
+      "cid": "2735539893",
+      "monthly_budget": 701,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "college_hills_veterinary_hospital": {
+      "name": "College Hills Veterinary Hospital",
+      "cid": "5808783846",
+      "monthly_budget": 388,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cohutta_animal_clinic": {
+      "name": "Cohutta Animal Clinic",
+      "cid": "3531508586",
+      "monthly_budget": 700,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pulaski_veterinary_clinic": {
+      "name": "Pulaski Veterinary Clinic",
+      "cid": "4410920276",
+      "monthly_budget": 3,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_hospital_of_east_davie": {
+      "name": "Animal Hospital of East Davie",
+      "cid": "7297056296",
+      "monthly_budget": 381,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "the_whole_pet_vet_hospital_and_wellness_": {
+      "name": "The Whole Pet Vet Hospital and Wellness Center",
+      "cid": "7222994694",
+      "monthly_budget": 693,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "oakwood_veterinary_hospital": {
+      "name": "Oakwood Veterinary Hospital",
+      "cid": "8240486248",
+      "monthly_budget": 699,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bexley_animal_hospital": {
+      "name": "Bexley Animal Hospital",
+      "cid": "2617844629",
+      "monthly_budget": 651,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "for_paws_veterinary_clinic": {
+      "name": "For Paws Veterinary Clinic",
+      "cid": "6623665601",
+      "monthly_budget": 710,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cocoa_veterinary_hospital": {
+      "name": "Cocoa Veterinary Hospital",
+      "cid": "8212256145",
+      "monthly_budget": 540,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "stateline_animal_clinic": {
+      "name": "Stateline Animal Clinic",
+      "cid": "8089512792",
+      "monthly_budget": 541,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "canyons_veterinary_clinic": {
+      "name": "Canyons Veterinary Clinic",
+      "cid": "5297208154",
+      "monthly_budget": 390,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "north_hills_animal_hospital": {
+      "name": "North Hills Animal Hospital",
+      "cid": "6151744097",
+      "monthly_budget": 346,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bailey_veterinary_clinic": {
+      "name": "Bailey Veterinary Clinic",
+      "cid": "9980554442",
+      "monthly_budget": 362,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "paws_claws_and_hooves_veterinary_center": {
+      "name": "Paws Claws and Hooves Veterinary Center",
+      "cid": "5255841333",
+      "monthly_budget": 100,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pacific_animal_hospital": {
+      "name": "Pacific Animal Hospital",
+      "cid": "3235809925",
+      "monthly_budget": 684,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "burlingame_family_pet_hospital": {
+      "name": "Burlingame Family Pet Hospital",
+      "cid": "7696354846",
+      "monthly_budget": 711,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "south_shreveport_animal_hospital": {
+      "name": "South Shreveport Animal Hospital",
+      "cid": "6793452964",
+      "monthly_budget": 371,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "inman_animal_hospital": {
+      "name": "Inman Animal Hospital",
+      "cid": "7071701684",
+      "monthly_budget": 341,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "desert_tails_animal_clinic": {
+      "name": "Desert Tails Animal Clinic",
+      "cid": "9018425231",
+      "monthly_budget": 711,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "wheelersburg_animal_hospital": {
+      "name": "Wheelersburg Animal Hospital",
+      "cid": "2418049468",
+      "monthly_budget": 533,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_care_hospital": {
+      "name": "Animal Care Hospital",
+      "cid": "5698548321",
+      "monthly_budget": 568,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "moreland_veterinary_hospital": {
+      "name": "Moreland Veterinary Hospital",
+      "cid": "9991736394",
+      "monthly_budget": 380,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "spring_valley_veterinary_hospital_west_e": {
+      "name": "Spring Valley Veterinary Hospital West/East",
+      "cid": "6636108217",
+      "monthly_budget": 1071,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "guthrie_pet_hospital": {
+      "name": "Guthrie Pet Hospital",
+      "cid": "9599303764",
+      "monthly_budget": 668,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "orchards_veterinary_clinic": {
+      "name": "Orchards Veterinary Clinic",
+      "cid": "9057853382",
+      "monthly_budget": 530,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "360_pet_medical": {
+      "name": "360 Pet Medical",
+      "cid": "3255501301",
+      "monthly_budget": 690,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "lago_vista_animal_clinic": {
+      "name": "Lago Vista Animal Clinic",
+      "cid": "8000529956",
+      "monthly_budget": 537,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "fairgrounds_animal_hospital": {
+      "name": "Fairgrounds Animal Hospital",
+      "cid": "7073945813",
+      "monthly_budget": 585,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "sunset_animal_clinic": {
+      "name": "Sunset Animal Clinic",
+      "cid": "3349629660",
+      "monthly_budget": 696,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "perimeter_veterinary_center": {
+      "name": "Perimeter Veterinary Center",
+      "cid": "3838779090",
+      "monthly_budget": 384,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "all_creatures_animal_hospital": {
+      "name": "All Creatures Animal Hospital",
+      "cid": "6445201578",
+      "monthly_budget": 675,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "wimberley_veterinary_clinic": {
+      "name": "Wimberley Veterinary Clinic",
+      "cid": "3745351429",
+      "monthly_budget": 285,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_healthcare_center": {
+      "name": "Animal HealthCare Center",
+      "cid": "2886067143",
+      "monthly_budget": 698,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "mission": {
+      "name": "Mission Valley Veterinary Clinic",
+      "cid": "7230081941",
+      "monthly_budget": 1391,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "north_suffolk_animal_clinic": {
+      "name": "North Suffolk Animal Clinic",
+      "cid": "8442856768",
+      "monthly_budget": 692,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "staples_mill_animal_hospital": {
+      "name": "Staples Mill Animal Hospital",
+      "cid": "9522252854",
+      "monthly_budget": 656,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "carver_lake_veterinary_center": {
+      "name": "Carver Lake Veterinary Center",
+      "cid": "1817774570",
+      "monthly_budget": 534,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "barker": {
+      "name": "Barker Animal Hospital",
+      "cid": "2817604111",
+      "monthly_budget": 449,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "sooner_veterinary_hospital": {
+      "name": "Sooner Veterinary Hospital",
+      "cid": "4514692041",
+      "monthly_budget": 341,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "country_view_veterinary_hospital": {
+      "name": "Country View Veterinary Hospital",
+      "cid": "6994561982",
+      "monthly_budget": 533,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cherrelyn": {
+      "name": "Cherrelyn Animal Hospital",
+      "cid": "9422023847",
+      "monthly_budget": 1757,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "wickenburg_veterinary_clinic": {
+      "name": "Wickenburg Veterinary Clinic",
+      "cid": "1683236531",
+      "monthly_budget": 640,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bel_aire_veterinary_hospital": {
+      "name": "Bel-Aire Veterinary Hospital",
+      "cid": "5804297649",
+      "monthly_budget": 470,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "summerlin_animal_hospital": {
+      "name": "Summerlin Animal Hospital",
+      "cid": "5472199786",
+      "monthly_budget": 337,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "chewelah_veterinary_clinic": {
+      "name": "Chewelah Veterinary Clinic",
+      "cid": "3729834545",
+      "monthly_budget": 534,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "alpine_animal_clinic": {
+      "name": "Alpine Animal Clinic",
+      "cid": "7840098597",
+      "monthly_budget": 706,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "rowland_veterinary_services": {
+      "name": "Rowland Veterinary Services",
+      "cid": "5958982082",
+      "monthly_budget": 708,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "brier_veterinary_hospital": {
+      "name": "Brier Veterinary Hospital",
+      "cid": "3113844023",
+      "monthly_budget": 536,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "companion_pet_hospital": {
+      "name": "Companion Pet Hospital",
+      "cid": "4743194237",
+      "monthly_budget": 695,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "fallbrook_animal_hospital": {
+      "name": "Fallbrook Animal Hospital",
+      "cid": "6069004882",
+      "monthly_budget": 480,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "aloha_animal_medical_center": {
+      "name": "Aloha Animal Medical Center",
+      "cid": "7341241597",
+      "monthly_budget": 480,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "family_pet_hospital": {
+      "name": "Family Pet Hospital",
+      "cid": "9704613337",
+      "monthly_budget": 538,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "west_main_animal_hospital": {
+      "name": "West Main Animal Hospital",
+      "cid": "2998959380",
+      "monthly_budget": 395,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pacific_veterinary_clinic": {
+      "name": "Pacific Veterinary Clinic",
+      "cid": "6928813080",
+      "monthly_budget": 703,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "touhy_animal_hospital": {
+      "name": "Touhy Animal Hospital",
+      "cid": "3644080311",
+      "monthly_budget": 707,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "palo_duro_animal_hospital": {
+      "name": "Palo Duro Animal Hospital",
+      "cid": "9053490993",
+      "monthly_budget": 716,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "forest_grove_veterinary_clinic": {
+      "name": "Forest Grove Veterinary Clinic",
+      "cid": "3256392297",
+      "monthly_budget": 695,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "san_juan_veterinary_hospital": {
+      "name": "San Juan Veterinary Hospital",
+      "cid": "2623151227",
+      "monthly_budget": 286,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "southgate_veterinary_hospital": {
+      "name": "Southgate Veterinary Hospital",
+      "cid": "7173897043",
+      "monthly_budget": 721,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "parkview_cat_clinic": {
+      "name": "Parkview Cat Clinic",
+      "cid": "9454397058",
+      "monthly_budget": 711,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "crestwood_crossing_animal_hospital": {
+      "name": "Crestwood Crossing Animal Hospital",
+      "cid": "8740107597",
+      "monthly_budget": 118,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "beaumont_animal_clinic": {
+      "name": "Beaumont Animal Clinic",
+      "cid": "2004525962",
+      "monthly_budget": 393,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "east_and_west_ridge_animal_hospital": {
+      "name": "East and West Ridge Animal Hospital",
+      "cid": "4926615686",
+      "monthly_budget": 1050,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "ithaca_animal_hospital": {
+      "name": "Ithaca Animal Hospital",
+      "cid": "6654294192",
+      "monthly_budget": 517,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "santa_rosa_veterinary_hospital": {
+      "name": "Santa Rosa Veterinary Hospital",
+      "cid": "1427938060",
+      "monthly_budget": 373,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "city_pets_vet": {
+      "name": "City Pets Vet",
+      "cid": "6799301286",
+      "monthly_budget": 526,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "terrace_heights_family_pet_clinic": {
+      "name": "Terrace Heights Family Pet Clinic",
+      "cid": "4895952294",
+      "monthly_budget": 387,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_care_of_carters_creek": {
+      "name": "Animal Care of Carters Creek",
+      "cid": "9132265937",
+      "monthly_budget": 284,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "vineyard_veterinary_hospital": {
+      "name": "Vineyard Veterinary Hospital",
+      "cid": "2486729192",
+      "monthly_budget": 402,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "doctors_office_for_pets": {
+      "name": "Doctors Office for Pets",
+      "cid": "4625190695",
+      "monthly_budget": 380,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "laurel": {
+      "name": "Laurel Pet Hospital",
+      "cid": "6947947454",
+      "monthly_budget": 500,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "north_hills_animal_hospital_resort": {
+      "name": "North Hills Animal Hospital & Resort",
+      "cid": "7096860168",
+      "monthly_budget": 845,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "arbor_hills_animal_clinic": {
+      "name": "Arbor Hills Animal Clinic",
+      "cid": "9809280378",
+      "monthly_budget": 701,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "risinger_veterinary_hospital": {
+      "name": "Risinger Veterinary Hospital",
+      "cid": "8912411313",
+      "monthly_budget": 359,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "adobe_animal_hospital": {
+      "name": "Adobe Animal Hospital",
+      "cid": "9550453649",
+      "monthly_budget": 688,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal": {
+      "name": "Animal Clinic East",
+      "cid": "3146645588",
+      "monthly_budget": 449,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pioneer_animal_hospital": {
+      "name": "Pioneer Animal Hospital",
+      "cid": "8880013519",
+      "monthly_budget": 675,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "southeast_community_animal_hospital": {
+      "name": "Southeast Community Animal Hospital",
+      "cid": "8018688354",
+      "monthly_budget": 639,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "friendtown_veterinary_clinic": {
+      "name": "Friendtown Veterinary Clinic",
+      "cid": "8644313735",
+      "monthly_budget": 526,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "northpointe_animal_hospital": {
+      "name": "Northpointe Animal Hospital",
+      "cid": "5838613272",
+      "monthly_budget": 678,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bernalillo_pet_care_center": {
+      "name": "Bernalillo Pet Care Center",
+      "cid": "6251349109",
+      "monthly_budget": 357,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "georgetown_veterinary_clinic": {
+      "name": "Georgetown Veterinary Clinic",
+      "cid": "6711636697",
+      "monthly_budget": 574,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "university_animal_hospital": {
+      "name": "University Animal Hospital",
+      "cid": "3152947715",
+      "monthly_budget": 521,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cherry_grove_animal_hospital": {
+      "name": "Cherry Grove Animal Hospital",
+      "cid": "4246778788",
+      "monthly_budget": 647,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "four_paws_four_points_veterinary_hospita": {
+      "name": "Four Paws @ Four Points Veterinary Hospital",
+      "cid": "7380899452",
+      "monthly_budget": 371,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "village_veterinary_clinic": {
+      "name": "Village Veterinary Clinic",
+      "cid": "4712772868",
+      "monthly_budget": 523,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "edmonds_westgate_veterinary_hospital": {
+      "name": "Edmonds-Westgate Veterinary Hospital",
+      "cid": "6829342309",
+      "monthly_budget": 693,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "best_friends_veterinary_center": {
+      "name": "Best Friends Veterinary Center",
+      "cid": "4077600662",
+      "monthly_budget": 708,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "the_pet_wellness_clinic": {
+      "name": "The Pet Wellness Clinic",
+      "cid": "6112436127",
+      "monthly_budget": 509,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "chico": {
+      "name": "Chico Creek Animal Hospital",
+      "cid": "6095765303",
+      "monthly_budget": 1596,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "the_veterinary_hospital": {
+      "name": "The Veterinary Hospital",
+      "cid": "7086141456",
+      "monthly_budget": 365,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "four_paws_pet_hotel_resort": {
+      "name": "Four Paws Pet Hotel & Resort",
+      "cid": "1131914815",
+      "monthly_budget": 391,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "compassionate_care_animal_hospital": {
+      "name": "Compassionate Care Animal Hospital",
+      "cid": "9288893695",
+      "monthly_budget": 183,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pet_vet_hospital_and_wellness_center": {
+      "name": "Pet Vet Hospital and Wellness Center",
+      "cid": "9899542005",
+      "monthly_budget": 239,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "doc_holly_pet_vet": {
+      "name": "Doc Holly Pet Vet",
+      "cid": "2774648550",
+      "monthly_budget": 522,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "peninsula_dog_cat_clinic": {
+      "name": "Peninsula Dog & Cat Clinic",
+      "cid": "8173040864",
+      "monthly_budget": 191,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "bayshore_animal_hospital": {
+      "name": "Bayshore Animal Hospital",
+      "cid": "3579800991",
+      "monthly_budget": 389,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "salazar_road_veterinary_clinic": {
+      "name": "Salazar Road Veterinary Clinic",
+      "cid": "5026212849",
+      "monthly_budget": 485,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "russell_creek_pet_clinic_and_hospital": {
+      "name": "Russell Creek Pet Clinic and Hospital",
+      "cid": "4765072972",
+      "monthly_budget": 386,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "boulevard_animal_hospital": {
+      "name": "Boulevard Animal Hospital",
+      "cid": "3909665058",
+      "monthly_budget": 696,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "woodinville_animal_hospital": {
+      "name": "Woodinville Animal Hospital",
+      "cid": "9143402395",
+      "monthly_budget": 730,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "companion_animal_veterinary_hospital": {
+      "name": "Companion Animal Veterinary Hospital",
+      "cid": "3179786700",
+      "monthly_budget": 523,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "oconomowoc_animal_hospital": {
+      "name": "Oconomowoc Animal Hospital",
+      "cid": "9636690691",
+      "monthly_budget": 663,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "creekside_animal_hospital": {
+      "name": "Creekside Animal Hospital",
+      "cid": "2106402848",
+      "monthly_budget": 534,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "tiger_tails_animal_hospital": {
+      "name": "Tiger Tails Animal Hospital",
+      "cid": "9638845848",
+      "monthly_budget": 270,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "festival_animal_clinic": {
+      "name": "Festival Animal Clinic",
+      "cid": "8440791849",
+      "monthly_budget": 118,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "mac_animal_hospital": {
+      "name": "MAC Animal Hospital",
+      "cid": "3419734015",
+      "monthly_budget": 700,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "vogel_veterinary_hospital": {
+      "name": "Vogel Veterinary Hospital",
+      "cid": "7166202205",
+      "monthly_budget": 0,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "laurel_road_veterinary_clinic": {
+      "name": "Laurel Road Veterinary Clinic",
+      "cid": "9885921529",
+      "monthly_budget": 466,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "forest_valley_veterinary_clinic": {
+      "name": "Forest Valley Veterinary Clinic",
+      "cid": "6815930801",
+      "monthly_budget": 209,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "dandridge_animal_hospital": {
+      "name": "Dandridge Animal Hospital",
+      "cid": "1381647296",
+      "monthly_budget": 546,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "echo_hollow_veterinary_hospital_urgent_c": {
+      "name": "Echo Hollow Veterinary Hospital  & Urgent Care",
+      "cid": "5150847272",
+      "monthly_budget": 188,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "san_marin_animal_hospital": {
+      "name": "San Marin Animal Hospital",
+      "cid": "2337045013",
+      "monthly_budget": 370,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "morgan_pet_clinic": {
+      "name": "Morgan Pet Clinic",
+      "cid": "7977550852",
+      "monthly_budget": 457,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "justin_animal_hospital": {
+      "name": "Justin Animal Hospital",
+      "cid": "2818086939",
+      "monthly_budget": 433,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "pet_medical_center_of_boca_raton": {
+      "name": "Pet Medical Center of Boca Raton",
+      "cid": "2670908552",
+      "monthly_budget": 709,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "santa_monica_veterinary_group": {
+      "name": "Santa Monica Veterinary Group",
+      "cid": "7582147764",
+      "monthly_budget": 271,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cherry_valley_veterinary_hospital": {
+      "name": "Cherry Valley Veterinary Hospital",
+      "cid": "8749342700",
+      "monthly_budget": 596,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "above_and_beyond_animal_care": {
+      "name": "Above and Beyond Animal Care",
+      "cid": "9770900709",
+      "monthly_budget": 269,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "family_pet_clinic_of_newberg": {
+      "name": "Family Pet Clinic of Newberg",
+      "cid": "4102417298",
+      "monthly_budget": 534,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "animal_medical_center_of_van_buren": {
+      "name": "Animal Medical Center of Van Buren",
+      "cid": "6722835103",
+      "monthly_budget": 363,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "monument_view_veterinary_hospital": {
+      "name": "Monument View Veterinary Hospital",
+      "cid": "8253783356",
+      "monthly_budget": 215,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "alexandria_veterinary_clinic": {
+      "name": "Alexandria Veterinary Clinic",
+      "cid": "3038894727",
+      "monthly_budget": 426,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "progressive_animal_wellness": {
+      "name": "Progressive Animal Wellness",
+      "cid": "9444139390",
+      "monthly_budget": 340,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "village_crossroad_animal_hospital": {
+      "name": "Village Crossroad Animal Hospital",
+      "cid": "4907737300",
+      "monthly_budget": 400,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "all_creatures_animal_care_center": {
+      "name": "All Creatures Animal Care Center",
+      "cid": "2073859662",
+      "monthly_budget": 390,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "griffin_animal_care": {
+      "name": "Griffin Animal Care",
+      "cid": "3909609046",
+      "monthly_budget": 709,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "grant_creek_veterinary_services": {
+      "name": "Grant Creek Veterinary Services",
+      "cid": "6975614527",
+      "monthly_budget": 657,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "vetcare": {
+      "name": "Vetcare",
+      "cid": "5362237931",
+      "monthly_budget": 618,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "kehoe_animal_clinic_of_viera": {
+      "name": "Kehoe Animal Clinic of Viera",
+      "cid": "7786568603",
+      "monthly_budget": 328,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "little_critters_veterinary_hospital": {
+      "name": "Little Critters Veterinary Hospital",
+      "cid": "1995947044",
+      "monthly_budget": 689,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "village_square_woodside_veterinary_hospi": {
+      "name": "Village Square Woodside Veterinary Hospital",
+      "cid": "6426804449",
+      "monthly_budget": 722,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "belvoir_pet_hospital": {
+      "name": "Belvoir Pet Hospital",
+      "cid": "5057386791",
+      "monthly_budget": 543,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "elm_creek_animal_hospital": {
+      "name": "Elm Creek Animal Hospital",
+      "cid": "2596572915",
+      "monthly_budget": 721,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "crossroad_animal_hospital_ga": {
+      "name": "Crossroad Animal Hospital (GA)",
+      "cid": "7315465249",
+      "monthly_budget": 109,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "healing_arts_veterinary_center": {
+      "name": "Healing Arts Veterinary Center",
+      "cid": "2506751103",
+      "monthly_budget": 705,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "kyle_animal_hospital": {
+      "name": "Kyle Animal Hospital",
+      "cid": "2938094603",
+      "monthly_budget": 717,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "chelsea_animal_hospital": {
+      "name": "Chelsea Animal Hospital",
+      "cid": "1255277178",
+      "monthly_budget": 122,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "south_shores_pet_clinic": {
+      "name": "South Shores Pet Clinic",
+      "cid": "5552518699",
+      "monthly_budget": 151,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "richmond_avenue_animal_hospital": {
+      "name": "Richmond Avenue Animal Hospital",
+      "cid": "5398397774",
+      "monthly_budget": 394,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "eastown_veterinary_clinic": {
+      "name": "Eastown Veterinary Clinic",
+      "cid": "5028501364",
+      "monthly_budget": 1225,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "fma_animal_hospital": {
+      "name": "FMA Animal Hospital",
+      "cid": "6837732215",
+      "monthly_budget": 720,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "companion_animal_hospital_ca": {
+      "name": "Companion Animal Hospital (CA)",
+      "cid": "7386432280",
+      "monthly_budget": 494,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "jamacha_pet_vets": {
+      "name": "Jamacha Pet Vets",
+      "cid": "4531754052",
+      "monthly_budget": 714,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "northbrook_animal_hospital": {
+      "name": "Northbrook Animal Hospital",
+      "cid": "7632869741",
+      "monthly_budget": 715,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cicero_animal_clinic": {
+      "name": "Cicero Animal Clinic",
+      "cid": "7546608449",
+      "monthly_budget": 541,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "river_run_animal_hospital": {
+      "name": "River Run Animal Hospital",
+      "cid": "8619667442",
+      "monthly_budget": 675,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "west_side_animal_clinic": {
+      "name": "West Side Animal Clinic",
+      "cid": "5560679954",
+      "monthly_budget": 391,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "malaherd_veterinary_hospital": {
+      "name": "Malaherd Veterinary Hospital",
+      "cid": "5752891678",
+      "monthly_budget": 0,
+      "cpa_goal": null,
+      "conversion_target": null
+    },
+    "cobblestone_veterinary_care": {
+      "name": "Cobblestone Veterinary Care",
+      "cid": "2709584893",
+      "monthly_budget": 531,
+      "cpa_goal": null,
+      "conversion_target": null
+    }
+  }
+}
