@@ -2913,84 +2913,127 @@ function renderPacingKPIs(rows) {
 
 function renderPacingCharts() {
   const now = new Date();
-  const curYM  = now.toISOString().slice(0, 7);
-  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const prevYM = prevDate.toISOString().slice(0, 7);
-  const prevYearYM = (now.getFullYear() - 1) + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  const cy = now.getFullYear(), cm = now.getMonth(); // cm is 0-indexed
+  const curYM  = cy + '-' + String(cm + 1).padStart(2, '0');
+  const prevYM = cm === 0 ? (cy-1) + '-12' : cy + '-' + String(cm).padStart(2, '0');
+  const pyYM   = (cy - 1) + '-' + String(cm + 1).padStart(2, '0');
 
-  // Assign each week to the month it ENDS in (weekStart + 6 days) — handles weeks crossing month boundaries
-  const weekEndYM = ws => { const d = new Date(ws+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+6); return d.toISOString().slice(0,7); };
-  const curWeeks  = WEEKLY_DATA.filter(w => w.weekStart && weekEndYM(w.weekStart) === curYM);
-  const prevWeeks = WEEKLY_DATA.filter(w => w.weekStart && weekEndYM(w.weekStart) === prevYM);
-  const pyWeeks   = WEEKLY_DATA.filter(w => w.weekStart && weekEndYM(w.weekStart) === prevYearYM);
-
-  const curMonthName  = now.toLocaleString('en-US', {month:'short'}) + ' ' + now.getFullYear();
-  const prevMonthName = prevDate.toLocaleString('en-US', {month:'short'}) + ' ' + prevDate.getFullYear();
-  const pyMonthName   = now.toLocaleString('en-US', {month:'short'}) + ' ' + (now.getFullYear() - 1);
+  const curMonthName  = now.toLocaleString('en-US', {month:'short', year:'numeric'});
+  const prevMonthName = new Date(cy, cm-1, 1).toLocaleString('en-US', {month:'short', year:'numeric'});
+  const pyMonthName   = new Date(cy-1, cm, 1).toLocaleString('en-US', {month:'short', year:'numeric'});
 
   document.getElementById('p-mom-cur-lbl').textContent  = curMonthName;
   document.getElementById('p-mom-prev-lbl').textContent = prevMonthName;
   document.getElementById('p-yoy-cur-lbl').textContent  = curMonthName;
   document.getElementById('p-yoy-prev-lbl').textContent = pyMonthName;
 
-  // Right-aligned: always 5 slots, current week at right edge, empty slots on left
-  const n = curWeeks.length;
-  const MAX_WKS = 5;
-  const labels = Array.from({length: MAX_WKS}, (_, i) => {
-    const wk = i - (MAX_WKS - n);
-    return wk >= 0 ? 'Wk ' + (wk + 1) : '';
-  });
-  const rightAlign = arr => { const out = Array(MAX_WKS).fill(null); arr.forEach((v,i) => { out[MAX_WKS - n + i] = v; }); return out; };
-  const prevSlice = prevWeeks.slice(0, n);
-  const pySlice   = pyWeeks.slice(0, n);
+  // Get daily spend array for a given YYYY-MM, summed across all accounts
+  // Returns array of length = days in that month; index 0 = day 1
+  function monthDailySpend(ym) {
+    const [y, mo] = ym.split('-').map(Number);
+    const daysInMo = new Date(y, mo, 0).getDate();
+    const totals = new Array(daysInMo).fill(0);
+    for (const a of A) {
+      for (const d of (a.daily || [])) {
+        if (d.date.slice(0, 7) !== ym) continue;
+        totals[parseInt(d.date.slice(8)) - 1] += d.spend || 0;
+      }
+    }
+    return totals.map(v => Math.round(v));
+  }
 
-  const noDataMsg = '<div style="display:flex;align-items:center;justify-content:center;height:180px;font-size:11px;color:#B4B2A9">No weekly data yet · updates daily at 4am PT</div>';
+  const curSpend  = monthDailySpend(curYM);
+  const prevSpend = monthDailySpend(prevYM);
+  const pySpend   = monthDailySpend(pyYM);
 
-  const chartOpts = () => ({
+  // X-axis: one slot per day. Label only on days 1, 8, 15, 22, 29 (weekly marks).
+  const daysInCur = curSpend.length;
+  const xLabels = Array.from({length: daysInCur}, (_, i) =>
+    i % 7 === 0 ? 'Wk ' + (Math.floor(i / 7) + 1) : ''
+  );
+
+  // Current month: null out days after today (no data yet)
+  const todayDay = now.getDate();
+  const curData  = curSpend.map((v, i) => i < todayDay ? v : null);
+
+  // Prev month / prev year: show all days (complete months), trim/pad to same length as curSpend
+  const padTo = (arr, len) => {
+    const out = arr.slice(0, len);
+    while (out.length < len) out.push(null);
+    return out;
+  };
+  const prevData = padTo(prevSpend, daysInCur);
+  const pyData   = padTo(pySpend,   daysInCur);
+
+  const noDataMsg = '<div style="display:flex;align-items:center;justify-content:center;height:180px;font-size:11px;color:#B4B2A9">No data yet · updates daily at 4am PT</div>';
+
+  const chartOpts = (labelA, labelB) => ({
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toLocaleString() } } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          title: ctx => xLabels[ctx[0].dataIndex] || ('Day ' + (ctx[0].dataIndex + 1)),
+          label: ctx => ctx.dataset.label + ': $' + (ctx.parsed.y || 0).toLocaleString()
+        }
+      }
+    },
     scales: {
-      x: { grid: { color: '#F5F4F0' }, ticks: { font: { size: 9 } } },
-      y: { beginAtZero: true, grid: { color: '#F5F4F0' }, ticks: { font: { size: 9 }, callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) } }
+      x: {
+        grid: { color: '#F5F4F0' },
+        ticks: {
+          font: { size: 9 },
+          // Only render tick label where xLabels has text
+          callback: (val, i) => xLabels[i] || null
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: { color: '#F5F4F0' },
+        ticks: { font: { size: 9 }, callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) }
+      }
     }
   });
 
   const mkDataset = (label, data, color, fill) => ({
     label, data,
     borderColor: color, backgroundColor: color + (fill ? '18' : '00'),
-    borderWidth: 2, pointRadius: 3, pointBackgroundColor: color,
-    pointBorderColor: 'white', pointBorderWidth: 1.5, tension: 0.3, fill
+    borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 4,
+    pointHoverBackgroundColor: color, pointHoverBorderColor: 'white',
+    pointHoverBorderWidth: 2, tension: 0.2, fill, spanGaps: false
   });
 
+  // MoM chart
   if (_pMomChart) { _pMomChart.destroy(); _pMomChart = null; }
   const momWrap = document.getElementById('p-mom-chart').parentElement;
-  if (n === 0) {
+  if (curData.every(v => v === null || v === 0)) {
     momWrap.innerHTML = noDataMsg;
   } else {
     if (!momWrap.querySelector('canvas')) momWrap.innerHTML = '<canvas id="p-mom-chart"></canvas>';
     _pMomChart = new Chart(document.getElementById('p-mom-chart').getContext('2d'), {
       type: 'line',
-      data: { labels, datasets: [
-        mkDataset(curMonthName,  rightAlign(curWeeks.map(w=>w.spend)),  '#1D9E75', true),
-        mkDataset(prevMonthName, rightAlign(prevSlice.map(w=>w.spend)), '#B4B2A9', false),
+      data: { labels: xLabels, datasets: [
+        mkDataset(curMonthName,  curData,  '#1D9E75', true),
+        mkDataset(prevMonthName, prevData, '#B4B2A9', false),
       ]},
-      options: chartOpts()
+      options: chartOpts(curMonthName, prevMonthName)
     });
   }
 
+  // YoY chart
   if (_pYoyChart) { _pYoyChart.destroy(); _pYoyChart = null; }
   const yoyWrap = document.getElementById('p-yoy-chart').parentElement;
-  if (n === 0) {
+  if (curData.every(v => v === null || v === 0)) {
     yoyWrap.innerHTML = noDataMsg;
   } else {
     if (!yoyWrap.querySelector('canvas')) yoyWrap.innerHTML = '<canvas id="p-yoy-chart"></canvas>';
     _pYoyChart = new Chart(document.getElementById('p-yoy-chart').getContext('2d'), {
       type: 'line',
-      data: { labels, datasets: [
-        mkDataset(curMonthName, rightAlign(curWeeks.map(w=>w.spend)),  '#378ADD', true),
-        mkDataset(pyMonthName,  rightAlign(pySlice.map(w=>w.spend)),   '#D4D0C8', false),
+      data: { labels: xLabels, datasets: [
+        mkDataset(curMonthName, curData, '#378ADD', true),
+        mkDataset(pyMonthName,  pyData,  '#D4D0C8', false),
       ]},
-      options: chartOpts()
+      options: chartOpts(curMonthName, pyMonthName)
     });
   }
 }
