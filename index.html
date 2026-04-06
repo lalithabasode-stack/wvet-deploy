@@ -1470,10 +1470,10 @@ function renderPortfolioCharts(selectedIds){
   const mi=months.indexOf(portDate), pi=PREV[portDate]?months.indexOf(PREV[portDate]):-1;
   const prevLbl=PREV[portDate]?MLABEL[PREV[portDate]].split(' ')[0]:null;
   setKPI('port-c1-kpi','port-c1-delta',spend[mi]??0,pi>=0?spend[pi]:null,prevLbl,v=>'$'+(v>=1000?(v/1000).toFixed(1)+'k':v),false);
-  setKPI('port-c2-kpi','port-c2-delta',mb[mi]??0,pi>=0?mb[pi]:null,prevLbl,v=>String(v));
-  setKPI('port-c3-kpi','port-c3-delta',sig[mi]??0,pi>=0?sig[pi]:null,prevLbl,v=>String(v));
+  setKPI('port-c2-kpi','port-c2-delta',mb[mi]??0,pi>=0?mb[pi]:null,prevLbl,v=>fConv(v));
+  setKPI('port-c3-kpi','port-c3-delta',sig[mi]??0,pi>=0?sig[pi]:null,prevLbl,v=>fN(v));
   const nci4=ncMonths.indexOf(portDate),pi4=PREV[portDate]?ncMonths.indexOf(PREV[portDate]):-1;
-  setKPI('port-c4-kpi','port-c4-delta',nci4>=0?nc[nci4]:0,pi4>=0?nc[pi4]:null,prevLbl,v=>String(v));
+  setKPI('port-c4-kpi','port-c4-delta',nci4>=0?nc[nci4]:0,pi4>=0?nc[pi4]:null,prevLbl,v=>fConv(v));
 }
 
 function getCurrentMonthKey(){
