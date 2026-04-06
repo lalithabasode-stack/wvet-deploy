@@ -245,7 +245,6 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
   <div class="logo">Western<span>Vet</span> · Paid Search</div>
   <div class="tabs">
     <button class="tab on" onclick="sw('portfolio',this)">Portfolio</button>
-    <button class="tab" onclick="sw('managed',this)">Managed (<span id="tab-managed-count">—</span>)</button>
     <button class="tab" onclick="sw('timeseries',this)">Time Series</button>
     <button class="tab" onclick="sw('signals',this)">Signals</button>
     <button class="tab" onclick="sw('budget',this)">Budget</button>
@@ -450,121 +449,6 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
           <div class="gl-item"><strong>GA Signals</strong> — Google Ads reported conversions (NC Industry + Appt Booked). Used as Smart Bidding input — not verified new clients.</div>
           <div class="gl-item"><strong>MoM</strong> — Month-over-month % change vs prior period. <strong>MTD</strong> — Month to date: current month data up to today only.</div>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== MANAGED (deep dive on 12) ===== -->
-<div id="managed" class="view">
-  <div class="date-bar" id="managed-date-bar"></div>
-  <div class="layout">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearMFilters()">Clear all</button></div>
-      <div class="fg">
-        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="m-acct-count">(—)</span></span><span style="margin-left:auto;display:flex;gap:4px;margin-right:4px" onclick="event.stopPropagation()"><button class="acct-tog-btn" onclick="mSelectAll()">All</button><button class="acct-tog-btn" onclick="mClearAccts()">Clear</button></span><span class="fg-arrow">▾</span></div>
-        <div class="fg-body">
-          <div style="padding:0 8px 6px"><input class="sb-search" id="m-srch" placeholder="Search accounts..." oninput="filterMAcctList(this.value)" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
-          <div class="acct-list" id="m-acct-list"></div>
-        </div>
-      </div>
-      <div class="fg">
-        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Campaign type</span><span class="fg-arrow">▾</span></div>
-        <div class="fg-body" style="padding:4px 13px 10px">
-          <label class="fcheck"><input type="checkbox" class="m-camp" value="pmax_test" checked onchange="renderManaged()"><span class="fcheck-lbl">PMax Brand Test</span></label>
-          <label class="fcheck"><input type="checkbox" class="m-camp" value="pmax_std" checked onchange="renderManaged()"><span class="fcheck-lbl">Standard PMax</span></label>
-        </div>
-      </div>
-      <div class="fg">
-        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Signal quality</span><span class="fg-arrow">▾</span></div>
-        <div class="fg-body" style="padding:4px 13px 10px">
-          <label class="fcheck"><input type="checkbox" class="m-sig" value="strong" checked onchange="renderManaged()"><span class="fcheck-lbl">Strong (r ≥ 0.5)</span><span class="fcount" id="m-fc-s">—</span></label>
-          <label class="fcheck"><input type="checkbox" class="m-sig" value="weak" checked onchange="renderManaged()"><span class="fcheck-lbl">Weak (0–0.49)</span><span class="fcount" id="m-fc-w">—</span></label>
-          <label class="fcheck"><input type="checkbox" class="m-sig" value="negative" checked onchange="renderManaged()"><span class="fcheck-lbl">Negative (r &lt; 0)</span><span class="fcount" id="m-fc-n">—</span></label>
-        </div>
-      </div>
-      <div class="fg">
-        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">MB trend</span><span class="fg-arrow">▾</span></div>
-        <div class="fg-body" style="padding:4px 13px 10px">
-          <label class="fcheck"><input type="checkbox" class="m-trend" value="up" checked onchange="renderManaged()"><span class="fcheck-lbl">↑ Trending up</span></label>
-          <label class="fcheck"><input type="checkbox" class="m-trend" value="flat" checked onchange="renderManaged()"><span class="fcheck-lbl">→ Flat</span></label>
-          <label class="fcheck"><input type="checkbox" class="m-trend" value="down" checked onchange="renderManaged()"><span class="fcheck-lbl">↓ Trending down</span></label>
-        </div>
-      </div>
-      <div class="fg" style="border-bottom:none">
-        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
-        <div class="fg-body open">
-          <div style="padding:4px 13px 10px">
-            <label class="fcheck"><input type="checkbox" class="cohort-chk" value=""                   checked onclick="setCohort(null)"><span class="fcheck-lbl">All</span></label>
-            <label class="fcheck"><input type="checkbox" class="cohort-chk" value="Growth"             onclick="setCohort('Growth')"><span class="fcheck-lbl">Growth</span></label>
-            <label class="fcheck"><input type="checkbox" class="cohort-chk" value="Ready for Growth"   onclick="setCohort('Ready for Growth')"><span class="fcheck-lbl">Ready for Growth</span></label>
-            <label class="fcheck"><input type="checkbox" class="cohort-chk" value="Preparing for Growth" onclick="setCohort('Preparing for Growth')"><span class="fcheck-lbl">Preparing for Growth</span></label>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Table -->
-    <div>
-      <div class="card">
-        <div class="card-head">
-          <div class="ct">Managed accounts — <span id="m-month-lbl">Mar 2026 (MTD)</span></div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <div style="font-size:10px;color:#888780">Click column header to sort</div>
-            <button class="btn-sm" onclick="downloadXLSX('m-tbody','m-tfoot','WesternVet_Managed')">↓ XLSX</button>
-          </div>
-        </div>
-        <div class="tbl-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th onclick="mSort('name')" rowspan="2">Hospital</th>
-                <th class="group" colspan="2">Matchback</th>
-                <th class="group" colspan="2">CP Matchback</th>
-                <th class="group" colspan="2">GA Signals*</th>
-                <th class="group" colspan="2">CP Signals*</th>
-                <th class="r" rowspan="2" onclick="mSort('spend')">Spend</th>
-                <th class="r nosort" rowspan="2">Signal r</th>
-                <th class="nosort" rowspan="2">Rec</th>
-              </tr>
-              <tr>
-                <th class="r" onclick="mSort('mb')">Value</th><th class="r nosort">MoM</th>
-                <th class="r" onclick="mSort('cpm')">Value</th><th class="r nosort">MoM</th>
-                <th class="r" onclick="mSort('sig')">Value</th><th class="r nosort">MoM</th>
-                <th class="r" onclick="mSort('cpsig')">Value</th><th class="r nosort">MoM</th>
-              </tr>
-            </thead>
-            <tbody id="m-tbody"></tbody>
-            <tfoot class="tfoot" id="m-tfoot">
-              <tr>
-                <td>Total (<span id="m-cnt">—</span>)</td>
-                <td class="r" id="mf-mb">—</td><td class="r" id="mf-mb-m">—</td>
-                <td class="r" id="mf-cpm">—</td><td class="r" id="mf-cpm-m">—</td>
-                <td class="r" id="mf-sig">—</td><td class="r" id="mf-sig-m">—</td>
-                <td class="r" id="mf-cpsig">—</td><td class="r" id="mf-cpsig-m">—</td>
-                <td class="r" id="mf-sp">—</td><td colspan="2"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-      <div class="glossary">
-        <div class="gl-title">Glossary</div>
-        <div class="gl-grid">
-          <div class="gl-item"><strong>Matchback</strong> — Invoca (call) + Vetstoria (web) verified new client appts attributed to paid search. Ground truth. 4–6 week lag.</div>
-          <div class="gl-item"><strong>Invoca</strong> — Call tracking platform. Matches inbound calls from paid search to new client appointments.</div>
-          <div class="gl-item"><strong>Vetstoria</strong> — Online booking platform. Matches web bookings from paid search to new client appointments.</div>
-          <div class="gl-item"><strong>CP Matchback</strong> — Cost per Matchback Appt: Spend ÷ matchback appts. True cost of acquiring a verified new client.</div>
-          <div class="gl-item"><strong>GA Signals*</strong> — NC Industry (call ext + web) + Appt Booked (call ext + web). Used as Smart Bidding signal. Excludes NC Appt.</div>
-          <div class="gl-item"><strong>CP Signals*</strong> — Spend ÷ GA Signals. Google's reported efficiency — not verified outcomes.</div>
-          <div class="gl-item"><strong>NC Industry</strong> — New Client (Industry): fires when a new patient calls or submits a form. Call ext + web page calls.</div>
-          <div class="gl-item"><strong>Appt Booked</strong> — Appointment Booked (Conversion): fires when a booking is confirmed on-site. Validated signal.</div>
-          <div class="gl-item"><strong>NC Appt</strong> — New Client Appointment: Google-reported. Reference only — negative correlation with matchback.</div>
-          <div class="gl-item"><strong>Signal r</strong> — Pearson correlation: best single conversion action vs matchback. r ≥ 0.5 = strong, r &lt; 0 = misdirected bidding.</div>
-          <div class="gl-item"><strong>PMax</strong> — Performance Max. Google's automated campaign type running all 12 managed accounts.</div>
-          <div class="gl-item"><strong>MoM</strong> — Month-over-month change vs prior period. <strong>MTD</strong> — Month to date.</div>
-        </div>
-        <div class="gl-note"><strong>*GA Signals exclude New Client Appointment</strong> — correlation analysis showed NCA moves opposite to matchback (r = −0.61 to −0.73). Only NC Industry + Appt Booked are used as bidding signals.</div>
       </div>
     </div>
   </div>
@@ -1782,114 +1666,6 @@ function renderPortfolioTable(){
 
 
 // ============================
-// MANAGED TAB (deep dive)
-// ============================
-let mDate=MONTHS[MONTHS.length-1], mSortCol='mb', mSortDir=-1;
-
-function initManagedFilters(){
-  const el=document.getElementById('m-acct-list');
-  el.innerHTML=AM.map(a=>`<label class="fcheck"><input type="checkbox" class="m-acct" value="${a.id}" checked onchange="renderManaged()"><span class="fcheck-lbl">${a.name}</span></label>`).join('');
-  document.getElementById('m-acct-count').textContent=`(${AM.length})`;
-  document.getElementById('m-fc-s').textContent=AM.filter(a=>getSigBand(a.bestR)==='strong').length;
-  document.getElementById('m-fc-w').textContent=AM.filter(a=>getSigBand(a.bestR)==='weak').length;
-  document.getElementById('m-fc-n').textContent=AM.filter(a=>getSigBand(a.bestR)==='negative').length;
-}
-
-function setMDate(m,el){
-  mDate=m;
-  document.querySelectorAll('#managed .dchip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on');
-  renderManaged();
-}
-
-function mSort(col){
-  if(mSortCol===col)mSortDir*=-1;else{mSortCol=col;mSortDir=-1;}
-  renderManaged();
-}
-
-function mSelectAll(){document.querySelectorAll('.m-acct').forEach(c=>c.checked=true);renderManaged();}
-function mClearAccts(){document.querySelectorAll('.m-acct').forEach(c=>c.checked=false);renderManaged();}
-function clearMFilters(){
-  document.querySelectorAll('#managed input[type=checkbox]').forEach(c=>c.checked=true);
-  document.getElementById('m-srch').value='';
-  renderManaged();
-}
-
-function filterMAcctList(val){
-  const q=val.toLowerCase();
-  document.querySelectorAll('#m-acct-list label').forEach(l=>{
-    l.style.display=l.textContent.toLowerCase().includes(q)?'flex':'none';
-  });
-}
-
-function renderManaged(){
-  const p2=PREV[mDate];
-  document.getElementById('m-month-lbl').textContent=MFULL[mDate];
-  const srch=document.getElementById('m-srch').value.toLowerCase();
-  const acctChk=Array.from(document.querySelectorAll('.m-acct:checked')).map(c=>c.value);
-  const sigChk=Array.from(document.querySelectorAll('.m-sig:checked')).map(c=>c.value);
-  const trendChk=Array.from(document.querySelectorAll('.m-trend:checked')).map(c=>c.value);
-  const campChk=Array.from(document.querySelectorAll('.m-camp:checked')).map(c=>c.value);
-  document.getElementById('m-acct-count').textContent=`(${acctChk.length})`;
-
-  let rows=AM.filter(a=>{
-    if(srch&&!a.name.toLowerCase().includes(srch))return false;
-    if(!acctChk.includes(a.id))return false;
-    if(!sigChk.includes(getSigBand(a.bestR)))return false;
-    if(!trendChk.includes(getMBTrend(a,mDate)))return false;
-    if(!campChk.includes(a.ct))return false;
-    if(activeCohort && a.cohort !== activeCohort) return false;
-    return true;
-  });
-
-  rows=rows.map(a=>{
-    const mb=a.mb[mDate]||0,mbp=p2?a.mb[p2]||0:0;
-    const sig=a.sig[mDate]||0,sigp=p2?a.sig[p2]||0:0;
-    const sp=a.spend[mDate]||0,spp=p2?a.spend[p2]||0:0;
-    const cpm=a.cpm[mDate]||0,cpmp=p2?a.cpm[p2]||0:0;
-    const cpsig=sig?sp/sig:0,cpsigp=sigp?spp/sigp:0;
-    const mbMom=mbp?(mb-mbp)/mbp:0;
-    const cpmMom=cpmp?(cpmp-cpm)/cpmp:0;
-    const sigMom=sigp?(sig-sigp)/sigp:0;
-    const cpsigMom=cpsigp?(cpsigp-cpsig)/cpsigp:0;
-    return{...a,mb,mbp,sig,sigp,sp,spp,cpm,cpmp,cpsig,cpsigp,mbMom,cpmMom,sigMom,cpsigMom};
-  });
-
-  const sortFns={mb:(a,b)=>mSortDir*(b.mb-a.mb),cpm:(a,b)=>mSortDir*(a.cpm-b.cpm),sig:(a,b)=>mSortDir*(b.sig-a.sig),cpsig:(a,b)=>mSortDir*(a.cpsig-b.cpsig),spend:(a,b)=>mSortDir*(b.sp-a.sp),name:(a,b)=>mSortDir*a.name.localeCompare(b.name)};
-  if(sortFns[mSortCol])rows.sort(sortFns[mSortCol]);
-
-  let tMB=0,tMBp=0,tSig=0,tSigP=0,tSp=0,tSpP=0;
-  const html=rows.map(a=>{
-    tMB+=a.mb;tMBp+=a.mbp;tSig+=a.sig;tSigP+=a.sigp;tSp+=a.sp;tSpP+=a.spp;
-    const score=scoreA(a);const rec=recFromScore(a,score);
-    return`<tr class="${cohortRowCls(a)}">
-      <td><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
-      <td class="r"><strong>${fConv(a.mb)}</strong></td><td class="r">${pct(a.mb,a.mbp)}</td>
-      <td class="r">${a.cpm?fCPA(a.cpm):'—'}</td><td class="r">${pct(a.cpmp,a.cpm,true)}</td>
-      <td class="r">${fConv(a.sig)}</td><td class="r">${pct(a.sig,a.sigp)}</td>
-      <td class="r">${a.cpsig?fCPA(a.cpsig):'—'}</td><td class="r">${pct(a.cpsigp,a.cpsig,true)}</td>
-      <td class="r">${f$(a.sp)}</td>
-      <td class="r">${rBar(a.bestR)}</td>
-      <td>${recPill(rec.type,rec.label)}</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('m-tbody').innerHTML=html||'<tr><td colspan="12" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match filters</td></tr>';
-  document.getElementById('m-cnt').textContent=rows.length;
-  const tCPM=tMB?tSp/tMB:0,tCPMp=tMBp?tSpP/tMBp:0;
-  const tCPSig=tSig?tSp/tSig:0,tCPSigP=tSigP?tSpP/tSigP:0;
-  document.getElementById('mf-mb').textContent=fConv(tMB);
-  document.getElementById('mf-mb-m').innerHTML=pct(tMB,tMBp);
-  document.getElementById('mf-cpm').textContent=tCPM?fCPA(tCPM):'—';
-  document.getElementById('mf-cpm-m').innerHTML=pct(tCPMp,tCPM,false);
-  document.getElementById('mf-sig').textContent=fConv(tSig);
-  document.getElementById('mf-sig-m').innerHTML=pct(tSig,tSigP);
-  document.getElementById('mf-cpsig').textContent=tCPSig?fCPA(tCPSig):'—';
-  document.getElementById('mf-cpsig-m').innerHTML=pct(tCPSigP,tCPSig,false);
-  document.getElementById('mf-sp').textContent=f$(tSp);
-}
-
-// ============================
 // MONTH PICKER
 // ============================
 const _MPICK_MOS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1996,7 +1772,6 @@ function setCohort(c) {
   const id = active.id;
   if (id === 'portfolio')  renderPortfolioTable();
   if (id === 'timeseries') { renderTS(); renderPoP(); }
-  if (id === 'managed')    renderManaged();
   if (id === 'pacing')     renderPacing();
   if (id === 'signals')    renderPoP();
 }
@@ -2994,11 +2769,8 @@ function initPortResize(){initTableResize('port-table');}
     const updatedDate=d._updated||'';
     const dateParts=updatedDate?new Date(updatedDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'}):'';
     document.getElementById('topbar-right').textContent=`${dateParts} · ${A.length} accounts · Google Ads`;
-    document.getElementById('tab-managed-count').textContent=AM.length;
-
     // Render date chips for all tabs
     renderPortDateBar();
-    renderDateChips('managed-date-bar',mDate,'setMDate');
 
     // Init portfolio tab
     initPortFilters();
@@ -3008,9 +2780,6 @@ function initPortResize(){initTableResize('port-table');}
     initTableResize('ts-table');
     initTableResize('pop-table');
 
-    // Init managed tab
-    initManagedFilters();
-    renderManaged();
     renderPoP();
 
   }catch(e){
