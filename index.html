@@ -1039,15 +1039,15 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
         <div class="tbl-wrap" style="max-height:400px;overflow-y:auto">
           <table id="p-table">
             <thead><tr>
-              <th>Hospital</th>
-              <th class="r">Budget</th>
-              <th class="r">MTD Spend</th>
-              <th class="r">Pacing %</th>
-              <th class="r">Status</th>
-              <th class="r">MTD Conv</th>
-              <th class="r">CPA Actual</th>
-              <th class="r">CPA Goal</th>
-              <th class="r">Δ CPA</th>
+              <th onclick="pacingSort('name')">Hospital</th>
+              <th class="r" onclick="pacingSort('budget')">Budget</th>
+              <th class="r" onclick="pacingSort('spendMtd')">MTD Spend</th>
+              <th class="r" onclick="pacingSort('pacingPct')">Pacing %</th>
+              <th class="r" onclick="pacingSort('status')">Status</th>
+              <th class="r" onclick="pacingSort('sigMtd')">MTD Conv</th>
+              <th class="r" onclick="pacingSort('cpa')">CPA Actual</th>
+              <th class="r" onclick="pacingSort('cpaGoal')">CPA Goal</th>
+              <th class="r" onclick="pacingSort('cpaDelta')">Δ CPA</th>
             </tr></thead>
             <tbody id="p-tbody"></tbody>
             <tfoot class="tfoot" id="p-tfoot"></tfoot>
@@ -2947,6 +2947,11 @@ function initPortResize(){initTableResize('port-table');}
 let PACING_CONFIG = null;
 let _allPacingRows = [];
 let _pacingInited = false;
+let pacingSortCol = 'pacingPct', pacingSortDir = -1;
+function pacingSort(col) {
+  if (pacingSortCol === col) pacingSortDir *= -1; else { pacingSortCol = col; pacingSortDir = -1; }
+  renderPacingFromFilter();
+}
 let _pMomChart = null, _pYoyChart = null;
 
 async function loadPacingConfig() {
@@ -3236,7 +3241,18 @@ function renderPacingCharts() {
 }
 
 function renderPacingTable(rows) {
-  const filtered = rows || getFilteredPacingRows();
+  let filtered = (rows || getFilteredPacingRows()).slice();
+
+  // Sort
+  filtered.sort((a, b) => {
+    const col = pacingSortCol;
+    const d   = pacingSortDir;
+    if (col === 'name')   return d * a.name.localeCompare(b.name);
+    if (col === 'status') return d * a.status.localeCompare(b.status);
+    const av = a[col] ?? (d > 0 ? Infinity : -Infinity);
+    const bv = b[col] ?? (d > 0 ? Infinity : -Infinity);
+    return d * (av - bv);
+  });
 
   document.getElementById('p-tbl-count').textContent = filtered.length + ' accounts';
 
