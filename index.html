@@ -2595,7 +2595,7 @@ function renderSignals(){
     const c=a.corr;
     if(!c) return`<tr><td><span class="hn">${a.name}</span></td><td colspan="7" style="font-size:10px;color:#B4B2A9">No correlation data</td></tr>`;
     const deltaColor=c.delta>=0.2?'#1D9E75':c.delta>=0.05?'#EF9F27':'#888780';
-    const combo=(c.best_combo||[]).map(ac=>`<span style="font-size:9px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:4px;padding:1px 6px;color:#5F5E5A;white-space:nowrap">${ac}</span>`).join(' ');
+    const combo=(c.best_combo_disp||c.best_combo||[]).map(ac=>`<span style="font-size:9px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:4px;padding:1px 6px;color:#5F5E5A;white-space:nowrap">${ac}</span>`).join(' ');
     const cohortCls=a.cohort==='Growth'?'growth':a.cohort==='Ready for Growth'?'ready':a.cohort==='Preparing for Growth'?'preparing':'none';
     const cohortLbl=a.cohort||'—';
     return`<tr onclick="document.getElementById('corr-inp').value='${a.name.replace(/'/g,"\\'")}';filterCorrDetail('${a.name.replace(/'/g,"\\'")}');" style="cursor:pointer">

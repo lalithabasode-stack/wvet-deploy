@@ -457,6 +457,9 @@ function buildDailyRows(trafficRows, convRows) {
           // Cohort fields — set by add-cohorts.js, preserved here
           cohort:       prev.cohort       ?? null,
           locationCode: prev.locationCode ?? null,
+          // Correlation fields — set by fetch-all-conv-monthly.js + compute-correlations.js
+          conv_monthly: prev.conv_monthly ?? undefined,
+          corr:         prev.corr         ?? undefined,
         });
         process.stdout.write('.');
       } catch (err) {
