@@ -1935,11 +1935,16 @@ document.addEventListener('click',function(e){
 // TIME SERIES
 // ============================
 let activeCohort = null;
-let expandedCohort = null; // null = all collapsed; string = open group key
+let expandedCohort    = null; // portfolio accordion
+let expandedCohortPoP = null; // PoP accordion
 
 function toggleCohortGroup(key) {
   expandedCohort = (expandedCohort === key) ? null : key;
   renderPortfolioTable();
+}
+function toggleCohortGroupPoP(key) {
+  expandedCohortPoP = (expandedCohortPoP === key) ? null : key;
+  renderPoP();
 }
 
 function cohortRowCls(a) {
@@ -2615,15 +2620,58 @@ function renderPoP(){
     }
   }
 
-  const html=sel.map((a,i)=>{
-    const av=aD[i], bv=bD[i];
-    const isM=MANAGED_IDS.has(a.id);
-    const cells=POP_METRICS.filter(m=>!m.mb||mbOk).map(m=>metricCells(av,bv,m)).join('');
-    const trCls=[isM?'managed-row':'',cohortRowCls(a)].filter(Boolean).join(' ');
-    return`<tr${trCls?' class="'+trCls+'"':''}>
-      <td class="hn-cell"><span class="hn">${a.name}</span></td>${cells}
+  // Accordion cohort groups
+  const POP_COHORT_KEYS=['Growth','Ready for Growth','Preparing for Growth',null];
+  const popCohortTK=c=>c||'__uncategorized__';
+  const popCohortCls=c=>c==='Growth'?'growth':c==='Ready for Growth'?'ready':c==='Preparing for Growth'?'preparing':'none';
+
+  const grpMap={};
+  POP_COHORT_KEYS.forEach(c=>{grpMap[popCohortTK(c)]=[];});
+  sel.forEach((a,i)=>{
+    const k=popCohortTK(a.cohort);
+    if(!grpMap[k])grpMap[k]=[];
+    grpMap[k].push({a,av:aD[i],bv:bD[i]});
+  });
+
+  const sumGroup=items=>{
+    const at={sp:0,cl:0,si:0,mb:0},bt={sp:0,cl:0,si:0,mb:0};
+    items.forEach(({av,bv})=>{
+      at.sp+=av.sp||0;at.cl+=av.cl||0;at.si+=av.si||0;at.mb+=av.mb||0;
+      bt.sp+=bv.sp||0;bt.cl+=bv.cl||0;bt.si+=bv.si||0;bt.mb+=bv.mb||0;
+    });
+    at.cps=at.si?at.sp/at.si:null;at.cpm=at.mb?at.sp/at.mb:null;
+    bt.cps=bt.si?bt.sp/bt.si:null;bt.cpm=bt.mb?bt.sp/bt.mb:null;
+    return{at,bt};
+  };
+
+  let html='';
+  POP_COHORT_KEYS.forEach(c=>{
+    const key=popCohortTK(c);
+    if(activeCohort&&activeCohort!==c)return;
+    const items=grpMap[key]||[];
+    if(!items.length)return;
+    const isExp=activeCohort?true:expandedCohortPoP===key;
+    const cls=popCohortCls(c);
+    const lbl=c||'Uncategorized';
+    const arrow=isExp?'▾':'▸';
+    const safeKey=key.replace(/'/g,"\\'");
+    const{at,bt}=sumGroup(items);
+    const sumCells=POP_METRICS.filter(m=>!m.mb||mbOk).map(m=>metricCells(at,bt,m)).join('');
+    html+=`<tr class="cohort-summary ${cls}" onclick="toggleCohortGroupPoP('${safeKey}')">
+      <td class="hn-cell"><span class="cohort-arrow">${arrow}</span><strong>${lbl}</strong><span style="color:#B4B2A9;font-size:9px;font-weight:400;margin-left:5px">· ${items.length}</span></td>${sumCells}
     </tr>`;
-  }).join('');
+    if(isExp){
+      html+=items.map(({a,av,bv})=>{
+        const isM=MANAGED_IDS.has(a.id);
+        const cells=POP_METRICS.filter(m=>!m.mb||mbOk).map(m=>metricCells(av,bv,m)).join('');
+        const trCls=[isM?'managed-row':'',cohortRowCls(a)].filter(Boolean).join(' ');
+        return`<tr${trCls?' class="'+trCls+'"':''}>
+          <td class="hn-cell" style="padding-left:18px"><span class="hn">${a.name}</span></td>${cells}
+        </tr>`;
+      }).join('');
+    }
+  });
+  html=html||'<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:16px;font-size:11px">No accounts match current filters</td></tr>';
 
   // Totals row
   const sumFn=(arr,key)=>arr.reduce((s,d)=>s+(d[key]||0),0);
@@ -3310,6 +3358,7 @@ async function renderPacing() {
   _allPacingRows = getPacingRows();
   if (!_pacingInited) {
     initPacingFilters();
+    initTableResize('p-table');
     _pacingInited = true;
   }
   const filtered = getFilteredPacingRows();
