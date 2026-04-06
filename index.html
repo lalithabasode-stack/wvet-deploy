@@ -246,7 +246,7 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
   <div class="tabs">
     <button class="tab on" onclick="sw('portfolio',this)">Portfolio</button>
     <button class="tab" onclick="sw('timeseries',this)">Time Series</button>
-    <button class="tab" onclick="sw('signals',this)">Signals</button>
+    <button class="tab" onclick="sw('signals',this)">Correlation</button>
     <button class="tab" onclick="sw('budget',this)">Budget</button>
     <button class="tab" onclick="sw('pacing',this)">Pacing</button>
   </div>
@@ -647,12 +647,28 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
   </div>
 </div>
 
-<!-- ===== SIGNALS (correlation, managed only) ===== -->
+<!-- ===== CORRELATION (managed only) ===== -->
 <div id="signals" class="view">
   <div class="layout">
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearCorrFilters()">Clear all</button></div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Account <span style="font-weight:400;color:#B4B2A9" id="corr-acct-count">(—)</span></span><span style="margin-left:auto;display:flex;gap:4px;margin-right:4px" onclick="event.stopPropagation()"><button class="acct-tog-btn" onclick="corrSelectAll()">All</button><button class="acct-tog-btn" onclick="corrClearAccts()">Clear</button></span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open">
+          <div style="padding:0 8px 6px"><input class="sb-search" id="corr-srch" placeholder="Search accounts..." oninput="filterCorrAcctList(this.value)" style="border-radius:6px;border:0.5px solid #E8E6DF;background:#F5F4F0;width:100%"></div>
+          <div class="acct-list" id="corr-acct-list"></div>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Cohort</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="corr-cohort" value=""                     checked onclick="setCorrCohort(null)"><span class="fcheck-lbl">All</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-cohort" value="Growth"               onclick="setCorrCohort('Growth')"><span class="fcheck-lbl">Growth</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-cohort" value="Ready for Growth"     onclick="setCorrCohort('Ready for Growth')"><span class="fcheck-lbl">Ready for Growth</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-cohort" value="Preparing for Growth" onclick="setCorrCohort('Preparing for Growth')"><span class="fcheck-lbl">Preparing for Growth</span></label>
+        </div>
+      </div>
       <div class="fg">
         <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Best r quality</span><span class="fg-arrow open">▾</span></div>
         <div class="fg-body open" style="padding:4px 13px 10px">
@@ -675,16 +691,17 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
     <div>
   <div class="card">
     <div class="card-head">
-      <div class="ct">Conversion signal quality — managed accounts</div>
+      <div class="ct">Correlation analysis — managed accounts</div>
       <div style="display:flex;gap:6px;align-items:center">
         <div style="font-size:10px;color:#888780">Click headers to sort · click row to explore</div>
-        <button class="btn-sm" onclick="downloadXLSX('corr-tbody',null,'WesternVet_Signals')">↓ XLSX</button>
+        <button class="btn-sm" onclick="downloadXLSX('corr-tbody',null,'WesternVet_Correlation')">↓ XLSX</button>
       </div>
     </div>
     <div class="tbl-wrap">
       <table>
         <thead><tr>
           <th onclick="corrSort('name')">Hospital</th>
+          <th onclick="corrSort('cohort')">Cohort</th>
           <th class="r" onclick="corrSort('actions')">Actions</th>
           <th class="r" onclick="corrSort('combos')">Combos</th>
           <th class="r" onclick="corrSort('allr')">All r</th>
@@ -2520,14 +2537,37 @@ function renderPoP(){
 // ============================
 // SIGNALS (correlation, managed only)
 // ============================
-let corrSortCol='delta', corrSortDir=-1;
+let corrSortCol='delta', corrSortDir=-1, corrSelectedIds=new Set(), corrCohortFilter=null;
 function corrSort(col){
   if(corrSortCol===col)corrSortDir*=-1;else{corrSortCol=col;corrSortDir=-1;}
   renderSignals();
 }
 function clearCorrFilters(){
   document.querySelectorAll('.corr-qual,.corr-pri').forEach(c=>c.checked=true);
+  document.querySelectorAll('.corr-cohort').forEach((c,i)=>{c.checked=i===0;});
+  corrCohortFilter=null;
+  corrSelectAll();
+}
+function setCorrCohort(val){
+  corrCohortFilter=val;
+  document.querySelectorAll('.corr-cohort').forEach(c=>{c.checked=(c.value===''&&val===null)||(c.value===val);});
   renderSignals();
+}
+function initCorrSidebar(){
+  const accts=AM.filter(a=>a.corr);
+  corrSelectedIds=new Set(accts.map(a=>a.id));
+  document.getElementById('corr-acct-count').textContent='('+accts.length+')';
+  document.getElementById('corr-acct-list').innerHTML=accts.map(a=>
+    `<label class="fcheck"><input type="checkbox" class="corr-acct-chk" value="${a.id}" checked onchange="corrToggleAcct('${a.id}',this.checked)"><span class="fcheck-lbl" style="font-size:10px">${a.name}</span></label>`
+  ).join('');
+}
+function corrToggleAcct(id,on){corrSelectedIds[on?'add':'delete'](id);renderSignals();}
+function corrSelectAll(){corrSelectedIds=new Set(AM.filter(a=>a.corr).map(a=>a.id));document.querySelectorAll('.corr-acct-chk').forEach(c=>c.checked=true);renderSignals();}
+function corrClearAccts(){corrSelectedIds.clear();document.querySelectorAll('.corr-acct-chk').forEach(c=>c.checked=false);renderSignals();}
+function filterCorrAcctList(q){
+  document.querySelectorAll('#corr-acct-list .fcheck').forEach(el=>{
+    el.style.display=el.querySelector('.fcheck-lbl').textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
 }
 function renderSignals(){
   const qualChk=[...document.querySelectorAll('.corr-qual:checked')].map(c=>c.value);
@@ -2536,6 +2576,8 @@ function renderSignals(){
   const priOf=d=>d*100>20?'high':d*100>=5?'medium':'low';
   let rows=[...AM].filter(a=>{
     if(!a.corr) return false;
+    if(!corrSelectedIds.has(a.id)) return false;
+    if(corrCohortFilter && a.cohort!==corrCohortFilter) return false;
     if(!qualChk.includes(qualOf(a.corr.best_r))) return false;
     if(!priChk.includes(priOf(a.corr.delta))) return false;
     return true;
@@ -2546,15 +2588,19 @@ function renderSignals(){
   else if(corrSortCol==='combos')rows.sort((a,b)=>corrSortDir*((cv(b).total_combos||0)-(cv(a).total_combos||0)));
   else if(corrSortCol==='allr')rows.sort((a,b)=>corrSortDir*((cv(b).all_r||0)-(cv(a).all_r||0)));
   else if(corrSortCol==='bestr')rows.sort((a,b)=>corrSortDir*((cv(b).best_r||0)-(cv(a).best_r||0)));
+  else if(corrSortCol==='cohort')rows.sort((a,b)=>corrSortDir*(a.cohort||'').localeCompare(b.cohort||''));
   else if(corrSortCol==='delta')rows.sort((a,b)=>corrSortDir*((cv(b).delta||0)-(cv(a).delta||0)));
 
   document.getElementById('corr-tbody').innerHTML=rows.map(a=>{
     const c=a.corr;
-    if(!c) return`<tr><td><span class="hn">${a.name}</span></td><td colspan="6" style="font-size:10px;color:#B4B2A9">No correlation data</td></tr>`;
+    if(!c) return`<tr><td><span class="hn">${a.name}</span></td><td colspan="7" style="font-size:10px;color:#B4B2A9">No correlation data</td></tr>`;
     const deltaColor=c.delta>=0.2?'#1D9E75':c.delta>=0.05?'#EF9F27':'#888780';
     const combo=(c.best_combo||[]).map(ac=>`<span style="font-size:9px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:4px;padding:1px 6px;color:#5F5E5A;white-space:nowrap">${ac}</span>`).join(' ');
+    const cohortCls=a.cohort==='Growth'?'growth':a.cohort==='Ready for Growth'?'ready':a.cohort==='Preparing for Growth'?'preparing':'none';
+    const cohortLbl=a.cohort||'—';
     return`<tr onclick="document.getElementById('corr-inp').value='${a.name.replace(/'/g,"\\'")}';filterCorrDetail('${a.name.replace(/'/g,"\\'")}');" style="cursor:pointer">
       <td><span class="hn">${a.name}</span></td>
+      <td><span class="cohort-badge ${cohortCls}" style="font-size:9px">${cohortLbl}</span></td>
       <td class="r" style="font-size:11px;color:#888780">${c.n_actions}</td>
       <td class="r" style="font-size:11px;color:#888780">${c.total_combos.toLocaleString()}</td>
       <td class="r">${rBar(c.all_r)}</td>
@@ -2724,7 +2770,7 @@ function sw(id,btn){
     renderTS();
   }
   if(id==='budget')renderBudget();
-  if(id==='signals')renderSignals();
+  if(id==='signals'){initCorrSidebar();renderSignals();}
   if(id==='pacing')renderPacing();
 }
 
