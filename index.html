@@ -1238,6 +1238,32 @@ function toggleFG(el){
 // PORTFOLIO TAB (all accounts)
 // ============================
 let portDate=MONTHS[MONTHS.length-1], portSortCol='spend', portSortDir=-1, mbExpanded=false;
+let portYear=new Date().getFullYear();
+
+function renderPortDateBar(){
+  const years=[...new Set(MONTHS.map(m=>new Date(MONTH_YM[m]+'-02').getFullYear()))];
+  const yearTabs=years.map(yr=>
+    `<span class="dchip${yr===portYear?' on':''}" onclick="setPortYear(${yr})" style="font-weight:600;letter-spacing:-.3px">${yr}</span>`
+  ).join('');
+  const latest=MONTHS[MONTHS.length-1];
+  const monthChips=MONTHS.filter(m=>new Date(MONTH_YM[m]+'-02').getFullYear()===portYear).map(m=>{
+    const d=new Date(MONTH_YM[m]+'-02');
+    const label=_MO_LABEL[d.getMonth()]+(m===latest?' MTD':'');
+    return`<div class="dchip${m===portDate?' on':''}" onclick="setPortDate('${m}',this)">${label}</div>`;
+  }).join('');
+  document.getElementById('port-date-bar').innerHTML=
+    '<span class="dlbl">Period:</span>'+yearTabs+
+    '<span style="color:#D0CEC7;margin:0 5px;font-size:11px">|</span>'+monthChips;
+}
+
+function setPortYear(yr){
+  portYear=yr;
+  const yMonths=MONTHS.filter(m=>new Date(MONTH_YM[m]+'-02').getFullYear()===yr);
+  if(yMonths.length&&!yMonths.includes(portDate)) portDate=yMonths[yMonths.length-1];
+  renderPortDateBar();
+  renderPortfolioKPIs();
+  renderPortfolioTable();
+}
 
 function toggleMBExpand(){
   mbExpanded=!mbExpanded;
@@ -1267,8 +1293,8 @@ function renderDateChips(barId,currentVal,onClickFn){
 
 function setPortDate(m,el){
   portDate=m;
-  document.querySelectorAll('#portfolio .dchip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on');
+  portYear=new Date(MONTH_YM[m]+'-02').getFullYear();
+  renderPortDateBar();
   renderPortfolioKPIs();
   renderPortfolioTable();
 }
@@ -2972,7 +2998,7 @@ function initPortResize(){initTableResize('port-table');}
     document.getElementById('tab-managed-count').textContent=AM.length;
 
     // Render date chips for all tabs
-    renderDateChips('port-date-bar',portDate,'setPortDate');
+    renderPortDateBar();
     renderDateChips('managed-date-bar',mDate,'setMDate');
 
     // Init portfolio tab
