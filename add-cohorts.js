@@ -48,6 +48,8 @@ const MANUAL = {
   'village pet doctor':                         { cohort:null,                     code:'L-517' },
   'four paws pet hotel & resort':               { cohort:null,                     code:'L-524' },
   'village square portola valley veterinary clinic': { cohort:'Preparing for Growth', code:'L-513' },
+  'midway vets':                                    { cohort:'Preparing for Growth', code:'L-262' },
+  'wildwood animal clinic (portland)':              { cohort:'Preparing for Growth', code:'L-004' },
 };
 
 async function main() {
