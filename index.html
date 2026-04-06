@@ -1069,7 +1069,7 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
 // Month constants are auto-generated from campaign start → today.
 // Keys are unique within a fiscal year (Oct–Sep). Add years to key if campaign
 // runs past Sep 2026 (e.g. oct26). For now single short names suffice.
-const CAMPAIGN_START=new Date(2025,9,1); // Oct 2025
+const CAMPAIGN_START=new Date(2025,0,1); // Jan 2025
 const _MO_SHORT=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 const _MO_LABEL=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const _MO_LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1254,9 +1254,13 @@ function renderDateChips(barId,currentVal,onClickFn){
   const bar=document.getElementById(barId);
   if(!bar) return;
   const latest=MONTHS[MONTHS.length-1];
+  let lastYr=null;
   bar.innerHTML='<span class="dlbl">Period:</span>'+MONTHS.map(m=>{
-    const d=new Date(MONTH_YM[m]+'-02'); // +2 to avoid UTC offset issues
-    const label=_MO_LABEL[d.getMonth()]+(m===latest?' MTD':'');
+    const d=new Date(MONTH_YM[m]+'-02');
+    const yr=d.getFullYear();
+    const base=_MO_LABEL[d.getMonth()];
+    const label=(yr!==lastYr?base+' \''+String(yr).slice(2):base)+(m===latest?' MTD':'');
+    lastYr=yr;
     return`<div class="dchip${m===currentVal?' on':''}" onclick="${onClickFn}('${m}',this)">${label}</div>`;
   }).join('');
 }
@@ -1405,7 +1409,8 @@ function clearPortFilters(){
 const portCharts={};
 function renderPortfolioCharts(selectedIds){
   const months=MONTHS;
-  const lbls=months.map(m=>MLABEL[m].split(' ')[0]); // e.g. 'Oct', 'Nov' from 'Oct 2025'
+  let _chartYr=null;
+  const lbls=months.map(m=>{const d=new Date(MONTH_YM[m]+'-02');const yr=d.getFullYear();const b=_MO_LABEL[d.getMonth()];const l=yr!==_chartYr?b+' \''+String(yr).slice(2):b;_chartYr=yr;return l;});
   const sel=A.filter(a=>selectedIds.has(a.id)&&(!activeCohort||a.cohort===activeCohort));
   const selM=sel.filter(a=>a.isManaged!==undefined?a.isManaged:MANAGED_IDS.has(a.id));
 
