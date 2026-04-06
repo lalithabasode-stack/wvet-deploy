@@ -1155,10 +1155,16 @@ function buildWeeklyFromDaily(accounts){
       byWeek[ws].sig    +=(d.nc_call||0)+(d.nc_web||0)+(d.appt_call||0)+(d.appt_web||0);
     }
   }
-  return Object.values(byWeek)
-    .sort((a,b)=>a.weekStart.localeCompare(b.weekStart))
-    .map(w=>({...w,spend:Math.round(w.spend*100)/100,
-      label:new Date(w.weekStart+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'})}));
+  const sorted=Object.values(byWeek).sort((a,b)=>a.weekStart.localeCompare(b.weekStart));
+  let lastYear=null;
+  return sorted.map(w=>{
+    const d=new Date(w.weekStart+'T12:00:00Z');
+    const yr=d.getUTCFullYear();
+    const base=d.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'});
+    const label=yr!==lastYear?base+' \''+String(yr).slice(2):base;
+    lastYear=yr;
+    return{...w,spend:Math.round(w.spend*100)/100,label};
+  });
 }
 
 // ============================
