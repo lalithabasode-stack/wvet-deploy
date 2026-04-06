@@ -1069,7 +1069,7 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
 // Month constants are auto-generated from campaign start → today.
 // Keys are unique within a fiscal year (Oct–Sep). Add years to key if campaign
 // runs past Sep 2026 (e.g. oct26). For now single short names suffice.
-const CAMPAIGN_START=new Date(2025,9,1); // Oct 2025
+const CAMPAIGN_START=new Date(2025,0,1); // Jan 2025
 const _MO_SHORT=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 const _MO_LABEL=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const _MO_LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1080,7 +1080,7 @@ function _buildMonths(){
   let prevKey=null;
   while(d<=now){
     const mo=d.getMonth(),yr=d.getFullYear();
-    const key=_MO_SHORT[mo];
+    const key=_MO_SHORT[mo]+String(yr).slice(2); // e.g. 'oct25', 'jan26'
     const isCur=(mo===now.getMonth()&&yr===now.getFullYear());
     months.push(key);
     mlabel[key]=_MO_LABEL[mo]+' '+yr;
@@ -1241,12 +1241,13 @@ let portDate=MONTHS[MONTHS.length-1], portSortCol='spend', portSortDir=-1, mbExp
 let portYear=new Date().getFullYear();
 
 function renderPortDateBar(){
-  const years=[...new Set(MONTHS.map(m=>new Date(MONTH_YM[m]+'-02').getFullYear()))];
+  const mkYear=mk=>2000+parseInt(mk.slice(-2));
+  const years=[...new Set(MONTHS.map(mkYear))];
   const yearTabs=years.map(yr=>
     `<span class="dchip${yr===portYear?' on':''}" onclick="setPortYear(${yr})" style="font-weight:600;letter-spacing:-.3px">${yr}</span>`
   ).join('');
   const latest=MONTHS[MONTHS.length-1];
-  const monthChips=MONTHS.filter(m=>new Date(MONTH_YM[m]+'-02').getFullYear()===portYear).map(m=>{
+  const monthChips=MONTHS.filter(m=>mkYear(m)===portYear).map(m=>{
     const d=new Date(MONTH_YM[m]+'-02');
     const label=_MO_LABEL[d.getMonth()]+(m===latest?' MTD':'');
     return`<div class="dchip${m===portDate?' on':''}" onclick="setPortDate('${m}',this)">${label}</div>`;
@@ -1258,7 +1259,7 @@ function renderPortDateBar(){
 
 function setPortYear(yr){
   portYear=yr;
-  const yMonths=MONTHS.filter(m=>new Date(MONTH_YM[m]+'-02').getFullYear()===yr);
+  const yMonths=MONTHS.filter(m=>(2000+parseInt(m.slice(-2)))===yr);
   if(yMonths.length&&!yMonths.includes(portDate)) portDate=yMonths[yMonths.length-1];
   renderPortDateBar();
   renderPortfolioKPIs();
@@ -1293,7 +1294,7 @@ function renderDateChips(barId,currentVal,onClickFn){
 
 function setPortDate(m,el){
   portDate=m;
-  portYear=new Date(MONTH_YM[m]+'-02').getFullYear();
+  portYear=2000+parseInt(m.slice(-2));
   renderPortDateBar();
   renderPortfolioKPIs();
   renderPortfolioTable();
@@ -1468,8 +1469,8 @@ function renderPortfolioCharts(selectedIds){
   }
 
   // Chart 4 — New Clients & CP new client (managed only)
-  const ncMonths=['oct','nov','dec','jan','feb'];
-  const ncLbls=['Oct','Nov','Dec','Jan','Feb'];
+  const ncMonths=MONTHS.filter(m=>AM.some(a=>a.nc&&a.nc[m]));
+  const ncLbls=ncMonths.map(m=>MLABEL[m].replace(' 20',' \'').replace(/\d{4}$/,s=>s.slice(2)));
   const nc=ncMonths.map(m=>selM.reduce((s,a)=>s+(a.nc&&a.nc[m]?a.nc[m]:0),0));
   const ncSpend=ncMonths.map(m=>selM.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0));
   const cpNC=ncMonths.map((m,i)=>nc[i]?Math.round(ncSpend[i]/nc[i]):0);
@@ -2159,10 +2160,9 @@ function getTSData(){
     const toWS=(toSel&&toSel.value)||(WEEKLY_DATA[WEEKLY_DATA.length-1]&&WEEKLY_DATA[WEEKLY_DATA.length-1].weekStart)||'';
     const filtered=WEEKLY_DATA.filter(d=>d.weekStart>=fromWS&&d.weekStart<=toWS);
     const sel=getEffectiveTSSel();
-    const _wkMo=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
     const rows=filtered.map(d=>{
       let sp=d.spend,cl=d.clicks,si=d.sig,im=d.imp||0;
-      const mo=d.weekStart?_wkMo[parseInt(d.weekStart.slice(5,7),10)-1]:null;
+      const mo=d.weekStart?(_MO_SHORT[parseInt(d.weekStart.slice(5,7),10)-1]+d.weekStart.slice(2,4)):null;
       if(mo){
         const totSp=AM.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
         const selSp=sel.filter(a=>MANAGED_IDS.has(a.id)).reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
@@ -2311,10 +2311,9 @@ function renderTS(){
     if(_fromIdx>=_numW&&_numW>0){
       const _priorWeeks=WEEKLY_DATA.slice(_fromIdx-_numW,_fromIdx);
       const _sel=getEffectiveTSSel();
-      const _wkMo=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
       const _pRows=_priorWeeks.map(d=>{
         let sp=d.spend,cl=d.clicks,si=d.sig,im=d.imp||0;
-        const mo=d.weekStart?_wkMo[parseInt(d.weekStart.slice(5,7),10)-1]:null;
+        const mo=d.weekStart?(_MO_SHORT[parseInt(d.weekStart.slice(5,7),10)-1]+d.weekStart.slice(2,4)):null;
         if(mo){
           const totSp=AM.reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
           const selSp=_sel.filter(a=>MANAGED_IDS.has(a.id)).reduce((s,a)=>s+(a.spend&&a.spend[mo]?a.spend[mo]:0),0);
@@ -3112,8 +3111,8 @@ function getPacingRows() {
 
 function renderPacingKPIs(rows) {
   const now = new Date();
-  const MKS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  const prevMk = MKS[(now.getMonth() + 11) % 12];
+  const _prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMk = _MO_SHORT[_prevDate.getMonth()] + String(_prevDate.getFullYear()).slice(2);
 
   const totalBudget = rows.reduce((s, r) => s + r.budget, 0);
   const totalSpend  = rows.reduce((s, r) => s + r.spendMtd, 0);

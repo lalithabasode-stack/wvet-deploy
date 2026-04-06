@@ -20,19 +20,20 @@ const XLSX_PATH = process.argv[2] || './matchback-source.xlsx';
 const JSON_PATH = process.argv[3] || '/Users/lalithabasode/wvet-deploy/data.json';
 
 // Columns 3,8,13,18,23,28,33,38,43,48,53,58 are month start columns
+// Keys use year-suffixed format: mar25, oct25, jan26, etc.
 const MONTH_COLS = [
-  { col: 3,  key: 'mar' },
-  { col: 8,  key: 'apr' },
-  { col: 13, key: 'may' },
-  { col: 18, key: 'jun' },
-  { col: 23, key: 'jul' },
-  { col: 28, key: 'aug' },
-  { col: 33, key: 'sep' },
-  { col: 38, key: 'oct' },
-  { col: 43, key: 'nov' },
-  { col: 48, key: 'dec' },
-  { col: 53, key: 'jan' },
-  { col: 58, key: 'feb' },
+  { col: 3,  key: 'mar25' },
+  { col: 8,  key: 'apr25' },
+  { col: 13, key: 'may25' },
+  { col: 18, key: 'jun25' },
+  { col: 23, key: 'jul25' },
+  { col: 28, key: 'aug25' },
+  { col: 33, key: 'sep25' },
+  { col: 38, key: 'oct25' },
+  { col: 43, key: 'nov25' },
+  { col: 48, key: 'dec25' },
+  { col: 53, key: 'jan26' },
+  { col: 58, key: 'feb26' },
 ];
 
 function normalize(s) {
