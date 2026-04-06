@@ -10,7 +10,7 @@
 
 const fs   = require('fs');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: '/Users/lalithabasode/claude/google-ads-mcp/.env' });
 const { GoogleAdsApi } = require('google-ads-api');
 
 const MCC_ID     = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID || '8264811884';
