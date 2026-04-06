@@ -1435,7 +1435,7 @@ function clearPortFilters(){
 
 const portCharts={};
 function renderPortfolioCharts(selectedIds){
-  const months=MONTHS;
+  const months=MONTHS.slice(-13);
   let _chartYr=null;
   const lbls=months.map(m=>{const d=new Date(MONTH_YM[m]+'-02');const yr=d.getFullYear();const b=_MO_LABEL[d.getMonth()];const l=yr!==_chartYr?b+' \''+String(yr).slice(2):b;_chartYr=yr;return l;});
   const sel=A.filter(a=>selectedIds.has(a.id)&&(!activeCohort||a.cohort===activeCohort));
