@@ -649,11 +649,35 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
 
 <!-- ===== SIGNALS (correlation, managed only) ===== -->
 <div id="signals" class="view">
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-top"><span class="sb-title">Filters</span><button class="sb-clear" onclick="clearCorrFilters()">Clear all</button></div>
+      <div class="fg">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Best r quality</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="corr-qual" value="strong"   checked onchange="renderSignals()"><span class="fcheck-lbl">Strong (r ≥ 0.7)</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-qual" value="moderate" checked onchange="renderSignals()"><span class="fcheck-lbl">Moderate (0.3–0.69)</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-qual" value="weak"     checked onchange="renderSignals()"><span class="fcheck-lbl">Weak (0–0.29)</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-qual" value="negative" checked onchange="renderSignals()"><span class="fcheck-lbl">Negative (r &lt; 0)</span></label>
+        </div>
+      </div>
+      <div class="fg" style="border-bottom:none">
+        <div class="fg-toggle" onclick="toggleFG(this)"><span class="fg-label">Fix priority (Δ)</span><span class="fg-arrow open">▾</span></div>
+        <div class="fg-body open" style="padding:4px 13px 10px">
+          <label class="fcheck"><input type="checkbox" class="corr-pri" value="high"   checked onchange="renderSignals()"><span class="fcheck-lbl">High (&gt; 20pp)</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-pri" value="medium" checked onchange="renderSignals()"><span class="fcheck-lbl">Medium (5–20pp)</span></label>
+          <label class="fcheck"><input type="checkbox" class="corr-pri" value="low"    checked onchange="renderSignals()"><span class="fcheck-lbl">Low (&lt; 5pp)</span></label>
+        </div>
+      </div>
+    </div>
+    <!-- Content -->
+    <div>
   <div class="card">
     <div class="card-head">
       <div class="ct">Conversion signal quality — managed accounts</div>
       <div style="display:flex;gap:6px;align-items:center">
-        <div style="font-size:10px;color:#888780">Click headers to sort</div>
+        <div style="font-size:10px;color:#888780">Click headers to sort · click row to explore</div>
         <button class="btn-sm" onclick="downloadXLSX('corr-tbody',null,'WesternVet_Signals')">↓ XLSX</button>
       </div>
     </div>
@@ -698,6 +722,8 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
       <div class="gl-item"><strong>Months used</strong> — Number of months where both conversion data and matchback data existed. Minimum 3 months required. More months = more reliable r.</div>
     </div>
   </div>
+    </div><!-- end content -->
+  </div><!-- end layout -->
 </div>
 
 <!-- ===== BUDGET (managed only) ===== -->
@@ -2499,8 +2525,21 @@ function corrSort(col){
   if(corrSortCol===col)corrSortDir*=-1;else{corrSortCol=col;corrSortDir=-1;}
   renderSignals();
 }
+function clearCorrFilters(){
+  document.querySelectorAll('.corr-qual,.corr-pri').forEach(c=>c.checked=true);
+  renderSignals();
+}
 function renderSignals(){
-  let rows=[...AM];
+  const qualChk=[...document.querySelectorAll('.corr-qual:checked')].map(c=>c.value);
+  const priChk=[...document.querySelectorAll('.corr-pri:checked')].map(c=>c.value);
+  const qualOf=r=>r>=0.7?'strong':r>=0.3?'moderate':r>=0?'weak':'negative';
+  const priOf=d=>d*100>20?'high':d*100>=5?'medium':'low';
+  let rows=[...AM].filter(a=>{
+    if(!a.corr) return false;
+    if(!qualChk.includes(qualOf(a.corr.best_r))) return false;
+    if(!priChk.includes(priOf(a.corr.delta))) return false;
+    return true;
+  });
   const cv=a=>a.corr||{};
   if(corrSortCol==='name')rows.sort((a,b)=>corrSortDir*a.name.localeCompare(b.name));
   else if(corrSortCol==='actions')rows.sort((a,b)=>corrSortDir*((cv(b).n_actions||0)-(cv(a).n_actions||0)));
