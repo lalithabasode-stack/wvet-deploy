@@ -43,6 +43,11 @@ const MANUAL = {
   'blackhawk veterinary hospital g1':           { cohort:'Preparing for Growth',   code:'L-046' },
   'echo hollow veterinary hospital  & urgent care': { cohort:'Growth',             code:'L-324' },
   'paws and claws animal hospital':             { cohort:'Preparing for Growth',   code:'L-176' },
+  // Name mismatches — L-code confirmed from matchback Excel, no conflicts
+  'north ranch animal hospital':                { cohort:null,                     code:'L-032' },
+  'village pet doctor':                         { cohort:null,                     code:'L-517' },
+  'four paws pet hotel & resort':               { cohort:null,                     code:'L-524' },
+  'village square portola valley veterinary clinic': { cohort:'Preparing for Growth', code:'L-513' },
 };
 
 async function main() {
