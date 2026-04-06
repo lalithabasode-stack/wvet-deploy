@@ -12,11 +12,14 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#F7F6F2;color:#1a
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:11px 22px;background:white;border-bottom:0.5px solid #E8E6DF;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
-.cohort-group-hdr td{font-size:10px;font-weight:600;letter-spacing:.05em;padding:6px 10px 4px;border-top:1px solid #E8E6DF;text-transform:uppercase}
-.cohort-group-hdr.growth td{color:#1D9E75}
-.cohort-group-hdr.ready td{color:#378ADD}
-.cohort-group-hdr.preparing td{color:#EF9F27}
-.cohort-group-hdr.none td{color:#B4B2A9}
+tr.cohort-summary{cursor:pointer}
+tr.cohort-summary td{background:#F7F6F2;font-size:11px;font-weight:600;border-top:1px solid #E8E6DF;border-bottom:1px solid #E8E6DF}
+tr.cohort-summary:hover td{background:#F0EEE8}
+tr.cohort-summary.growth{border-left:3px solid #1D9E75}
+tr.cohort-summary.ready{border-left:3px solid #378ADD}
+tr.cohort-summary.preparing{border-left:3px solid #EF9F27}
+tr.cohort-summary.none{border-left:3px solid #C0BEB8}
+.cohort-arrow{font-size:9px;margin-right:5px;display:inline-block;width:10px}
 .logo{font-size:14px;font-weight:600;letter-spacing:-0.3px}.logo span{color:#1D9E75}
 .tabs{display:flex;gap:2px;background:#F0EEE8;border-radius:10px;padding:3px}
 .tab{font-size:11px;padding:4px 12px;border-radius:7px;border:none;background:transparent;color:#888780;cursor:pointer;white-space:nowrap}
@@ -1590,69 +1593,104 @@ function renderPortfolioTable(){
   document.getElementById('port-acct-count').textContent=`(${acctChk.size})`;
   document.getElementById('port-row-count').textContent=`Showing ${rows.length} of ${A.length} accounts`;
 
-  // Build HTML
+  // Build HTML — accordion cohort groups
   const mbSplit=mbExpanded;
-  const COHORT_ORD={'Growth':0,'Ready for Growth':1,'Preparing for Growth':2};
+  const COHORT_KEYS=['Growth','Ready for Growth','Preparing for Growth',null];
   const cohortCls=c=>c==='Growth'?'growth':c==='Ready for Growth'?'ready':c==='Preparing for Growth'?'preparing':'none';
-  if(!activeCohort){
-    const si=rows.map((a,i)=>({a,i}));
-    si.sort((x,y)=>{const ca=COHORT_ORD[x.a.cohort]??3,cb=COHORT_ORD[y.a.cohort]??3;return ca!==cb?ca-cb:x.i-y.i;});
-    rows=si.map(({a})=>a);
-  }
-  let _lastCohort='__init__';
-  const html=rows.map(a=>{
-    let hdr='';
-    if(!activeCohort&&a.cohort!==_lastCohort){
-      _lastCohort=a.cohort;
-      hdr=`<tr class="cohort-group-hdr ${cohortCls(a.cohort)}"><td colspan="20">${a.cohort||'Uncategorized'}</td></tr>`;
-    }
-    return hdr+(()=>{
+  const cohortTK=c=>c||'__uncategorized__';
+
+  // Group rows by cohort (rows already sorted by portSortCol)
+  const grpMap={};
+  COHORT_KEYS.forEach(c=>{grpMap[cohortTK(c)]=[];});
+  rows.forEach(a=>{const k=cohortTK(a.cohort);if(!grpMap[k])grpMap[k]=[];grpMap[k].push(a);});
+
+  // Aggregate summary for a group
+  const summarize=grp=>{
+    const sp=grp.reduce((s,a)=>s+a.sp,0),spp=grp.reduce((s,a)=>s+a.spp,0);
+    const hasNci=grp.some(a=>a.nci!=null);
+    const nci=hasNci?grp.reduce((s,a)=>s+(a.nci||0),0):null,nciP=hasNci?grp.reduce((s,a)=>s+(a.nciP||0),0):null;
+    const hasAppt=grp.some(a=>a.appt_b!=null);
+    const appt_b=hasAppt?grp.reduce((s,a)=>s+(a.appt_b||0),0):null,appt_bP=hasAppt?grp.reduce((s,a)=>s+(a.appt_bP||0),0):null;
+    const hasNca=grp.some(a=>a.nca!=null);
+    const nca=hasNca?grp.reduce((s,a)=>s+(a.nca||0),0):null,ncaP=hasNca?grp.reduce((s,a)=>s+(a.ncaP||0),0):null;
+    const mb=grp.reduce((s,a)=>s+a.mb,0),mbP=grp.reduce((s,a)=>s+a.mbP,0);
+    const mb_inv=grp.some(a=>a.mb_inv!=null)?grp.reduce((s,a)=>s+(a.mb_inv||0),0):null;
+    const mb_invP=grp.some(a=>a.mb_invP!=null)?grp.reduce((s,a)=>s+(a.mb_invP||0),0):null;
+    const mb_vet=grp.some(a=>a.mb_vet!=null)?grp.reduce((s,a)=>s+(a.mb_vet||0),0):null;
+    const mb_vetP=grp.some(a=>a.mb_vetP!=null)?grp.reduce((s,a)=>s+(a.mb_vetP||0),0):null;
+    const cps=nci!=null&&appt_b!=null&&(nci+appt_b)>0?sp/(nci+appt_b):null;
+    const cpsP=nciP!=null&&appt_bP!=null&&(nciP+appt_bP)>0?spp/(nciP+appt_bP):null;
+    const cpm=mb>0?sp/mb:null,cpmP=mbP>0?spp/mbP:null;
+    return{sp,spp,nci,nciP,appt_b,appt_bP,nca,ncaP,mb,mbP,mb_inv,mb_invP,mb_vet,mb_vetP,cps,cpsP,cpm,cpmP};
+  };
+
+  // Account row HTML
+  const acctRow=a=>{
     if(a.isManaged){
       return`<tr class="managed-row ${cohortRowCls(a)}">
-        <td class="hn-cell"><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
-        <td class="r">${f$(a.sp)}</td>
-        <td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
-        <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td>
-        <td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
-        <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td>
-        <td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
-        <td class="r" style="color:#888780">${a.nca!=null?fConv(a.nca):'—'}</td>
-        <td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
-        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}><strong>${fConv(a.mb)}</strong></td>
-        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p?pct(a.mb,a.mbP,true):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_inv!=null?fConv(a.mb_inv):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_inv!=null&&a.mb_invP!=null?pct(a.mb_inv,a.mb_invP,true):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_vet!=null?fConv(a.mb_vet):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_vet!=null&&a.mb_vetP!=null?pct(a.mb_vet,a.mb_vetP,true):'—'}</td>
-        <td class="r">${a.cpm?fCPA(a.cpm):'—'}</td>
-        <td class="r">${p&&a.cpm&&a.cpmP?pct(a.cpm,a.cpmP,true):'—'}</td>
-        <td class="r">${a.cps!=null?fCPA(a.cps):'—'}</td>
-        <td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
+        <td class="hn-cell" style="padding-left:18px"><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
+        <td class="r">${f$(a.sp)}</td><td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
+        <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
+        <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
+        <td class="r" style="color:#888780">${a.nca!=null?fConv(a.nca):'—'}</td><td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
+        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}><strong>${fConv(a.mb)}</strong></td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p?pct(a.mb,a.mbP,true):'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_inv!=null?fConv(a.mb_inv):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_inv!=null&&a.mb_invP!=null?pct(a.mb_inv,a.mb_invP,true):'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_vet!=null?fConv(a.mb_vet):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_vet!=null&&a.mb_vetP!=null?pct(a.mb_vet,a.mb_vetP,true):'—'}</td>
+        <td class="r">${a.cpm?fCPA(a.cpm):'—'}</td><td class="r">${p&&a.cpm&&a.cpmP?pct(a.cpm,a.cpmP,true):'—'}</td>
+        <td class="r">${a.cps!=null?fCPA(a.cps):'—'}</td><td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
         <td class="r">${rBar(a.bestR)}</td>
       </tr>`;
     }
     const dim='style="color:#B4B2A9"';
     return`<tr class="${cohortRowCls(a)}">
-      <td class="hn-cell"><span class="hn">${a.name}</span></td>
-      <td class="r">${f$(a.sp)}</td>
-      <td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
+      <td class="hn-cell" style="padding-left:18px"><span class="hn">${a.name}</span></td>
+      <td class="r">${f$(a.sp)}</td><td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
       <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
       <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
       <td class="r" style="color:#888780">${a.nca!=null?fConv(a.nca):'—'}</td><td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
-      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
-      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
-      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
-      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
-      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
-      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
-      <td class="r" ${dim}>—</td>
-      <td class="r" ${dim}>—</td>
-      <td class="r">${a.cps!=null?fCPA(a.cps):'—'}</td>
-      <td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
+      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
+      <td class="r" ${dim}>—</td><td class="r" ${dim}>—</td>
+      <td class="r">${a.cps!=null?fCPA(a.cps):'—'}</td><td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
       <td class="r" ${dim}>—</td>
     </tr>`;
-  })();
-}).join('')||'<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match current filters</td></tr>';
+  };
+
+  // Summary row HTML
+  const summaryRow=(cohortKey,grp,isExp)=>{
+    const c=cohortKey==='__uncategorized__'?null:cohortKey;
+    const s=summarize(grp);
+    const cls=cohortCls(c);
+    const lbl=c||'Uncategorized';
+    const arrow=isExp?'▾':'▸';
+    const safeKey=cohortKey.replace(/'/g,"\\'");
+    return`<tr class="cohort-summary ${cls}" onclick="toggleCohortGroup('${safeKey}')">
+      <td class="hn-cell"><span class="cohort-arrow">${arrow}</span><strong>${lbl}</strong><span style="color:#888780;font-weight:400;font-size:10px;margin-left:4px">· ${grp.length}</span></td>
+      <td class="r"><strong>${f$(s.sp)}</strong></td><td class="r">${p?pct(s.sp,s.spp,true):'—'}</td>
+      <td class="r">${s.nci!=null?fConv(s.nci):'—'}</td><td class="r">${p&&s.nci!=null?pct(s.nci,s.nciP,true):'—'}</td>
+      <td class="r">${s.appt_b!=null?fConv(s.appt_b):'—'}</td><td class="r">${p&&s.appt_b!=null?pct(s.appt_b,s.appt_bP,true):'—'}</td>
+      <td class="r" style="color:#888780">${s.nca!=null?fConv(s.nca):'—'}</td><td class="r" style="color:#888780">${p&&s.nca!=null?pct(s.nca,s.ncaP,false):'—'}</td>
+      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${s.mb>0?fConv(s.mb):'—'}</td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p&&s.mb>0?pct(s.mb,s.mbP,true):'—'}</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${s.mb_inv!=null?fConv(s.mb_inv):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&s.mb_inv!=null?pct(s.mb_inv,s.mb_invP,true):'—'}</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${s.mb_vet!=null?fConv(s.mb_vet):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&s.mb_vet!=null?pct(s.mb_vet,s.mb_vetP,true):'—'}</td>
+      <td class="r">${s.cpm!=null?fCPA(s.cpm):'—'}</td><td class="r">${p&&s.cpm!=null?pct(s.cpm,s.cpmP,true):'—'}</td>
+      <td class="r">${s.cps!=null?fCPA(s.cps):'—'}</td><td class="r">${p&&s.cps!=null?pct(s.cps,s.cpsP,true):'—'}</td>
+      <td class="r" style="color:#B4B2A9">—</td>
+    </tr>`;
+  };
+
+  let html='';
+  COHORT_KEYS.forEach(c=>{
+    const key=cohortTK(c);
+    if(activeCohort && activeCohort!==c) return; // skip if cohort filter set to different group
+    const grp=grpMap[key]||[];
+    if(grp.length===0) return; // skip empty groups
+    const isExp=activeCohort?true:expandedCohort===key;
+    html+=summaryRow(key,grp,isExp);
+    if(isExp) html+=grp.map(acctRow).join('');
+  });
+  html=html||'<tr><td colspan="20" style="text-align:center;color:#B4B2A9;padding:18px;font-size:11px">No accounts match current filters</td></tr>';
 
   document.getElementById('port-tbody').innerHTML=html;
 
@@ -1897,6 +1935,12 @@ document.addEventListener('click',function(e){
 // TIME SERIES
 // ============================
 let activeCohort = null;
+let expandedCohort = null; // null = all collapsed; string = open group key
+
+function toggleCohortGroup(key) {
+  expandedCohort = (expandedCohort === key) ? null : key;
+  renderPortfolioTable();
+}
 
 function cohortRowCls(a) {
   if (!a) return '';
