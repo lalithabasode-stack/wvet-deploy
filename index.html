@@ -1406,7 +1406,7 @@ const portCharts={};
 function renderPortfolioCharts(selectedIds){
   const months=MONTHS;
   const lbls=months.map(m=>MLABEL[m].split(' ')[0]); // e.g. 'Oct', 'Nov' from 'Oct 2025'
-  const sel=A.filter(a=>selectedIds.has(a.id));
+  const sel=A.filter(a=>selectedIds.has(a.id)&&(!activeCohort||a.cohort===activeCohort));
   const selM=sel.filter(a=>a.isManaged!==undefined?a.isManaged:MANAGED_IDS.has(a.id));
 
   const spend=months.map(m=>sel.reduce((s,a)=>s+(a.spend&&a.spend[m]?a.spend[m]:0),0));
