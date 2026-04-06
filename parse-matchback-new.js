@@ -16,7 +16,7 @@
 const fs   = require('fs');
 const XLSX = require('xlsx');
 
-const XLSX_PATH = process.argv[2] || '/Users/lalithabasode/Downloads/CPA by Month - Paid Search (3).xlsx';
+const XLSX_PATH = process.argv[2] || './matchback-source.xlsx';
 const JSON_PATH = process.argv[3] || '/Users/lalithabasode/wvet-deploy/data.json';
 
 // Columns 3,8,13,18,23,28,33,38,43,48,53,58 are month start columns
