@@ -34,6 +34,7 @@ jobs:
 
       - name: Apply cohort mapping from Google Sheet
         run: node add-cohorts.js
+        continue-on-error: true
 
       - name: Commit updated data.json
         run: |
