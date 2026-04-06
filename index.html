@@ -649,13 +649,9 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
 
 <!-- ===== SIGNALS (correlation, managed only) ===== -->
 <div id="signals" class="view">
-  <div class="corr-info">
-    <div class="ci-title">How signal quality is calculated</div>
-    <div class="ci-body">For each managed account, we calculate the Pearson correlation (r) between each conversion action's monthly volume and verified matchback appointments (Invoca + Vetstoria). r = 1.0 = perfect predictor · r = −1.0 = perfect anti-predictor · r &lt; 0 = remove from primary goals immediately. The recommended action set is the combination that best predicts matchback when summed.</div>
-  </div>
   <div class="card">
     <div class="card-head">
-      <div class="ct">Signal quality summary — managed accounts</div>
+      <div class="ct">Conversion signal quality — managed accounts</div>
       <div style="display:flex;gap:6px;align-items:center">
         <div style="font-size:10px;color:#888780">Click headers to sort</div>
         <button class="btn-sm" onclick="downloadXLSX('corr-tbody',null,'WesternVet_Signals')">↓ XLSX</button>
@@ -665,36 +661,41 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
       <table>
         <thead><tr>
           <th onclick="corrSort('name')">Hospital</th>
-          <th class="r" onclick="corrSort('r1')">Best single r</th>
-          <th class="r" onclick="corrSort('r2')">Best combo r</th>
-          <th class="nosort">Best conversion action</th>
-          <th class="nosort">Recommended action set</th>
-          <th class="r" onclick="corrSort('strong')">Strong</th>
-          <th class="r" onclick="corrSort('neg')">Negative</th>
-          <th class="nosort">Verdict</th>
+          <th class="r" onclick="corrSort('actions')">Actions</th>
+          <th class="r" onclick="corrSort('combos')">Combos</th>
+          <th class="r" onclick="corrSort('allr')">All r</th>
+          <th class="r" onclick="corrSort('bestr')">Best r</th>
+          <th class="r" onclick="corrSort('delta')">Δ</th>
+          <th class="nosort">Best Combination</th>
         </tr></thead>
         <tbody id="corr-tbody"></tbody>
       </table>
     </div>
   </div>
   <div class="card" style="margin-top:11px">
-    <div class="card-head"><div class="ct">Detailed breakdown — search any managed account</div></div>
+    <div class="card-head"><div class="ct">Account detail — search to explore</div></div>
     <div style="padding:11px 15px;border-bottom:0.5px solid #E8E6DF">
-      <input class="corr-search" id="corr-inp" placeholder="Type account name to see full conversion action breakdown..." oninput="filterCorrDetail(this.value)">
+      <input class="corr-search" id="corr-inp" placeholder="Type account name to see top combinations and per-action breakdown..." oninput="filterCorrDetail(this.value)">
     </div>
     <div id="corr-detail" style="padding:11px 15px">
-      <div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">Type an account name above to see full conversion action breakdown</div>
+      <div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">Type an account name above to see full breakdown</div>
     </div>
   </div>
   <div class="glossary">
-    <div class="gl-title">Correlation guide</div>
+    <div class="gl-title">Methodology &amp; Glossary</div>
     <div class="gl-grid">
-      <div class="gl-item"><strong>r ≥ 0.7</strong> — Strong. Set as primary Smart Bidding goal</div>
-      <div class="gl-item"><strong>r 0.4–0.69</strong> — Moderate. Include in combination</div>
-      <div class="gl-item"><strong>r 0.2–0.39</strong> — Weak. Use only if no better action available</div>
-      <div class="gl-item"><strong>r 0–0.19</strong> — No signal. Neutral effect on bidding</div>
-      <div class="gl-item"><strong>r &lt; 0</strong> — Negative. Remove from primary immediately</div>
-      <div class="gl-item"><strong>Best combo</strong> — Optimal 2–5 action combination, always stronger than single action alone</div>
+      <div class="gl-item"><strong>How it works</strong> — For each managed account, every possible subset of conversion actions (2^n − 1 combinations) is tested. Each subset is scored by Pearson r against verified matchback appointments. The subset with the highest r is recommended for Smart Bidding.</div>
+      <div class="gl-item"><strong>Pearson r</strong> — Correlation coefficient (−1 to +1). Measures how closely a conversion action tracks real appointments. r = 1.0 = perfect predictor. r = −1.0 = perfect anti-predictor. Only r ≥ 0.5 should be used as a primary Smart Bidding goal.</div>
+      <div class="gl-item"><strong>All r</strong> — Pearson r when every tracked conversion action is used together. Often lower than Best r because noisy actions dilute the signal.</div>
+      <div class="gl-item"><strong>Best r</strong> — Pearson r of the optimal subset. The combination of actions that best predicts real appointments. Always ≥ All r.</div>
+      <div class="gl-item"><strong>Δ (Delta)</strong> — Improvement: Best r − All r, shown in percentage points. High Δ = noisy actions are hurting your current bidding. Sort by Δ descending to prioritise which accounts to fix first.</div>
+      <div class="gl-item"><strong>Best Combination</strong> — The specific conversion actions to keep for Smart Bidding. All others should be removed from primary goals or demoted to observation only.</div>
+      <div class="gl-item"><strong>r ≥ 0.7</strong> — Strong signal. Set as primary Smart Bidding goal.</div>
+      <div class="gl-item"><strong>r 0.3–0.69</strong> — Moderate. Include in combination; monitor closely.</div>
+      <div class="gl-item"><strong>r 0–0.29</strong> — Weak / no signal. Neutral at best; exclude from primary.</div>
+      <div class="gl-item"><strong>r &lt; 0</strong> — Negative. Actively misleads Smart Bidding. Remove from primary goals immediately.</div>
+      <div class="gl-item"><strong>Matchback</strong> — Verified new client appointments attributed to paid search via Invoca (calls) + Vetstoria (online bookings). Ground truth. 4–6 week reporting lag.</div>
+      <div class="gl-item"><strong>Months used</strong> — Number of months where both conversion data and matchback data existed. Minimum 3 months required. More months = more reliable r.</div>
     </div>
   </div>
 </div>
@@ -2493,45 +2494,82 @@ function renderPoP(){
 // ============================
 // SIGNALS (correlation, managed only)
 // ============================
-let corrSortCol='r1', corrSortDir=-1;
+let corrSortCol='delta', corrSortDir=-1;
 function corrSort(col){
   if(corrSortCol===col)corrSortDir*=-1;else{corrSortCol=col;corrSortDir=-1;}
   renderSignals();
 }
 function renderSignals(){
   let rows=[...AM];
-  if(corrSortCol==='r1')rows.sort((a,b)=>corrSortDir*(b.bestR-a.bestR));
-  else if(corrSortCol==='r2')rows.sort((a,b)=>corrSortDir*(b.bestCR-a.bestCR));
-  else if(corrSortCol==='strong')rows.sort((a,b)=>corrSortDir*(b.strong-a.strong));
-  else if(corrSortCol==='neg')rows.sort((a,b)=>corrSortDir*(b.neg-a.neg));
-  else if(corrSortCol==='name')rows.sort((a,b)=>corrSortDir*a.name.localeCompare(b.name));
+  const cv=a=>a.corr||{};
+  if(corrSortCol==='name')rows.sort((a,b)=>corrSortDir*a.name.localeCompare(b.name));
+  else if(corrSortCol==='actions')rows.sort((a,b)=>corrSortDir*((cv(b).n_actions||0)-(cv(a).n_actions||0)));
+  else if(corrSortCol==='combos')rows.sort((a,b)=>corrSortDir*((cv(b).total_combos||0)-(cv(a).total_combos||0)));
+  else if(corrSortCol==='allr')rows.sort((a,b)=>corrSortDir*((cv(b).all_r||0)-(cv(a).all_r||0)));
+  else if(corrSortCol==='bestr')rows.sort((a,b)=>corrSortDir*((cv(b).best_r||0)-(cv(a).best_r||0)));
+  else if(corrSortCol==='delta')rows.sort((a,b)=>corrSortDir*((cv(b).delta||0)-(cv(a).delta||0)));
 
   document.getElementById('corr-tbody').innerHTML=rows.map(a=>{
-    const v=a.bestR>=0.7?'<span style="font-size:10px;font-weight:600;color:#085041;background:#E1F5EE;padding:2px 8px;border-radius:4px">Strong</span>':a.bestR>=0.5?'<span style="font-size:10px;font-weight:600;color:#185FA5;background:#E6F1FB;padding:2px 8px;border-radius:4px">Moderate</span>':a.bestR>=0.3?'<span style="font-size:10px;font-weight:600;color:#854F0B;background:#FAEEDA;padding:2px 8px;border-radius:4px">Weak</span>':a.bestR>=0?'<span style="font-size:10px;font-weight:600;color:#5F5E5A;background:#F1EFE8;padding:2px 8px;border-radius:4px">No signal</span>':'<span style="font-size:10px;font-weight:600;color:#791F1F;background:#FCEBEB;padding:2px 8px;border-radius:4px">Negative — fix now</span>';
-    return`<tr>
+    const c=a.corr;
+    if(!c) return`<tr><td><span class="hn">${a.name}</span></td><td colspan="6" style="font-size:10px;color:#B4B2A9">No correlation data</td></tr>`;
+    const deltaColor=c.delta>=0.2?'#1D9E75':c.delta>=0.05?'#EF9F27':'#888780';
+    const combo=(c.best_combo||[]).map(ac=>`<span style="font-size:9px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:4px;padding:1px 6px;color:#5F5E5A;white-space:nowrap">${ac}</span>`).join(' ');
+    return`<tr onclick="document.getElementById('corr-inp').value='${a.name.replace(/'/g,"\\'")}';filterCorrDetail('${a.name.replace(/'/g,"\\'")}');" style="cursor:pointer">
       <td><span class="hn">${a.name}</span></td>
-      <td class="r">${rBar(a.bestR)}</td>
-      <td class="r">${rBar(a.bestCR)}</td>
-      <td style="font-size:10px;color:#888780;max-width:160px;white-space:normal">${a.bestA}</td>
-      <td style="font-size:10px;color:#888780;max-width:200px;white-space:normal">${a.recSet}</td>
-      <td class="r"><span class="${a.strong>0?'up':'fl'}">${a.strong}</span></td>
-      <td class="r"><span class="${a.neg>2?'dn':a.neg>0?'fl':'up'}">${a.neg}</span></td>
-      <td>${v}</td>
+      <td class="r" style="font-size:11px;color:#888780">${c.n_actions}</td>
+      <td class="r" style="font-size:11px;color:#888780">${c.total_combos.toLocaleString()}</td>
+      <td class="r">${rBar(c.all_r)}</td>
+      <td class="r">${rBar(c.best_r)}</td>
+      <td class="r" style="font-size:11px;font-weight:600;color:${deltaColor}">+${(c.delta*100).toFixed(1)}pp</td>
+      <td style="white-space:normal;line-height:1.8">${combo}</td>
     </tr>`;
   }).join('');
 }
 function filterCorrDetail(val){
   const q=val.toLowerCase().trim();
   const el=document.getElementById('corr-detail');
-  if(!q){el.innerHTML='<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">Type an account name above to see full conversion action breakdown</div>';return;}
+  if(!q){el.innerHTML='<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">Type an account name above to see full breakdown</div>';return;}
   const a=AM.find(x=>x.name.toLowerCase().includes(q));
-  if(!a){el.innerHTML=`<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">No managed account found matching "${val}"</div>`;return;}
-  const rows=a.sigs.map(s=>{
-    const rc=s.rec==='YES'?'rp-scale':s.rec==='NO'?'rp-trim':'rp-watch';
-    const action=s.r>=0.5?'Set as primary Smart Bidding goal':s.r>=0.3?'Include in combination':s.r>=0?'Neutral — low priority':s.r>=-0.3?'Misleading — remove from primary':'Actively harmful — remove immediately';
-    return`<tr><td style="font-size:11px">${s.n}</td><td class="r">${rBar(s.r)}</td><td class="r"><span class="rec-pill ${rc}">${s.rec}</span></td><td style="font-size:10px;color:#888780">${action}</td></tr>`;
+  if(!a||!a.corr){el.innerHTML=`<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">No data found for "${val}"</div>`;return;}
+  const c=a.corr;
+  // Top 10 combinations
+  const top10Rows=(c.top10||[]).map((cb,i)=>{
+    const isTop=i===0;
+    const acts=cb.actions.map(ac=>`<span style="font-size:9px;background:${isTop?'#E1F5EE':'#F5F4F0'};border:0.5px solid ${isTop?'#9FE1CB':'#E8E6DF'};border-radius:4px;padding:1px 6px;color:${isTop?'#085041':'#5F5E5A'};white-space:nowrap">${ac}</span>`).join(' ');
+    return`<tr style="${isTop?'background:#F7FCF9':''}">
+      <td class="r" style="font-size:11px;color:${isTop?'#1D9E75':'#888780'};font-weight:${isTop?600:400}">${i+1}</td>
+      <td class="r">${rBar(cb.r)}</td>
+      <td style="white-space:normal;line-height:1.8">${acts}${isTop?' <span style="font-size:9px;color:#1D9E75;font-weight:600">★ best</span>':''}</td>
+    </tr>`;
   }).join('');
-  el.innerHTML=`<div style="padding:10px 14px;border-bottom:0.5px solid #E8E6DF"><div style="font-size:12px;font-weight:500;margin-bottom:2px">${a.name}</div><div style="font-size:10px;color:#888780">Best combo r = ${a.bestCR.toFixed(2)} · ${a.strong} strong actions · ${a.neg} negative actions</div></div><div class="tbl-wrap"><table><thead><tr><th class="nosort">Conversion action</th><th class="r nosort">r value</th><th class="r nosort">Include?</th><th class="nosort">Action to take</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  // Per-action breakdown
+  const perRows=Object.entries(c.per_action||{}).sort((a,b)=>b[1]-a[1]).map(([name,r])=>{
+    const inBest=(c.best_combo||[]).includes(name);
+    const q=r>=0.7?'Strong':r>=0.3?'Moderate':r>=0?'Weak':'Negative';
+    const qc=rC(r);
+    const rec=r>=0.5?'Set as primary goal':r>=0.3?'Include in combo':r>=0?'Low priority — exclude':r>=-0.3?'Misleading — remove from primary':'Actively harmful — remove immediately';
+    return`<tr>
+      <td style="font-size:11px;${inBest?'font-weight:600;color:#1D9E75':''}">${name}${inBest?' ★':''}</td>
+      <td class="r">${rBar(r)}</td>
+      <td style="font-size:10px;font-weight:600;color:${qc}">${q}</td>
+      <td style="font-size:10px;color:#888780">${rec}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML=`
+    <div style="padding:10px 14px;border-bottom:0.5px solid #E8E6DF;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap">
+      <div style="font-size:12px;font-weight:500">${a.name}</div>
+      <div style="font-size:10px;color:#888780">${c.months_used} months · ${c.total_combos.toLocaleString()} combos tested · All r = ${c.all_r.toFixed(2)} → Best r = ${c.best_r.toFixed(2)} <span style="color:#1D9E75;font-weight:600">(+${(c.delta*100).toFixed(1)}pp improvement)</span></div>
+    </div>
+    <div style="padding:12px 14px 6px;font-size:11px;font-weight:600;color:#5F5E5A">Top 10 Combinations</div>
+    <div class="tbl-wrap" style="padding:0 14px 12px">
+      <table><thead><tr><th class="r nosort">#</th><th class="r nosort">r</th><th class="nosort">Actions</th></tr></thead>
+      <tbody>${top10Rows}</tbody></table>
+    </div>
+    <div style="padding:6px 14px 6px;font-size:11px;font-weight:600;color:#5F5E5A;border-top:0.5px solid #E8E6DF">Individual Action Breakdown</div>
+    <div class="tbl-wrap" style="padding:0 14px 12px">
+      <table><thead><tr><th class="nosort">Conversion action</th><th class="r nosort">r value</th><th class="nosort">Signal</th><th class="nosort">Recommendation</th></tr></thead>
+      <tbody>${perRows}</tbody></table>
+    </div>`;
 }
 
 // ============================
