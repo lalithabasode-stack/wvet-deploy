@@ -2845,8 +2845,6 @@ function downloadXLSX(tbodyId,tfootId,filename){
 // ============================
 // INIT
 // ============================
-(async function(){
-  try{
 function initTableResize(tableId){
   document.querySelectorAll('#'+tableId+' thead th').forEach(th=>{
     if(th.querySelector('.col-resizer')) return;
@@ -2876,6 +2874,9 @@ function initTableResize(tableId){
   });
 }
 function initPortResize(){initTableResize('port-table');}
+
+(async function(){
+  try{
 
     const r=await fetch('data.json?v='+Date.now());
     if(!r.ok)throw new Error('data.json fetch failed: '+r.status);
