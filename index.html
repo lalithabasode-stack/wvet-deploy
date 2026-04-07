@@ -1590,12 +1590,12 @@ function renderPortfolioTable(){
       return`<tr class="managed-row ${cohortRowCls(a)}">
         <td class="hn-cell" style="padding-left:18px"><span class="dot ${a.bestR>=0.5?'dg':a.bestR>=0?'da':'dr'}"></span><span class="hn">${a.name}</span>${a.ct==='pmax_test'?'<span class="bdg b-test">Brand Test</span>':''}</td>
         <td class="r">${f$(a.sp)}</td><td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
-        <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
-        <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
+        <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,false):'—'}</td>
+        <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,false):'—'}</td>
         <td class="r" style="color:#888780">${a.nca!=null?fConv(a.nca):'—'}</td><td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
-        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}><strong>${fConv(a.mb)}</strong></td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p?pct(a.mb,a.mbP,true):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_inv!=null?fConv(a.mb_inv):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_inv!=null&&a.mb_invP!=null?pct(a.mb_inv,a.mb_invP,true):'—'}</td>
-        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_vet!=null?fConv(a.mb_vet):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_vet!=null&&a.mb_vetP!=null?pct(a.mb_vet,a.mb_vetP,true):'—'}</td>
+        <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}><strong>${fConv(a.mb)}</strong></td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p?pct(a.mb,a.mbP,false):'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_inv!=null?fConv(a.mb_inv):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_inv!=null&&a.mb_invP!=null?pct(a.mb_inv,a.mb_invP,false):'—'}</td>
+        <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${a.mb_vet!=null?fConv(a.mb_vet):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&a.mb_vet!=null&&a.mb_vetP!=null?pct(a.mb_vet,a.mb_vetP,false):'—'}</td>
         <td class="r">${a.cpm?fCPA(a.cpm):'—'}</td><td class="r">${p&&a.cpm&&a.cpmP?pct(a.cpm,a.cpmP,true):'—'}</td>
         <td class="r">${a.cps!=null?fCPA(a.cps):'—'}</td><td class="r">${p&&a.cps!=null&&a.cpsP!=null?pct(a.cps,a.cpsP,true):'—'}</td>
         <td class="r">${rBar(a.bestR)}</td>
@@ -1605,8 +1605,8 @@ function renderPortfolioTable(){
     return`<tr class="${cohortRowCls(a)}">
       <td class="hn-cell" style="padding-left:18px"><span class="hn">${a.name}</span></td>
       <td class="r">${f$(a.sp)}</td><td class="r">${p?pct(a.sp,a.spp,true):'—'}</td>
-      <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,true):'—'}</td>
-      <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,true):'—'}</td>
+      <td class="r">${a.nci!=null?fConv(a.nci):'—'}</td><td class="r">${p&&a.nci!=null&&a.nciP!=null?pct(a.nci,a.nciP,false):'—'}</td>
+      <td class="r">${a.appt_b!=null?fConv(a.appt_b):'—'}</td><td class="r">${p&&a.appt_b!=null&&a.appt_bP!=null?pct(a.appt_b,a.appt_bP,false):'—'}</td>
       <td class="r" style="color:#888780">${a.nca!=null?fConv(a.nca):'—'}</td><td class="r" style="color:#888780">${p&&a.nca!=null&&a.ncaP!=null?pct(a.nca,a.ncaP,false):'—'}</td>
       <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}${dim}>—</td>
       <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}${dim}>—</td>
@@ -1628,12 +1628,12 @@ function renderPortfolioTable(){
     return`<tr class="cohort-summary ${cls}" onclick="toggleCohortGroup('${safeKey}')">
       <td class="hn-cell"><span class="cohort-arrow">${arrow}</span><strong>${lbl}</strong><span style="color:#888780;font-weight:400;font-size:10px;margin-left:4px">· ${grp.length}</span></td>
       <td class="r"><strong>${f$(s.sp)}</strong></td><td class="r">${p?pct(s.sp,s.spp,true):'—'}</td>
-      <td class="r">${s.nci!=null?fConv(s.nci):'—'}</td><td class="r">${p&&s.nci!=null?pct(s.nci,s.nciP,true):'—'}</td>
-      <td class="r">${s.appt_b!=null?fConv(s.appt_b):'—'}</td><td class="r">${p&&s.appt_b!=null?pct(s.appt_b,s.appt_bP,true):'—'}</td>
+      <td class="r">${s.nci!=null?fConv(s.nci):'—'}</td><td class="r">${p&&s.nci!=null?pct(s.nci,s.nciP,false):'—'}</td>
+      <td class="r">${s.appt_b!=null?fConv(s.appt_b):'—'}</td><td class="r">${p&&s.appt_b!=null?pct(s.appt_b,s.appt_bP,false):'—'}</td>
       <td class="r" style="color:#888780">${s.nca!=null?fConv(s.nca):'—'}</td><td class="r" style="color:#888780">${p&&s.nca!=null?pct(s.nca,s.ncaP,false):'—'}</td>
-      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${s.mb>0?fConv(s.mb):'—'}</td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p&&s.mb>0?pct(s.mb,s.mbP,true):'—'}</td>
-      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${s.mb_inv!=null?fConv(s.mb_inv):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&s.mb_inv!=null?pct(s.mb_inv,s.mb_invP,true):'—'}</td>
-      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${s.mb_vet!=null?fConv(s.mb_vet):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&s.mb_vet!=null?pct(s.mb_vet,s.mb_vetP,true):'—'}</td>
+      <td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${s.mb>0?fConv(s.mb):'—'}</td><td class="r mb-total-td" ${mbSplit?'style="display:none"':''}>${p&&s.mb>0?pct(s.mb,s.mbP,false):'—'}</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${s.mb_inv!=null?fConv(s.mb_inv):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&s.mb_inv!=null?pct(s.mb_inv,s.mb_invP,false):'—'}</td>
+      <td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${s.mb_vet!=null?fConv(s.mb_vet):'—'}</td><td class="r mb-split-td" ${!mbSplit?'style="display:none"':''}>${p&&s.mb_vet!=null?pct(s.mb_vet,s.mb_vetP,false):'—'}</td>
       <td class="r">${s.cpm!=null?fCPA(s.cpm):'—'}</td><td class="r">${p&&s.cpm!=null?pct(s.cpm,s.cpmP,true):'—'}</td>
       <td class="r">${s.cps!=null?fCPA(s.cps):'—'}</td><td class="r">${p&&s.cps!=null?pct(s.cps,s.cpsP,true):'—'}</td>
       <td class="r" style="color:#B4B2A9">—</td>
@@ -1646,7 +1646,7 @@ function renderPortfolioTable(){
     if(activeCohort && activeCohort!==c) return; // skip if cohort filter set to different group
     const grp=grpMap[key]||[];
     if(grp.length===0) return; // skip empty groups
-    const isExp=activeCohort?true:expandedCohort===key;
+    const isExp=activeCohort?true:expandedCohorts.has(key);
     html+=summaryRow(key,grp,isExp);
     if(isExp) html+=grp.map(acctRow).join('');
   });
@@ -1689,17 +1689,17 @@ function renderPortfolioTable(){
     <td class="r">${f$(totSp)}</td>
     <td class="r">${p?pct(totSp,totSpP,true):'—'}</td>
     <td class="r">${fConv(totNci)}</td>
-    <td class="r">${p?pct(totNci,prevNci,true):'—'}</td>
+    <td class="r">${p?pct(totNci,prevNci,false):'—'}</td>
     <td class="r">${fConv(totAppt)}</td>
-    <td class="r">${p?pct(totAppt,prevAppt,true):'—'}</td>
+    <td class="r">${p?pct(totAppt,prevAppt,false):'—'}</td>
     <td class="r" style="color:#888780">${fConv(totNca)}</td>
     <td class="r" style="color:#888780">${p?pct(totNca,prevNca,false):'—'}</td>
     <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}><strong>${fConv(totMb)}</strong></td>
-    <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}>${p?pct(totMb,prevMb,true):'—'}</td>
+    <td class="r mb-total-td" ${mbExpanded?'style="display:none"':''}>${p?pct(totMb,prevMb,false):'—'}</td>
     <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${fConv(totInv)}</strong></td>
-    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totInv,prevInv,true):'—'}</td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totInv,prevInv,false):'—'}</td>
     <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}><strong>${fConv(totVet)}</strong></td>
-    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totVet,prevVet,true):'—'}</td>
+    <td class="r mb-split-td" ${!mbExpanded?'style="display:none"':''}>${p?pct(totVet,prevVet,false):'—'}</td>
     <td class="r">${avgCPM2>0?fCPA(avgCPM2):'—'}</td>
     <td class="r">${p&&avgCPM2&&prevCPM?pct(avgCPM2,prevCPM,true):'—'}</td>
     <td class="r">${totCPS>0?fCPA(totCPS):'—'}</td>
@@ -1787,15 +1787,17 @@ document.addEventListener('click',function(e){
 // TIME SERIES
 // ============================
 let activeCohort = null;
-let expandedCohort    = null; // portfolio accordion
-let expandedCohortPoP = null; // PoP accordion
+let expandedCohorts    = new Set(); // portfolio accordion — multi-open
+let expandedCohortsPoP = new Set(); // PoP accordion — multi-open
 
 function toggleCohortGroup(key) {
-  expandedCohort = (expandedCohort === key) ? null : key;
+  if (expandedCohorts.has(key)) expandedCohorts.delete(key);
+  else expandedCohorts.add(key);
   renderPortfolioTable();
 }
 function toggleCohortGroupPoP(key) {
-  expandedCohortPoP = (expandedCohortPoP === key) ? null : key;
+  if (expandedCohortsPoP.has(key)) expandedCohortsPoP.delete(key);
+  else expandedCohortsPoP.add(key);
   renderPoP();
 }
 
@@ -2187,7 +2189,7 @@ function renderTS(){
     :'';
   tbody.innerHTML=dataRows+`<tr class="tfoot">
     <td>Total</td>
-    <td class="r">${f$(Math.round(tot.spend))}</td><td class="r">${_pp?pct(tot.spend,_pp.spend):'—'}</td>
+    <td class="r">${f$(Math.round(tot.spend))}</td><td class="r">${_pp?pct(tot.spend,_pp.spend,true):'—'}</td>
     <td class="r">${fN(Math.round(tot.imp))}</td><td class="r">${_pp?pct(tot.imp,_pp.imp):'—'}</td>
     <td class="r">${fN(Math.round(tot.clicks))}</td><td class="r">${_pp?pct(tot.clicks,_pp.clicks):'—'}</td>
     <td class="r">$${tCPC.toFixed(2)}</td><td class="r">${_pp&&_pp.cpc?pct(_pp.cpc,tCPC,false):'—'}</td>
@@ -2499,7 +2501,7 @@ function renderPoP(){
     if(activeCohort&&activeCohort!==c)return;
     const items=grpMap[key]||[];
     if(!items.length)return;
-    const isExp=activeCohort?true:expandedCohortPoP===key;
+    const isExp=activeCohort?true:expandedCohortsPoP.has(key);
     const cls=popCohortCls(c);
     const lbl=c||'Uncategorized';
     const arrow=isExp?'▾':'▸';
