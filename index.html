@@ -2921,6 +2921,12 @@ let PACING_CONFIG = null;
 let _allPacingRows = [];
 let _pacingInited = false;
 let pacingSortCol = 'pacingPct', pacingSortDir = -1;
+let expandedPacingCohorts = new Set();
+function togglePacingCohort(key) {
+  if (expandedPacingCohorts.has(key)) expandedPacingCohorts.delete(key);
+  else expandedPacingCohorts.add(key);
+  renderPacingTable();
+}
 function pacingSort(col) {
   if (pacingSortCol === col) pacingSortDir *= -1; else { pacingSortCol = col; pacingSortDir = -1; }
   renderPacingFromFilter();
@@ -3216,7 +3222,7 @@ function renderPacingCharts() {
 function renderPacingTable(rows) {
   let filtered = (rows || getFilteredPacingRows()).slice();
 
-  // Sort
+  // Sort within each cohort group
   filtered.sort((a, b) => {
     const col = pacingSortCol;
     const d   = pacingSortDir;
@@ -3230,7 +3236,6 @@ function renderPacingTable(rows) {
   document.getElementById('p-tbl-count').textContent = filtered.length + ' accounts';
 
   const fmt$ = v => v !== null ? f$(Math.round(v)) : '—';
-  const fmtPct = v => v !== null ? v + '%' : '—';
   const fmtDelta = v => v !== null ? (v >= 0 ? '+' : '') + v + '%' : '—';
   const deltaColor = v => v === null ? '' : v > 0 ? 'color:#D85A30' : v < 0 ? 'color:#1D9E75' : '';
 
@@ -3249,9 +3254,8 @@ function renderPacingTable(rows) {
     return '—';
   };
 
-  const tbody = document.getElementById('p-tbody');
-  tbody.innerHTML = filtered.map(r => `<tr class="${cohortRowCls(r)}">
-    <td style="font-weight:500">${r.name}</td>
+  const acctRow = r => `<tr class="${cohortRowCls(r)}">
+    <td style="font-weight:500;padding-left:22px">${r.name}</td>
     <td class="r">${fmt$(r.budget)}</td>
     <td class="r">${fmt$(r.spendMtd)}</td>
     <td class="r">${pctBar(r.pacingPct, r.status)}</td>
@@ -3260,13 +3264,57 @@ function renderPacingTable(rows) {
     <td class="r" style="${r.cpa && r.cpaGoal && r.cpa > r.cpaGoal ? 'color:#D85A30' : ''}">${fCPA(r.cpa)}</td>
     <td class="r">${fmt$(r.cpaGoal)}</td>
     <td class="r" style="${deltaColor(r.cpaDelta)}">${fmtDelta(r.cpaDelta)}</td>
-  </tr>`).join('');
+  </tr>`;
+
+  // Group by cohort — same order as portfolio
+  const PACING_COHORT_KEYS = ['Growth', 'Ready for Growth', 'Preparing for Growth', null];
+  const grpMap = {};
+  for (const r of filtered) {
+    const key = r.cohort || '__none__';
+    if (!grpMap[key]) grpMap[key] = [];
+    grpMap[key].push(r);
+  }
+
+  const cohortSummaryRow = (cohortVal, grp) => {
+    const key = cohortVal || '__none__';
+    const isExp = expandedPacingCohorts.has(key);
+    const arrow = isExp ? '▾' : '▸';
+    const lbl = cohortVal || 'Uncategorized';
+    const cls = cohortVal === 'Growth' ? 'growth' : cohortVal === 'Ready for Growth' ? 'ready' : cohortVal === 'Preparing for Growth' ? 'preparing' : 'none';
+    const totB = grp.reduce((s,r)=>s+r.budget,0);
+    const totS = grp.reduce((s,r)=>s+r.spendMtd,0);
+    const totSig = grp.reduce((s,r)=>s+r.sigMtd,0);
+    const hot = grp.filter(r=>r.status==='hot').length;
+    const on  = grp.filter(r=>r.status==='on').length;
+    const low = grp.filter(r=>r.status==='low').length;
+    const safeKey = key.replace(/'/g,"\\'");
+    return `<tr class="cohort-summary ${cls}" onclick="togglePacingCohort('${safeKey}')">
+      <td class="hn-cell"><span class="cohort-arrow">${arrow}</span><strong>${lbl}</strong><span style="color:#888780;font-weight:400;font-size:10px;margin-left:4px">· ${grp.length}</span></td>
+      <td class="r"><strong>${fmt$(totB)}</strong></td>
+      <td class="r"><strong>${fmt$(totS)}</strong></td>
+      <td class="r">—</td>
+      <td class="r"><span style="font-size:10px;color:#D85A30">${hot}H</span> <span style="font-size:10px;color:#1D9E75">${on}✓</span> <span style="font-size:10px;color:#888780">${low}L</span></td>
+      <td class="r">${totSig > 0 ? fConv(totSig) : '—'}</td>
+      <td class="r">—</td><td class="r">—</td><td class="r">—</td>
+    </tr>`;
+  };
+
+  let html = '';
+  for (const cohortVal of PACING_COHORT_KEYS) {
+    const key = cohortVal || '__none__';
+    const grp = grpMap[key];
+    if (!grp || grp.length === 0) continue;
+    html += cohortSummaryRow(cohortVal, grp);
+    if (expandedPacingCohorts.has(key)) html += grp.map(acctRow).join('');
+  }
+
+  document.getElementById('p-tbody').innerHTML = html;
 
   // Totals row
-  const totBudget  = filtered.reduce((s,r)=>s+r.budget,0);
-  const totSpend   = filtered.reduce((s,r)=>s+r.spendMtd,0);
-  const totSig     = filtered.reduce((s,r)=>s+r.sigMtd,0);
-  const totCpa     = totSig > 0 ? totSpend/totSig : null;
+  const totBudget = filtered.reduce((s,r)=>s+r.budget,0);
+  const totSpend  = filtered.reduce((s,r)=>s+r.spendMtd,0);
+  const totSig    = filtered.reduce((s,r)=>s+r.sigMtd,0);
+  const totCpa    = totSig > 0 ? totSpend/totSig : null;
   document.getElementById('p-tfoot').innerHTML = `<tr>
     <td>Total (${filtered.length})</td>
     <td class="r">${fmt$(totBudget)}</td>
