@@ -3260,6 +3260,9 @@ function renderPacingTable(rows) {
   const fmt$ = v => v !== null ? f$(Math.round(v)) : '—';
   const fmtDelta = v => v !== null ? (v >= 0 ? '+' : '') + v + '%' : '—';
   const deltaColor = v => v === null ? '' : v > 0 ? 'color:#D85A30' : v < 0 ? 'color:#1D9E75' : '';
+  const now2 = new Date();
+  const _dim = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).getDate();
+  const _de  = now2.getDate();
 
   const pctBar = (pct, status) => {
     if (pct === null) return '—';
@@ -3309,15 +3312,19 @@ function renderPacingTable(rows) {
     const hot = grp.filter(r=>r.status==='hot').length;
     const on  = grp.filter(r=>r.status==='on').length;
     const low = grp.filter(r=>r.status==='low').length;
+    const totExpected = _dim > 0 ? (totB / _dim) * _de : 0;
+    const cohPacingPct = totExpected > 0 ? Math.round((totS / totExpected) * 1000) / 10 : null;
+    const cohStatus = cohPacingPct === null ? null : cohPacingPct > 110 ? 'hot' : cohPacingPct < 90 ? 'low' : 'on';
+    const cohCpa = totSig > 0 ? totS / totSig : null;
     const safeKey = key.replace(/'/g,"\\'");
     return `<tr class="cohort-summary ${cls}" onclick="togglePacingCohort('${safeKey}')">
       <td class="hn-cell"><span class="cohort-arrow">${arrow}</span><strong>${lbl}</strong><span style="color:#888780;font-weight:400;font-size:10px;margin-left:4px">· ${grp.length}</span></td>
       <td class="r"><strong>${fmt$(totB)}</strong></td>
       <td class="r"><strong>${fmt$(totS)}</strong></td>
-      <td class="r">—</td>
+      <td class="r">${pctBar(cohPacingPct, cohStatus)}</td>
       <td class="r"><span style="font-size:10px;color:#D85A30">${hot}H</span> <span style="font-size:10px;color:#1D9E75">${on}✓</span> <span style="font-size:10px;color:#888780">${low}L</span></td>
       <td class="r">${totSig > 0 ? fConv(totSig) : '—'}</td>
-      <td class="r">—</td><td class="r">—</td><td class="r">—</td>
+      <td class="r">${fCPA(cohCpa)}</td><td class="r">—</td><td class="r">—</td>
     </tr>`;
   };
 
@@ -3337,11 +3344,14 @@ function renderPacingTable(rows) {
   const totSpend  = filtered.reduce((s,r)=>s+r.spendMtd,0);
   const totSig    = filtered.reduce((s,r)=>s+r.sigMtd,0);
   const totCpa    = totSig > 0 ? totSpend/totSig : null;
+  const totExp    = _dim > 0 ? (totBudget / _dim) * _de : 0;
+  const totPacPct = totExp > 0 ? Math.round((totSpend / totExp) * 1000) / 10 : null;
+  const totPacSt  = totPacPct === null ? null : totPacPct > 110 ? 'hot' : totPacPct < 90 ? 'low' : 'on';
   document.getElementById('p-tfoot').innerHTML = `<tr>
     <td>Total (${filtered.length})</td>
     <td class="r">${fmt$(totBudget)}</td>
     <td class="r">${fmt$(totSpend)}</td>
-    <td class="r">—</td><td class="r">—</td>
+    <td class="r">${pctBar(totPacPct, totPacSt)}</td><td class="r">—</td>
     <td class="r">${totSig > 0 ? fConv(totSig) : '—'}</td>
     <td class="r">${fCPA(totCpa)}</td>
     <td class="r">—</td><td class="r">—</td>
