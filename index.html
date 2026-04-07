@@ -704,10 +704,10 @@ tr.cohort-preparing{border-left:2px solid #EF9F27}
           <th onclick="corrSort('cohort')">Cohort</th>
           <th class="r" onclick="corrSort('actions')">Actions</th>
           <th class="r" onclick="corrSort('combos')">Combos</th>
-          <th class="r" onclick="corrSort('allr')">All r</th>
-          <th class="r" onclick="corrSort('bestr')">Best r</th>
-          <th class="r" onclick="corrSort('delta')">Δ</th>
-          <th class="nosort">Best Combination</th>
+          <th class="r" onclick="corrSort('bestr_inv')">Best r (Invoca)</th>
+          <th class="r" onclick="corrSort('bestr_vet')">Best r (Online)</th>
+          <th class="nosort">Best Combo (Invoca)</th>
+          <th class="nosort">Best Combo (Online)</th>
         </tr></thead>
         <tbody id="corr-tbody"></tbody>
       </table>
@@ -2539,7 +2539,7 @@ function renderPoP(){
 // ============================
 // SIGNALS (correlation, managed only)
 // ============================
-let corrSortCol='delta', corrSortDir=-1, corrSelectedIds=new Set(), corrCohortFilter=null;
+let corrSortCol='bestr_inv', corrSortDir=-1, corrSelectedIds=new Set(), corrCohortFilter=null;
 function corrSort(col){
   if(corrSortCol===col)corrSortDir*=-1;else{corrSortCol=col;corrSortDir=-1;}
   renderSignals();
@@ -2556,7 +2556,7 @@ function setCorrCohort(val){
   renderSignals();
 }
 function initCorrSidebar(){
-  const accts=AM.filter(a=>a.corr);
+  const accts=AM.filter(a=>a.corr_inv||a.corr_vet);
   corrSelectedIds=new Set(accts.map(a=>a.id));
   document.getElementById('corr-acct-count').textContent='('+accts.length+')';
   document.getElementById('corr-acct-list').innerHTML=accts.map(a=>
@@ -2564,7 +2564,7 @@ function initCorrSidebar(){
   ).join('');
 }
 function corrToggleAcct(id,on){corrSelectedIds[on?'add':'delete'](id);renderSignals();}
-function corrSelectAll(){corrSelectedIds=new Set(AM.filter(a=>a.corr).map(a=>a.id));document.querySelectorAll('.corr-acct-chk').forEach(c=>c.checked=true);renderSignals();}
+function corrSelectAll(){corrSelectedIds=new Set(AM.filter(a=>a.corr_inv||a.corr_vet).map(a=>a.id));document.querySelectorAll('.corr-acct-chk').forEach(c=>c.checked=true);renderSignals();}
 function corrClearAccts(){corrSelectedIds.clear();document.querySelectorAll('.corr-acct-chk').forEach(c=>c.checked=false);renderSignals();}
 function filterCorrAcctList(q){
   document.querySelectorAll('#corr-acct-list .fcheck').forEach(el=>{
@@ -2576,39 +2576,40 @@ function renderSignals(){
   const priChk=[...document.querySelectorAll('.corr-pri:checked')].map(c=>c.value);
   const qualOf=r=>r>=0.7?'strong':r>=0.3?'moderate':r>=0?'weak':'negative';
   const priOf=d=>d*100>20?'high':d*100>=5?'medium':'low';
+  const maxBestR=a=>Math.max(a.corr_inv?.best_r??-99, a.corr_vet?.best_r??-99);
+  const maxDelta=a=>Math.max(a.corr_inv?.delta??0, a.corr_vet?.delta??0);
   let rows=[...AM].filter(a=>{
-    if(!a.corr) return false;
+    if(!a.corr_inv && !a.corr_vet) return false;
     if(!corrSelectedIds.has(a.id)) return false;
     if(corrCohortFilter && a.cohort!==corrCohortFilter) return false;
-    if(!qualChk.includes(qualOf(a.corr.best_r))) return false;
-    if(!priChk.includes(priOf(a.corr.delta))) return false;
+    if(!qualChk.includes(qualOf(maxBestR(a)))) return false;
+    if(!priChk.includes(priOf(maxDelta(a)))) return false;
     return true;
   });
-  const cv=a=>a.corr||{};
+  const nActions=a=>(a.corr_inv||a.corr_vet)?.n_actions||0;
+  const nCombos=a=>(a.corr_inv||a.corr_vet)?.total_combos||0;
   if(corrSortCol==='name')rows.sort((a,b)=>corrSortDir*a.name.localeCompare(b.name));
-  else if(corrSortCol==='actions')rows.sort((a,b)=>corrSortDir*((cv(b).n_actions||0)-(cv(a).n_actions||0)));
-  else if(corrSortCol==='combos')rows.sort((a,b)=>corrSortDir*((cv(b).total_combos||0)-(cv(a).total_combos||0)));
-  else if(corrSortCol==='allr')rows.sort((a,b)=>corrSortDir*((cv(b).all_r||0)-(cv(a).all_r||0)));
-  else if(corrSortCol==='bestr')rows.sort((a,b)=>corrSortDir*((cv(b).best_r||0)-(cv(a).best_r||0)));
+  else if(corrSortCol==='actions')rows.sort((a,b)=>corrSortDir*(nActions(b)-nActions(a)));
+  else if(corrSortCol==='combos')rows.sort((a,b)=>corrSortDir*(nCombos(b)-nCombos(a)));
+  else if(corrSortCol==='bestr_inv')rows.sort((a,b)=>corrSortDir*((a.corr_inv?.best_r??-99)-(b.corr_inv?.best_r??-99))*-1);
+  else if(corrSortCol==='bestr_vet')rows.sort((a,b)=>corrSortDir*((a.corr_vet?.best_r??-99)-(b.corr_vet?.best_r??-99))*-1);
   else if(corrSortCol==='cohort')rows.sort((a,b)=>corrSortDir*(a.cohort||'').localeCompare(b.cohort||''));
-  else if(corrSortCol==='delta')rows.sort((a,b)=>corrSortDir*((cv(b).delta||0)-(cv(a).delta||0)));
+
+  const chips=(c,highlight)=>(c?.best_combo_disp||c?.best_combo||[]).map(ac=>`<span style="font-size:9px;background:${highlight?'#E1F5EE':'#F5F4F0'};border:0.5px solid ${highlight?'#9FE1CB':'#E8E6DF'};border-radius:4px;padding:1px 6px;color:${highlight?'#085041':'#5F5E5A'};white-space:nowrap">${ac}</span>`).join(' ');
 
   document.getElementById('corr-tbody').innerHTML=rows.map(a=>{
-    const c=a.corr;
-    if(!c) return`<tr><td><span class="hn">${a.name}</span></td><td colspan="7" style="font-size:10px;color:#B4B2A9">No correlation data</td></tr>`;
-    const deltaColor=c.delta>=0.2?'#1D9E75':c.delta>=0.05?'#EF9F27':'#888780';
-    const combo=(c.best_combo_disp||c.best_combo||[]).map(ac=>`<span style="font-size:9px;background:#F5F4F0;border:0.5px solid #E8E6DF;border-radius:4px;padding:1px 6px;color:#5F5E5A;white-space:nowrap">${ac}</span>`).join(' ');
+    const ci=a.corr_inv, cv=a.corr_vet;
+    const nc=(ci||cv)?.n_actions||0, tc=(ci||cv)?.total_combos||0;
     const cohortCls=a.cohort==='Growth'?'growth':a.cohort==='Ready for Growth'?'ready':a.cohort==='Preparing for Growth'?'preparing':'none';
-    const cohortLbl=a.cohort||'—';
     return`<tr onclick="document.getElementById('corr-inp').value='${a.name.replace(/'/g,"\\'")}';filterCorrDetail('${a.name.replace(/'/g,"\\'")}');" style="cursor:pointer">
       <td><span class="hn">${a.name}</span></td>
-      <td><span class="cohort-badge ${cohortCls}" style="font-size:9px">${cohortLbl}</span></td>
-      <td class="r" style="font-size:11px;color:#888780">${c.n_actions}</td>
-      <td class="r" style="font-size:11px;color:#888780">${c.total_combos.toLocaleString()}</td>
-      <td class="r">${rBar(c.all_r)}</td>
-      <td class="r">${rBar(c.best_r)}</td>
-      <td class="r" style="font-size:11px;font-weight:600;color:${deltaColor}">+${(c.delta*100).toFixed(1)}pp</td>
-      <td style="white-space:normal;line-height:1.8">${combo}</td>
+      <td><span class="cohort-badge ${cohortCls}" style="font-size:9px">${a.cohort||'—'}</span></td>
+      <td class="r" style="font-size:11px;color:#888780">${nc}</td>
+      <td class="r" style="font-size:11px;color:#888780">${tc.toLocaleString()}</td>
+      <td class="r">${ci?rBar(ci.best_r):'<span style="color:#B4B2A9;font-size:10px">—</span>'}</td>
+      <td class="r">${cv?rBar(cv.best_r):'<span style="color:#B4B2A9;font-size:10px">—</span>'}</td>
+      <td style="white-space:normal;line-height:1.8">${ci?chips(ci,true):'<span style="color:#B4B2A9;font-size:10px">—</span>'}</td>
+      <td style="white-space:normal;line-height:1.8">${cv?chips(cv,false):'<span style="color:#B4B2A9;font-size:10px">—</span>'}</td>
     </tr>`;
   }).join('');
 }
@@ -2617,44 +2618,65 @@ function filterCorrDetail(val){
   const el=document.getElementById('corr-detail');
   if(!q){el.innerHTML='<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">Type an account name above to see full breakdown</div>';return;}
   const a=AM.find(x=>x.name.toLowerCase().includes(q));
-  if(!a||!a.corr){el.innerHTML=`<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">No data found for "${val}"</div>`;return;}
-  const c=a.corr;
-  // Top 10 combinations
-  const top10Rows=(c.top10||[]).map((cb,i)=>{
-    const isTop=i===0;
-    const acts=cb.actions.map(ac=>`<span style="font-size:9px;background:${isTop?'#E1F5EE':'#F5F4F0'};border:0.5px solid ${isTop?'#9FE1CB':'#E8E6DF'};border-radius:4px;padding:1px 6px;color:${isTop?'#085041':'#5F5E5A'};white-space:nowrap">${ac}</span>`).join(' ');
-    return`<tr style="${isTop?'background:#F7FCF9':''}">
-      <td class="r" style="font-size:11px;color:${isTop?'#1D9E75':'#888780'};font-weight:${isTop?600:400}">${i+1}</td>
-      <td class="r">${rBar(cb.r)}</td>
-      <td style="white-space:normal;line-height:1.8">${acts}${isTop?' <span style="font-size:9px;color:#1D9E75;font-weight:600">★ best</span>':''}</td>
-    </tr>`;
-  }).join('');
-  // Per-action breakdown
-  const perRows=Object.entries(c.per_action||{}).sort((a,b)=>b[1]-a[1]).map(([name,r])=>{
-    const inBest=(c.best_combo||[]).includes(name);
-    const q=r>=0.7?'Strong':r>=0.3?'Moderate':r>=0?'Weak':'Negative';
-    const qc=rC(r);
-    const rec=r>=0.5?'Set as primary goal':r>=0.3?'Include in combo':r>=0?'Low priority — exclude':r>=-0.3?'Misleading — remove from primary':'Actively harmful — remove immediately';
+  if(!a||(! a.corr_inv&&!a.corr_vet)){el.innerHTML=`<div style="font-size:11px;color:#B4B2A9;text-align:center;padding:16px">No data found for "${val}"</div>`;return;}
+  const ci=a.corr_inv, cv=a.corr_vet;
+  const ref=ci||cv;
+
+  function top10Panel(c,label,highlight){
+    if(!c) return`<div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:600;color:#5F5E5A;margin-bottom:8px">${label}</div><div style="font-size:10px;color:#B4B2A9;padding:12px 0">No data</div></div>`;
+    const rows=(c.top10||[]).map((cb,i)=>{
+      const isTop=i===0;
+      const acts=cb.actionsDisplay.map(ac=>`<span style="font-size:9px;background:${isTop&&highlight?'#E1F5EE':'#F5F4F0'};border:0.5px solid ${isTop&&highlight?'#9FE1CB':'#E8E6DF'};border-radius:4px;padding:1px 6px;color:${isTop&&highlight?'#085041':'#5F5E5A'};white-space:nowrap">${ac}</span>`).join(' ');
+      return`<tr style="${isTop?'background:#F7FCF9':''}">
+        <td class="r" style="font-size:11px;color:${isTop?'#1D9E75':'#888780'};font-weight:${isTop?600:400}">${i+1}</td>
+        <td class="r">${rBar(cb.r)}</td>
+        <td style="white-space:normal;line-height:1.8">${acts}${isTop?' <span style="font-size:9px;color:#1D9E75;font-weight:600">★</span>':''}</td>
+      </tr>`;
+    }).join('');
+    return`<div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:600;color:#5F5E5A;margin-bottom:4px">${label} <span style="font-weight:400;color:#888780">${c.months_used}mo · best r = ${c.best_r.toFixed(2)}</span></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th class="r nosort">#</th><th class="r nosort">r</th><th class="nosort">Actions</th></tr></thead>
+        <tbody>${rows}</tbody></table>
+      </div>
+    </div>`;
+  }
+
+  // Unified per-action breakdown — merge all action names from both sources
+  const allActions=new Set([...Object.keys(ci?.per_action||{}),...Object.keys(cv?.per_action||{})]);
+  const perRows=[...allActions].map(name=>({
+    name,
+    ri:ci?.per_action?.[name]??null,
+    rv:cv?.per_action?.[name]??null,
+  })).sort((a,b)=>Math.max(b.ri??-99,b.rv??-99)-Math.max(a.ri??-99,a.rv??-99)).map(({name,ri,rv})=>{
+    const maxR=Math.max(ri??-99,rv??-99);
+    const inBestInv=(ci?.best_combo||[]).includes(name);
+    const inBestVet=(cv?.best_combo||[]).includes(name);
+    const inBest=inBestInv||inBestVet;
+    const ql=maxR>=0.7?'Strong':maxR>=0.3?'Moderate':maxR>=0?'Weak':'Negative';
+    const rec=maxR>=0.5?'Set as primary goal':maxR>=0.3?'Include in combo':maxR>=0?'Low priority — exclude':maxR>=-0.3?'Misleading — remove from primary':'Actively harmful — remove immediately';
+    const star=`${inBestInv?' ★inv':''}${inBestVet?' ★onl':''}`;
     return`<tr>
-      <td style="font-size:11px;${inBest?'font-weight:600;color:#1D9E75':''}">${name}${inBest?' ★':''}</td>
-      <td class="r">${rBar(r)}</td>
-      <td style="font-size:10px;font-weight:600;color:${qc}">${q}</td>
+      <td style="font-size:11px;${inBest?'font-weight:600;color:#1D9E75':''}">${name}${star}</td>
+      <td class="r">${ri!==null?rBar(ri):'<span style="color:#B4B2A9">—</span>'}</td>
+      <td class="r">${rv!==null?rBar(rv):'<span style="color:#B4B2A9">—</span>'}</td>
+      <td style="font-size:10px;font-weight:600;color:${rC(maxR)}">${ql}</td>
       <td style="font-size:10px;color:#888780">${rec}</td>
     </tr>`;
   }).join('');
+
   el.innerHTML=`
     <div style="padding:10px 14px;border-bottom:0.5px solid #E8E6DF;display:flex;gap:16px;align-items:baseline;flex-wrap:wrap">
       <div style="font-size:12px;font-weight:500">${a.name}</div>
-      <div style="font-size:10px;color:#888780">${c.months_used} months · ${c.total_combos.toLocaleString()} combos tested · All r = ${c.all_r.toFixed(2)} → Best r = ${c.best_r.toFixed(2)} <span style="color:#1D9E75;font-weight:600">(+${(c.delta*100).toFixed(1)}pp improvement)</span></div>
+      <div style="font-size:10px;color:#888780">${ref.total_combos.toLocaleString()} combos tested · source: ${ref.source}</div>
     </div>
-    <div style="padding:12px 14px 6px;font-size:11px;font-weight:600;color:#5F5E5A">Top 10 Combinations</div>
-    <div class="tbl-wrap" style="padding:0 14px 12px">
-      <table><thead><tr><th class="r nosort">#</th><th class="r nosort">r</th><th class="nosort">Actions</th></tr></thead>
-      <tbody>${top10Rows}</tbody></table>
+    <div style="padding:12px 14px 12px;display:flex;gap:16px;border-bottom:0.5px solid #E8E6DF;flex-wrap:wrap">
+      ${top10Panel(ci,'Invoca (Phone)',true)}
+      ${top10Panel(cv,'Online Booking',false)}
     </div>
-    <div style="padding:6px 14px 6px;font-size:11px;font-weight:600;color:#5F5E5A;border-top:0.5px solid #E8E6DF">Individual Action Breakdown</div>
+    <div style="padding:6px 14px 6px;font-size:11px;font-weight:600;color:#5F5E5A">Per-Action Breakdown <span style="font-weight:400;color:#888780;font-size:10px">★inv = in Invoca best combo · ★onl = in Online best combo</span></div>
     <div class="tbl-wrap" style="padding:0 14px 12px">
-      <table><thead><tr><th class="nosort">Conversion action</th><th class="r nosort">r value</th><th class="nosort">Signal</th><th class="nosort">Recommendation</th></tr></thead>
+      <table><thead><tr><th class="nosort">Conversion action</th><th class="r nosort">r (Invoca)</th><th class="r nosort">r (Online)</th><th class="nosort">Signal</th><th class="nosort">Recommendation</th></tr></thead>
       <tbody>${perRows}</tbody></table>
     </div>`;
 }

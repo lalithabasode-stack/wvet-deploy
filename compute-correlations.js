@@ -1,8 +1,8 @@
 // compute-correlations.js
 // Computes Pearson r for all 2^n-1 subsets of conversion actions vs monthly
-// matchback for every account that has both conv_monthly AND mb data.
-// Falls back to daily fields for accounts without conv_monthly (e.g. managed 12).
-// Stores results in account.corr — used only by the Correlation tab.
+// matchback — separately for Invoca (phone) and Vetstoria (online booking).
+// Stores results in account.corr_inv and account.corr_vet.
+// Used only by the Correlation tab.
 //
 // Usage: node compute-correlations.js [path/to/data.json]
 
@@ -45,9 +45,9 @@ function fromConvMonthly(acct) {
 
 // Build action map from daily fields (fallback)
 function fromDaily(acct) {
-  if (!acct.daily || Object.keys(acct.daily).length === 0) return null;
+  if (!acct.daily || acct.daily.length === 0) return null;
   const monthly = {};
-  for (const d of Object.values(acct.daily)) {
+  for (const d of acct.daily) {
     const dt = new Date(d.date);
     const mk = MO[dt.getMonth()] + String(dt.getFullYear()).slice(2);
     for (const { key, label } of DAILY_ACTIONS) {
@@ -59,46 +59,34 @@ function fromDaily(acct) {
 }
 
 // Strip hospital name suffix from action names for display normalisation
-// e.g. "Click to Call on Website-Payson Family Pet Hospital" → "Click to Call on Website"
 function normaliseLabel(raw, acctName) {
   let s = raw;
-  // Remove exact account name (with common separators)
   s = s.replace(new RegExp('[\\s\\-–]+' + acctName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '.*$', 'i'), '');
-  // Remove trailing GA4 source tags e.g. " - GA4", "(GA4)", "- GA4"
   s = s.replace(/[\s\-–]+GA4.*$/i, '').replace(/\s*\(GA4\).*$/i, '');
   return s.trim() || raw;
 }
 
-let processed = 0, skipped = 0;
-
-for (const acct of data.accounts) {
-  if (!acct.mb || Object.keys(acct.mb).length === 0) { skipped++; continue; }
-
-  const actionMap = fromConvMonthly(acct) || fromDaily(acct);
-  if (!actionMap) { skipped++; continue; }
-
-  // Find months where both matchback > 0 and at least one action > 0
-  const mbKeys = Object.keys(acct.mb).filter(mk => (acct.mb[mk] || 0) > 0);
+// Core correlation engine — runs against any mbObj (mb_inv or mb_vet)
+function computeCorr(actionMap, mbObj, acctName, source) {
+  const mbKeys = Object.keys(mbObj).filter(mk => (mbObj[mk] || 0) > 0);
   const overlap = mbKeys.filter(mk =>
     Object.values(actionMap).some(byMk => (byMk[mk] || 0) > 0)
   ).sort();
 
-  if (overlap.length < 3) { skipped++; continue; }
+  if (overlap.length < 3) return null;
 
-  const mbVals = overlap.map(mk => acct.mb[mk]);
+  const mbVals = overlap.map(mk => mbObj[mk]);
 
-  // Filter to actions with any non-zero data in overlap months
   const activeActions = Object.entries(actionMap)
     .filter(([, byMk]) => overlap.some(mk => (byMk[mk] || 0) > 0))
     .map(([rawLabel, byMk]) => ({
       rawLabel,
-      label: normaliseLabel(rawLabel, acct.name),
+      label: normaliseLabel(rawLabel, acctName),
       byMk,
     }));
 
-  if (activeActions.length === 0) { skipped++; continue; }
+  if (activeActions.length === 0) return null;
 
-  // Sort by individual r desc, cap at 20 to keep combos manageable
   const withR = activeActions.map(a => ({
     ...a,
     r: pearson(overlap.map(mk => a.byMk[mk] || 0), mbVals) || 0,
@@ -107,20 +95,17 @@ for (const acct of data.accounts) {
   const usedActions = withR.slice(0, 20);
   const totalCombos = (1 << usedActions.length) - 1;
 
-  // All-actions r
   const allXs = overlap.map(mk =>
     usedActions.reduce((s, { byMk }) => s + (byMk[mk] || 0), 0)
   );
   const allR = pearson(allXs, mbVals);
 
-  // Per-action r — keyed by raw label (exact Google Ads name) for actionability
   const perAction = {};
   for (const { rawLabel, byMk } of usedActions) {
     const xs = overlap.map(mk => byMk[mk] || 0);
     perAction[rawLabel] = +(pearson(xs, mbVals) || 0).toFixed(4);
   }
 
-  // All 2^n-1 combos
   const combos = [];
   for (let mask = 1; mask <= totalCombos; mask++) {
     const subset = usedActions.filter((_, i) => (mask >> i) & 1);
@@ -128,13 +113,13 @@ for (const acct of data.accounts) {
     const r = pearson(xs, mbVals);
     if (r !== null) combos.push({
       r: +r.toFixed(4),
-      actions: subset.map(a => a.rawLabel),          // raw for detail card
-      actionsDisplay: subset.map(a => a.label),      // normalised for summary chips
+      actions: subset.map(a => a.rawLabel),
+      actionsDisplay: subset.map(a => a.label),
     });
   }
   combos.sort((a, b) => b.r - a.r);
 
-  acct.corr = {
+  return {
     n_actions:       usedActions.length,
     total_combos:    totalCombos,
     all_r:           +(allR || 0).toFixed(4),
@@ -145,12 +130,38 @@ for (const acct of data.accounts) {
     top10:           combos.slice(0, 10),
     per_action:      perAction,
     months_used:     overlap.length,
-    source:          acct.conv_monthly ? 'conv_monthly' : 'daily_fields',
+    source,
   };
+}
 
-  processed++;
-  if (processed <= 20 || processed % 50 === 0) {
-    console.log(`${acct.name}: all_r=${acct.corr.all_r} best_r=${acct.corr.best_r} Δ=+${(acct.corr.delta*100).toFixed(1)}pp (${overlap.length}mo, ${usedActions.length} actions, ${totalCombos} combos) [${acct.corr.source}]`);
+let processed = 0, skipped = 0;
+
+for (const acct of data.accounts) {
+  const hasMbInv = acct.mb_inv && Object.keys(acct.mb_inv).some(mk => (acct.mb_inv[mk] || 0) > 0);
+  const hasMbVet = acct.mb_vet && Object.keys(acct.mb_vet).some(mk => (acct.mb_vet[mk] || 0) > 0);
+
+  if (!hasMbInv && !hasMbVet) { skipped++; continue; }
+
+  const actionMap = fromConvMonthly(acct) || fromDaily(acct);
+  if (!actionMap) { skipped++; continue; }
+
+  const src = acct.conv_monthly ? 'conv_monthly' : 'daily_fields';
+
+  acct.corr_inv = hasMbInv ? computeCorr(actionMap, acct.mb_inv, acct.name, src) : null;
+  acct.corr_vet = hasMbVet ? computeCorr(actionMap, acct.mb_vet, acct.name, src) : null;
+  delete acct.corr;
+
+  if (acct.corr_inv || acct.corr_vet) {
+    processed++;
+    if (processed <= 20 || processed % 50 === 0) {
+      const inv = acct.corr_inv;
+      const vet = acct.corr_vet;
+      const invStr = inv ? `inv_r=${inv.best_r} (${inv.months_used}mo)` : 'inv=—';
+      const vetStr = vet ? `vet_r=${vet.best_r} (${vet.months_used}mo)` : 'vet=—';
+      console.log(`${acct.name}: ${invStr} ${vetStr} [${src}]`);
+    }
+  } else {
+    skipped++;
   }
 }
 

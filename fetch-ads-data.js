@@ -459,7 +459,8 @@ function buildDailyRows(trafficRows, convRows) {
           locationCode: prev.locationCode ?? null,
           // Correlation fields — set by fetch-all-conv-monthly.js + compute-correlations.js
           conv_monthly: prev.conv_monthly ?? undefined,
-          corr:         prev.corr         ?? undefined,
+          corr_inv:     prev.corr_inv     ?? undefined,
+          corr_vet:     prev.corr_vet     ?? undefined,
         });
         process.stdout.write('.');
       } catch (err) {
