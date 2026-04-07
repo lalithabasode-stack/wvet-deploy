@@ -3107,7 +3107,7 @@ function renderPacingCharts() {
     const daysInMo = new Date(y, mo, 0).getDate();
     const totals = new Array(daysInMo).fill(0);
     for (const a of A) {
-      for (const d of (a.daily || [])) {
+      for (const d of Object.values(a.daily || {})) {
         if (d.date.slice(0, 7) !== ym) continue;
         totals[parseInt(d.date.slice(8)) - 1] += d.spend || 0;
       }
